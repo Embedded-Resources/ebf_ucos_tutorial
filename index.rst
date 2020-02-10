@@ -34,9 +34,10 @@
    zero_to_one/ready_list
    zero_to_one/multi_priority
    zero_to_one/Time_base_list
+   zero_to_one/sliding
    zero_to_one/Suspend_and_restore
    zero_to_one/Task_deletion
-   zero_to_one/sliding
+
 
 
 .. toctree::

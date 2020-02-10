@@ -114,7 +114,7 @@
 
 
 但是，在多任务系统中，每个任务都是独立的，互不干扰的，所以要为每个任务都分配独立的栈空间，这个栈空间通常是一
-个预先定义好的全局数组。这些一个个的任务栈也是存在于RAM中，能够使用的最大的栈也是由代码清单:任务-3中的Stack_Size
+个预先定义好的全局数组。这些一个个的任务栈也是存在于RAM中，能够使用的最大的栈也是由 代码清单:任务-3_ 中的Stack_Size
 决定。只是多任务系统中任务的栈就是在统一的一个栈空间里面分配好一个个独立的房间，每个任务只能使用各自的房间，
 而裸机系统中需要使用栈的时候则可以天马行空，随便在栈里面找个空闲的空间使用，大概的区别具体见。
 
@@ -123,7 +123,7 @@
 
 .. code-block:: c
     :caption: 代码清单:任务-4定义任务栈
-    :name: 代码清单:任务-
+    :name: 代码清单:任务-4
     :linenos:
 
     #define  TASK1_STK_SIZE       128              (1)
@@ -215,7 +215,7 @@
 为每个任务都额外定义了一个任务控制块TCB（Task ControlBlock），这个任务控制块就相当于任务的身份证，里面存有任务
 的所有信息，比如任务的栈，任务名称，任务的形参等。有了这个任务控制块之后，以后系统对任务的全部操作都可以通过这个
 TCB来实现。TCB是一个新的数据类型，在os.h（os.h第一次使用需要自行在文件夹μC/OS-III\Source中新建并添加到工程的
-μC/OS-III Source组）这个头文件中声明，有关TCB具体的声明见 代码清单:任务-_7_ ，使用它可以为每个任务都定义一个TCB实体。
+μC/OS-III Source组）这个头文件中声明，有关TCB具体的声明见 代码清单:任务-7_ ，使用它可以为每个任务都定义一个TCB实体。
 
 .. code-block:: c
     :caption: 代码清单:任务-7任务控制块TCB类型声明
@@ -547,8 +547,8 @@ os_core.c（os_core.c第一次使用需要自行在文件夹μC/OS-III\Source中
 
 -   代码清单:任务-19_ （5）：代码运行到这里表示没有错误，即OS_ERR_NONE。
 
-代码清单:任务-19_ 中的全局变量OSTCBCurPtr和OSTCBHighRdyPtr均在os.h中定义，具体见
-代码清单:任务-21_ 。OS_STATE_OS_STOPPED 这个表示系统运行状态的宏也在os.h中定义，具体见 代码清单:任务-22_ 。
+代码清单:任务-19_ 中的全局变量OSTCBCurPtr和OSTCBHighRdyPtr均在os.h中定义，具体见 代码清单:任务-21_ 。
+OS_STATE_OS_STOPPED 这个表示系统运行状态的宏也在os.h中定义，具体见 代码清单:任务-22_ 。
 
 .. code-block:: c
     :caption: 代码清单:任务-21 OSInit()函数中出现的全局变量的定义
@@ -805,19 +805,19 @@ PendSV_Handler函数里面涉及的ARM汇编指令的讲解具体见表 PendSV_H
     LDR     R1, = OSTCBHighRdyPtr(6)
     ; 加载 OSTCBHighRdyPtr 指针到R2，这里LDR属于ARM指令
     LDR     R2, [R1](7)
-    ; 存储 OSTCBHighRdyPtr 到 OSTCBCurPtr  
+    ; 存储 OSTCBHighRdyPtr 到 OSTCBCurPtr
     STR     R2, [R0](8)
 
-    ; 加载 OSTCBHighRdyPtr 到 R0 
+    ; 加载 OSTCBHighRdyPtr 到 R0
     LDR     R0, [R2](9)
-    ; 加载需要手动保存的信息到CPU寄存器R4-R11  
+    ; 加载需要手动保存的信息到CPU寄存器R4-R11
     LDMIA   R0!, {R4-R11}(10)
 
     ; 更新PSP的值，这个时候PSP指向下一个要执行的任务的栈的栈底
     ;（这个栈底已经加上刚刚手动加载到CPU寄存器R4-R11的偏移）
     MSR     PSP, R0(11)
 
-    ; 确保异常返回使用的栈指针是PSP，即LR寄存器的位2要为1  
+    ; 确保异常返回使用的栈指针是PSP，即LR寄存器的位2要为1
     ORR     LR, LR, #0x04 (12)
 
     ; 开中断
@@ -1000,7 +1000,7 @@ PendSV_Handler函数里面涉及的ARM汇编指令的讲解具体见表 PendSV_H
 main()函数
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-main()函数在文件app.c中编写，其中app.c文件中的所有代码具体见代码清单:任务-29。
+main()函数在文件app.c中编写，其中app.c文件中的所有代码具体见 代码清单:任务-29_ 。
 
 .. code-block:: c
     :caption: 代码清单:任务-29 app.c文件中的代码
