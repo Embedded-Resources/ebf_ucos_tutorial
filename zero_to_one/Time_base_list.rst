@@ -14,7 +14,7 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 时基列表在代码层面上由全局数组OSCfg_TickWheel[]和全局变量OSTickCtr构成，一个空的时基列表示意图见
-图 空的时基列表_ ，时基列表的代码实现具体见 代码清单:时基列表-1_ 。
+图 空的时基列表_ ，时基列表的代码实现具体见 代码清单:时基列表-1_。
 
 .. image:: media/Time_base_list/Timeba002.png
    :align: center
@@ -48,7 +48,8 @@
     OS_EXT            OS_TICK                OSTickCtr;(3)
 
 
--   代码清单:时基列表-1_ （1）：OS_TICK_SPOKE为时基列表数组OSCfg_TickWheel[]的数据类型，在os.h文件定义，具体见 代码清单:时基列表-2_ 。
+-   代码清单:时基列表-1_ （1）：OS_TICK_SPOKE为时基列表数组OSCfg_TickWheel[]的数据类型，
+    在os.h文件定义，具体见 代码清单:时基列表-2_。
 
 .. code-block:: c
     :caption: 代码清单:时基列表-2OS_TICK_SPOKE定义
@@ -66,17 +67,22 @@
 
 -   代码清单:时基列表-2_ （1）：在μC/OS-III中，内核对象的数据类型都会用大写字母重新定义。
 
--   代码清单:时基列表-2_ （2）：时基列表OSCfg_TickWheel[]的每个成员都包含一条单向链表，被插入该条链表的TCB会按照延时时间做升序排列。FirstPtr用于指向这条单向链表的第一个节点。
+-   代码清单:时基列表-2_ （2）：时基列表OSCfg_TickWheel[]的每个成员都包含一条单向链表，
+    被插入该条链表的TCB会按照延时时间做升序排列。FirstPtr用于指向这条单向链表的第一个节点。
 
--   代码清单:时基列表-2_ （3）：时基列表OSCfg_TickWheel[]的每个成员都包含一条单向链表，NbrEntries表示该条单向链表当前有多少个节点。
+-   代码清单:时基列表-2_ （3）：时基列表OSCfg_TickWheel[]的每个成员都包含一条单向链表，
+    NbrEntries表示该条单向链表当前有多少个节点。
 
--   代码清单:时基列表-2_ （4）：时基列表OSCfg_TickWheel[]的每个成员都包含一条单向链表，NbrEntriesMax记录该条单向链表最多的时候有多少个节点，
+-   代码清单:时基列表-2_ （4）：时基列表OSCfg_TickWheel[]的每个成员都包含一条单向链表，
+    NbrEntriesMax记录该条单向链表最多的时候有多少个节点，
     在增加节点的时候会刷新，在删除节点的时候不刷新。
 
--   代码清单:时基列表-1_ （2）：OS_CFG_TICK_WHEEL_SIZE是一个宏，在os_cfg_app.h中定义，用于控制时基列表的大小。OS_CFG_TICK_WHEEL_SIZE的推
+-   代码清单:时基列表-1_ （2）：OS_CFG_TICK_WHEEL_SIZE是一个宏，
+    在os_cfg_app.h中定义，用于控制时基列表的大小。OS_CFG_TICK_WHEEL_SIZE的推
     荐值为任务数/4，不推荐使用偶数，如果算出来是偶数，则加1变成质数，实际上质数是一个很好的选择。
 
--   代码清单:时基列表-1_ （3）：OSTickCtr为SysTick周期计数器，记录系统启动到现在或者从上一次复位到现在经过了多少个SysTick周期。
+-   代码清单:时基列表-1_ （3）：OSTickCtr为SysTick周期计数器，
+    记录系统启动到现在或者从上一次复位到现在经过了多少个SysTick周期。
 
 修改任务控制块TCB
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -129,19 +135,22 @@ OSCfg_TickWheel[]索引11这条链表里面插入了两个TCB，一个需要延�
 
 -   代码清单:时基列表-3_ （3）：TickRemain用于设置任务还需要等待多少个时钟周期，每到来一个时钟周期，该值会递减。
 
--   代码清单:时基列表-3_ （4）：TickCtrMatch的值等于时基计数器OSTickCtr的值加上TickRemain的值，当TickCtrMatch的值等于OSTickCtr的值的时候，表示等待到期，TCB会从链表中删除。
+-   代码清单:时基列表-3_ （4）：TickCtrMatch的值等于时基计数器OSTickCtr的值加上TickRemain的值，
+    当TickCtrMatch的值等于OSTickCtr的值的时候，表示等待到期，TCB会从链表中删除。
 
 -   代码清单:时基列表-3_ （5）：每个被插入链表的TCB都包含一个字段TickSpokePtr，用于回指到链表的根部。
 
 实现时基列表相关函数
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-时基列表相关函数在os_tick.c实现，在os.h中声明。如果os_tick.c文件是第一次使用，需要自行在文件夹μC/OS-III\Source中新建并添加到工程的μC/OS-III Source组。
+时基列表相关函数在os_tick.c实现，在os.h中声明。如果os_tick.c文件是第一次使用，
+需要自行在文件夹μC/OS-III\Source中新建并添加到工程的μC/OS-III Source组。
 
 OS_TickListInit()函数
 ''''''''''''''''''''''''''''''''''
 
-OS_TickListInit()函数用于初始化时基列表，即将全局变量OSCfg_TickWheel[]的数据域全部初始化为0，一个初始化为0的的时基列表见图 时基列表的数据域全部被初始化为0_ 。
+OS_TickListInit()函数用于初始化时基列表，即将全局变量OSCfg_TickWheel[]的数据域全部初始化为0，
+一个初始化为0的的时基列表见图 时基列表的数据域全部被初始化为0_。
 
 .. code-block:: c
     :caption: 代码清单:时基列表-4OS_TickListInit()函数
@@ -172,7 +181,8 @@ OS_TickListInit()函数用于初始化时基列表，即将全局变量OSCfg_Tic
 OS_TickListInsert()函数
 '''''''''''''''''''''''''''''''''''''''''
 
-OS_TickListInsert()函数用于往时基列表中插入一个任务TCB，具体实现见 代码清单:时基列表-5_ 。代码清单:时基列表-5_ 可配和图 时基列表中有三个TCB_ 一起阅读，这样理解起来会容易很多。
+OS_TickListInsert()函数用于往时基列表中插入一个任务TCB，具体实现见 代码清单:时基列表-5_。
+代码清单:时基列表-5_ 可配和图 时基列表中有三个TCB_ 一起阅读，这样理解起来会容易很多。
 
 .. image:: media/Time_base_list/Timeba004.png
    :align: center
@@ -260,30 +270,38 @@ OS_TickListInsert()函数用于往时基列表中插入一个任务TCB，具体�
     }
 
 
--   代码清单:时基列表-5_ （1）：TickCtrMatch的值等于当前时基计数器的值OSTickCtr加上任务要延时的时间time，time由函数形参传进来。OSTickCtr是一个全局变量，
+-   代码清单:时基列表-5_ （1）：TickCtrMatch的值等于当前时基计数器的值OSTickCtr加上任务要延时的时间time，
+    time由函数形参传进来。OSTickCtr是一个全局变量，
     记录的是系统自启动以来或者自上次复位以来经过了多少个SysTick周期。OSTickCtr的值每经过一个SysTick周期其值就加一，当TickCtrMatch的值与其相等时，就表示任务等待时间到期。
 
--   代码清单:时基列表-5_ （2）：将任务需要延时的时间time保存到TCB的TickRemain，它表示任务还需要延时多少个SysTick周期，每到来一个SysTick周期，TickRemain会减一。
+-   代码清单:时基列表-5_ （2）：将任务需要延时的时间time保存到TCB的TickRemain，
+    它表示任务还需要延时多少个SysTick周期，每到来一个SysTick周期，TickRemain会减一。
 
--   代码清单:时基列表-5_ （3）：由任务的TickCtrMatch 对时基列表的大小OSCfg_TickWheelSize进行求余操作，得出的值spoke作为时基列表OSCfg_TickWheel[]的索引。只
-    要是任务的TickCtrMatch对OSCfg_TickWheelSize求余后得到的值spoke相等，那么任务的TCB就会被插入OSCfg_TickWheel[spoke]下的单向链表中，节点按照任务的
-    TickCtrMatch值做升序排列。举例：在图 时基列表中有三个TCB_ 中，时基列表OSCfg_TickWheel[]的大小OSCfg_TickWheelSize等于12，当前时基计数器OSTickCtr的值
-    为10，有三个任务分别需要延时TickTemain=1、TickTemain=23和TickTemain=25个时钟周期，三个任务的TickRemain加上OSTickCtr可分别得出它们的TickCtrMatch等于
-    11、23和35，这三个任务的TickCtrMatch对OSCfg_TickWheelSize求余操作后的值spoke都等于11，所以这三个任务的TCB会被插入OSCfg_TickWheel[11]下的同一条链表，
+-   代码清单:时基列表-5_ （3）：由任务的TickCtrMatch 对时基列表的大小OSCfg_TickWheelSize进行求余操作，
+    得出的值spoke作为时基列表OSCfg_TickWheel[]的索引。只要是任务的TickCtrMatch对OSCfg_TickWheelSize求余后得到的值spoke相等，
+    那么任务的TCB就会被插入OSCfg_TickWheel[spoke]下的单向链表中，节点按照任务的TickCtrMatch值做升序排列。
+    举例：在图 时基列表中有三个TCB_ 中，时基列表OSCfg_TickWheel[]的大小OSCfg_TickWheelSize等于12，
+    当前时基计数器OSTickCtr的值为10，有三个任务分别需要延时TickTemain=1、TickTemain=23和TickTemain=25个时钟周期，
+    三个任务的TickRemain加上OSTickCtr可分别得出它们的TickCtrMatch等于11、23和35，
+    这三个任务的TickCtrMatch对OSCfg_TickWheelSize求余操作后的值spoke都等于11，所以这三个任务的TCB会被插入OSCfg_TickWheel[11]下的同一条链表，
     节点顺序根据TickCtrMatch的值做升序排列。
 
--   代码清单:时基列表-5_ （4）：根据刚刚算出的索引值spoke，获取到该索引值下的成员的地址，也叫根指针，因为该索引下对应的成员OSCfg_TickWheel[spoke]会维护一条双向的链表。
+-   代码清单:时基列表-5_ （4）：根据刚刚算出的索引值spoke，获取到该索引值下的成员的地址，
+    也叫根指针，因为该索引下对应的成员OSCfg_TickWheel[spoke]会维护一条双向的链表。
 
--   代码清单:时基列表-5_ （5）：将TCB插入链表中分两种情况，第一是当前链表是空的，插入的节点将成为第一个节点，这个处理非常简单；第二是当前链表已经有节点。
+-   代码清单:时基列表-5_ （5）：将TCB插入链表中分两种情况，第一是当前链表是空的，
+    插入的节点将成为第一个节点，这个处理非常简单；第二是当前链表已经有节点。
 
--   代码清单:时基列表-5_ （6）：当前的链表中已经有节点，插入的时候则根据TickCtrMatch的值做升序排列，插入的时候分三种情况，第一是在最后一个节点之间插入，
+-   代码清单:时基列表-5_ （6）：当前的链表中已经有节点，插入的时候则根据TickCtrMatch的值做升序排列，
+    插入的时候分三种情况，第一是在最后一个节点之间插入，
     第二是在第一个节点插入，第三是在两个节点之间插入。
 
 -   代码清单:时基列表-5_ （7）（8）：节点成功插入p_tcb1指针，跳出while循环
 
 -   代码清单:时基列表-5_ （9）：节点成功插入，记录当前链表节点个数的计数器NbrEntries加一。
 
--   代码清单:时基列表-5_ （10）：刷新NbrEntriesMax的值,NbrEntriesMax用于记录当前链表曾经最多有多少个节点，只有在增加节点的时候才刷新，在删除节点的时候是不刷新的。
+-   代码清单:时基列表-5_ （10）：刷新NbrEntriesMax的值,NbrEntriesMax用于记录当前链表曾经最多有多少个节点，
+    只有在增加节点的时候才刷新，在删除节点的时候是不刷新的。
 
 -   代码清单:时基列表-5_ （11）：任务TCB被成功插入链表，TCB中的TickSpokePtr回指所在链表的根指针。
 
@@ -359,7 +377,8 @@ OS_TickListRemove()用于从时基列表删除一个指定的TCB节点，具体�
 OS_TickListUpdate()函数
 '''''''''''''''''''''''''''''''''''''''''
 
-OS_TickListUpdate()在每个SysTick周期到来时在OSTimeTick()被调用，用于更新时基计数器OSTickCtr，扫描时基列表中的任务延时是否到期，具体实现见 代码清单:时基列表-7_ 。
+OS_TickListUpdate()在每个SysTick周期到来时在OSTimeTick()被调用，用于更新时基计数器OSTickCtr，
+扫描时基列表中的任务延时是否到期，具体实现见 代码清单:时基列表-7_。
 
 .. code-block:: c
     :caption: 代码清单:时基列表-7OS_TickListUpdate()函数
@@ -419,24 +438,31 @@ OS_TickListUpdate()在每个SysTick周期到来时在OSTimeTick()被调用，用
 
 -   代码清单:时基列表-7_ （1）：每到来一个SysTick时钟周期，时基计数器OSTickCtr都要加一操作。
 
--   代码清单:时基列表-7_ （2）：计算要扫描的时基列表的索引，每次只扫描一条链表。时基列表里面有可能有多条链表，为啥只扫描其中一条链表就可以？因为任务
-    在插入时基列表的时候，插入的索引值spoke_insert是通过TickCtrMatch对OSCfg_TickWheelSize求余得出，现在需要扫描的索引值spoke_update是通过OSTickCtr对
-    OSCfg_TickWheelSize求余得出，TickCtrMatch的值等于OSTickCt加上TickRemain，只有在经过TickRemain个时钟周期后，spoke_update的值才有可能等于
-    spoke_insert。如果算出的spoke_update小于spoke_insert，且OSCfg_TickWheel[spoke_update]下的链表的任务没有到期，那后面的肯定都没有到期，不用继续扫描。
+-   代码清单:时基列表-7_ （2）：计算要扫描的时基列表的索引，每次只扫描一条链表。
+    时基列表里面有可能有多条链表，为啥只扫描其中一条链表就可以？因为任务在插入时基列表的时候，
+    插入的索引值spoke_insert是通过TickCtrMatch对OSCfg_TickWheelSize求余得出，
+    现在需要扫描的索引值spoke_update是通过OSTickCtr对OSCfg_TickWheelSize求余得出，
+    TickCtrMatch的值等于OSTickCt加上TickRemain，只有在经过TickRemain个时钟周期后，
+    spoke_update的值才有可能等于spoke_insert。如果算出的spoke_update小于spoke_insert，
+    且OSCfg_TickWheel[spoke_update]下的链表的任务没有到期，那后面的肯定都没有到期，不用继续扫描。
 
-举例，在 图时基列表中有三个TCB_ ，时基列表OSCfg_TickWheel[]的大小OSCfg_TickWheelSize等于12，当前时基计数器OSTickCtr的值为7，有三个任务分别需要延时
-TickTemain=16、TickTemain=28和TickTemain=40个时钟周期，三个任务的TickRemain加上OSTickCtr可分别得出它们的TickCtrMatch等于23、35和47，这三个任务的
-TickCtrMatch对OSCfg_TickWheelSize求余操作后的值spoke都等于11，所以这三个任务的TCB会被插入OSCfg_TickWheel[11]下的同一条链表，节点顺序根据TickCtrMatch
-的值做升序排列。当下一个SysTick时钟周期到来的时候，会调用OS_TickListUpdate()函数，这时OSTickCtr加一操作后等于8，对OSCfg_TickWheelSize（等于12）
-求余算得要扫描更新的索引值spoke_update等8，则对OSCfg_TickWheel[8]下面的链表进行扫描，从 图时基列表中有三个TCB_ 可以得知，8这个索引下没有节点，则直接退出，
-刚刚插入的三个TCB是在OSCfg_TickWheel[11]下的链表，根本不用扫描，因为时间只是刚刚过了1个时钟周期而已，远远没有达到他们需要的延时时间。
+举例，在 图时基列表中有三个TCB_ ，时基列表OSCfg_TickWheel[]的大小OSCfg_TickWheelSize等于12，
+当前时基计数器OSTickCtr的值为7，有三个任务分别需要延时TickTemain=16、TickTemain=28和TickTemain=40个时钟周期，
+三个任务的TickRemain加上OSTickCtr可分别得出它们的TickCtrMatch等于23、35和47，
+这三个任务的TickCtrMatch对OSCfg_TickWheelSize求余操作后的值spoke都等于11，
+所以这三个任务的TCB会被插入OSCfg_TickWheel[11]下的同一条链表，节点顺序根据TickCtrMatch的值做升序排列。
+当下一个SysTick时钟周期到来的时候，会调用OS_TickListUpdate()函数，这时OSTickCtr加一操作后等于8，
+对OSCfg_TickWheelSize（等于12）求余算得要扫描更新的索引值spoke_update等8，则对OSCfg_TickWheel[8]下面的链表进行扫描，
+从 图时基列表中有三个TCB_ 可以得知，8这个索引下没有节点，则直接退出，刚刚插入的三个TCB是在OSCfg_TickWheel[11]下的链表，
+根本不用扫描，因为时间只是刚刚过了1个时钟周期而已，远远没有达到他们需要的延时时间。
 
 -   代码清单:时基列表-7_ （3）：判断链表是否为空，为空则跳转到第（8）步骤。
 
 -   代码清单:时基列表-7_ （4）：链表不为空，递减第一个节点的TickRemain。
 
--   代码清单:时基列表-7_ （5）：判断第一个节点的延时时间是否到，如果到期，让任务就绪，即将任务从时基列表删除，插入就绪列表，这两步由函数OS_TaskRdy()来
-    完成，该函数在os_core.c中定义，具体实现见 代码清单:时基列表-8_ 。
+-   代码清单:时基列表-7_ （5）：判断第一个节点的延时时间是否到，如果到期，让任务就绪，
+    即将任务从时基列表删除，插入就绪列表，这两步由函数OS_TaskRdy()来完成，
+    该函数在os_core.c中定义，具体实现见 代码清单:时基列表-8_。
 
 .. code-block:: c
     :caption: 代码清单:时基列表-8OS_TaskRdy()函数
@@ -453,7 +479,8 @@ TickCtrMatch对OSCfg_TickWheelSize求余操作后的值spoke都等于11，所以
     }
 
 
--   代码清单:时基列表-7_ （6）：如果第一个节点延时期未满，则退出while循环，因为链表是根据升序排列的，第一个节点延时期未满，那后面的肯定未满。
+-   代码清单:时基列表-7_ （6）：如果第一个节点延时期未满，则退出while循环，
+    因为链表是根据升序排列的，第一个节点延时期未满，那后面的肯定未满。
 
 -   代码清单:时基列表-7_ （7）：如果第一个节点延时到期，则继续判断下一个节点延时是否到期。
 
