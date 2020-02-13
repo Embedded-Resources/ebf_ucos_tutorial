@@ -15,19 +15,17 @@
 在任务实现挂起和恢复的时候，要根据任务的状态来操作，任务的状态不同，操作也不同，有关任务状态的宏定义在os.h中实现，
 总共有9种状态，具体定义见 代码清单:挂起和恢复-1_。
 
-.. code-block::
+.. code-block:: c
     :caption: 代码清单:挂起和恢复-1定义任务的状态
     :name: 代码清单:挂起和恢复-1
     :linenos:
 
     /* ---------- 任务的状态 -------*/
     #define  OS_TASK_STATE_BIT_DLY               (OS_STATE)(0x01u)/*   /-------- 挂起位          */
-    /*   |                        */
+
     #define  OS_TASK_STATE_BIT_PEND              (OS_STATE)(0x02u)/*   | /-----  等待位          */
-    *   | |                      */
+
     #define  OS_TASK_STATE_BIT_SUSPENDED         (OS_STATE)(0x04u)/*   | | /---  延时/超时位      */
-    /*   | | |                    */
-    /*   V V V                    */
 
     #define  OS_TASK_STATE_RDY                    (OS_STATE)(  0u)/*   0 0 0  就绪               */
     #define  OS_TASK_STATE_DLY                    (OS_STATE)(  1u)/*   0 0 1  延时或者超时        */
@@ -56,18 +54,18 @@
         CPU_STK         *StkPtr;
         CPU_STK_SIZE    StkSize;
 
-    /* 任务延时周期个数 */
+        /* 任务延时周期个数 */
         OS_TICK         TaskDelayTicks;
 
-    /* 任务优先级 */
+        /* 任务优先级 */
         OS_PRIO         Prio;
 
-    /* 就绪列表双向链表的下一个指针 */
+        /* 就绪列表双向链表的下一个指针 */
         OS_TCB          *NextPtr;
-    /* 就绪列表双向链表的前一个指针 */
+        /* 就绪列表双向链表的前一个指针 */
         OS_TCB          *PrevPtr;
 
-    /*时基列表相关字段*/
+        /*时基列表相关字段*/
         OS_TCB          *TickNextPtr;
         OS_TCB          *TickPrevPtr;
         OS_TICK_SPOKE   *TickSpokePtr;
@@ -75,14 +73,14 @@
         OS_TICK         TickCtrMatch;
         OS_TICK         TickRemain;
 
-    /* 时间片相关字段 */
+        /* 时间片相关字段 */
         OS_TICK              TimeQuanta;
         OS_TICK              TimeQuantaCtr;
 
         OS_STATE             TaskState;(1)
 
     #if OS_CFG_TASK_SUSPEND_EN > 0u(2)
-    /* 任务挂起函数OSTaskSuspend()计数器 */
+        /* 任务挂起函数OSTaskSuspend()计数器 */
         OS_NESTING_CTR       SuspendCtr;(3)
     #endif
 
@@ -114,103 +112,108 @@ OSTaskSuspend()函数
     void   OSTaskSuspend (OS_TCB  *p_tcb,
                         OS_ERR  *p_err)
     {
-    CPU_SR_ALLOC();
+        CPU_SR_ALLOC();
 
 
-    #if 0/* 屏蔽开始 */                                                     (1)
-    #ifdef OS_SAFETY_CRITICAL
-    /* 安全检查，OS_SAFETY_CRITICAL_EXCEPTION()函数需要用户自行编写 */
-    if (p_err == (OS_ERR *)0) {
-        OS_SAFETY_CRITICAL_EXCEPTION();
-    return;
-    }
+        #if 0/* 屏蔽开始 */                                                     (1)
+        #ifdef OS_SAFETY_CRITICAL
+        /* 安全检查，OS_SAFETY_CRITICAL_EXCEPTION()函数需要用户自行编写 */
+        if (p_err == (OS_ERR *)0)
+        {
+            OS_SAFETY_CRITICAL_EXCEPTION();
+            return;
+        }
     #endif
 
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
-    /* 不能在ISR程序中调用该函数 */
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0) {
-        *p_err = OS_ERR_TASK_SUSPEND_ISR;
-    return;
-    }
+        /* 不能在ISR程序中调用该函数 */
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0)
+        {
+            *p_err = OS_ERR_TASK_SUSPEND_ISR;
+            return;
+        }
     #endif
 
-    /* 不能挂起空闲任务 */
-    if (p_tcb == &OSIdleTaskTCB) {
-        *p_err = OS_ERR_TASK_SUSPEND_IDLE;
-    return;
-    }
+        /* 不能挂起空闲任务 */
+        if (p_tcb == &OSIdleTaskTCB)
+        {
+            *p_err = OS_ERR_TASK_SUSPEND_IDLE;
+            return;
+        }
 
     #if OS_CFG_ISR_POST_DEFERRED_EN > 0u
-    /* 不能挂起中断处理任务 */
-    if (p_tcb == &OSIntQTaskTCB) {
-        *p_err = OS_ERR_TASK_SUSPEND_INT_HANDLER;
-    return;
-    }
+        /* 不能挂起中断处理任务 */
+        if (p_tcb == &OSIntQTaskTCB)
+        {
+            *p_err = OS_ERR_TASK_SUSPEND_INT_HANDLER;
+            return;
+        }
     #endif
 
     #endif/* 屏蔽结束 */                                                   (2)
 
-    CPU_CRITICAL_ENTER();
+        CPU_CRITICAL_ENTER();
 
-    /* 是否挂起自己 */                                                      (3)
-    if (p_tcb == (OS_TCB *)0) {
-        p_tcb = OSTCBCurPtr;
-    }
-
-    if (p_tcb == OSTCBCurPtr) {
-    /* 如果调度器锁住则不能挂起自己 */
-    if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0) {
-            CPU_CRITICAL_EXIT();
-            *p_err = OS_ERR_SCHED_LOCKED;
-    return;
+        /* 是否挂起自己 */                                                      (3)
+        if (p_tcb == (OS_TCB *)0) {
+            p_tcb = OSTCBCurPtr;
         }
-    }
 
-    *p_err = OS_ERR_NONE;
+        if (p_tcb == OSTCBCurPtr) {
+        /* 如果调度器锁住则不能挂起自己 */
+        if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0) {
+                CPU_CRITICAL_EXIT();
+                *p_err = OS_ERR_SCHED_LOCKED;
+        return;
+            }
+        }
 
-    /* 根据任务的状态来决定挂起的动作 */(4)
-    switch (p_tcb->TaskState) {
-    case OS_TASK_STATE_RDY:(5)
-        OS_CRITICAL_ENTER_CPU_CRITICAL_EXIT();
-        p_tcb->TaskState  =  OS_TASK_STATE_SUSPENDED;
-        p_tcb->SuspendCtr = (OS_NESTING_CTR)1;
-        OS_RdyListRemove(p_tcb);
-        OS_CRITICAL_EXIT_NO_SCHED();
-    break;
+        *p_err = OS_ERR_NONE;
 
-    case OS_TASK_STATE_DLY:(6)
-        p_tcb->TaskState  = OS_TASK_STATE_DLY_SUSPENDED;
-        p_tcb->SuspendCtr = (OS_NESTING_CTR)1;
-        CPU_CRITICAL_EXIT();
-    break;
+        /* 根据任务的状态来决定挂起的动作 */(4)
+        switch (p_tcb->TaskState)
+        {
+            case OS_TASK_STATE_RDY:(5)
+                OS_CRITICAL_ENTER_CPU_CRITICAL_EXIT();
+                p_tcb->TaskState  =  OS_TASK_STATE_SUSPENDED;
+                p_tcb->SuspendCtr = (OS_NESTING_CTR)1;
+                OS_RdyListRemove(p_tcb);
+                OS_CRITICAL_EXIT_NO_SCHED();
+                break;
 
-    case OS_TASK_STATE_PEND:(7)
-        p_tcb->TaskState  = OS_TASK_STATE_PEND_SUSPENDED;
-        p_tcb->SuspendCtr = (OS_NESTING_CTR)1;
-        CPU_CRITICAL_EXIT();
-    break;
+            case OS_TASK_STATE_DLY:(6)
+                p_tcb->TaskState  = OS_TASK_STATE_DLY_SUSPENDED;
+                p_tcb->SuspendCtr = (OS_NESTING_CTR)1;
+                CPU_CRITICAL_EXIT();
+                break;
 
-    case OS_TASK_STATE_PEND_TIMEOUT:(8)
-        p_tcb->TaskState  = OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED;
-        p_tcb->SuspendCtr = (OS_NESTING_CTR)1;
-        CPU_CRITICAL_EXIT();
-    break;
+            case OS_TASK_STATE_PEND:(7)
+                p_tcb->TaskState  = OS_TASK_STATE_PEND_SUSPENDED;
+                p_tcb->SuspendCtr = (OS_NESTING_CTR)1;
+                CPU_CRITICAL_EXIT();
+                break;
 
-    case OS_TASK_STATE_SUSPENDED:(9)
-    case OS_TASK_STATE_DLY_SUSPENDED:
-    case OS_TASK_STATE_PEND_SUSPENDED:
-    case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
-        p_tcb->SuspendCtr++;
-        CPU_CRITICAL_EXIT();
-    break;
+            case OS_TASK_STATE_PEND_TIMEOUT:(8)
+                p_tcb->TaskState  = OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED;
+                p_tcb->SuspendCtr = (OS_NESTING_CTR)1;
+                CPU_CRITICAL_EXIT();
+                break;
 
-    default:(10)
-        CPU_CRITICAL_EXIT();
-        *p_err = OS_ERR_STATE_INVALID;
-    return;
-    }
+            case OS_TASK_STATE_SUSPENDED:(9)
+            case OS_TASK_STATE_DLY_SUSPENDED:
+            case OS_TASK_STATE_PEND_SUSPENDED:
+            case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
+                p_tcb->SuspendCtr++;
+                CPU_CRITICAL_EXIT();
+                break;
 
-    /* 任务切换 */
+            default:(10)
+                CPU_CRITICAL_EXIT();
+                *p_err = OS_ERR_STATE_INVALID;
+                return;
+        }
+
+        /* 任务切换 */
         OSSched();(11)
     }
     #endif
@@ -386,19 +389,19 @@ main()函数
         OS_ERR err;
 
 
-    /* CPU初始化：1、初始化时间戳 */
+        /* CPU初始化：1、初始化时间戳 */
         CPU_Init();
 
-    /* 关闭中断 */
+        /* 关闭中断 */
         CPU_IntDis();
 
-    /* 配置SysTick 10ms 中断一次 */
+        /* 配置SysTick 10ms 中断一次 */
         OS_CPU_SysTickInit (10);
 
-    /* 初始化相关的全局变量 */
+        /* 初始化相关的全局变量 */
         OSInit(&err);
 
-    /* 创建任务 */
+        /* 创建任务 */
         OSTaskCreate( (OS_TCB       *)&Task1TCB,
                     (OS_TASK_PTR   )Task1,
                     (void         *)0,
@@ -426,7 +429,7 @@ main()函数
                     (OS_TICK       )0,
                     (OS_ERR       *)&err );
 
-    /* 启动OS，将不再返回 */
+        /* 启动OS，将不再返回 */
         OSStart(&err);
     }
 
@@ -434,7 +437,7 @@ main()函数
     {
         OS_ERR err;
 
-    for ( ;; ) {
+        for ( ;; ) {
             flag1 = 1;
             OSTaskSuspend(&Task1TCB,&err);
             flag1 = 0;
@@ -446,10 +449,10 @@ main()函数
     {
         OS_ERR err;
 
-    for ( ;; ) {
+        for ( ;; ) {
             flag2 = 1;
             OSTimeDly(1);
-    //OSTaskResume(&Task1TCB,&err);
+            //OSTaskResume(&Task1TCB,&err);
             flag2 = 0;
             OSTimeDly(1);;
             OSTaskResume(&Task1TCB,&err);
@@ -458,7 +461,7 @@ main()函数
 
     void Task3( void *p_arg )
     {
-    for ( ;; ) {
+        for ( ;; ) {
             flag3 = 1;
             OSTimeDly(1);
             flag3 = 0;

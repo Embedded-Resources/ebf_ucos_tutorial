@@ -50,33 +50,33 @@
 
 
     #ifdef OS_SAFETY_CRITICAL//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0)           //如果 p_err 为空
+        if (p_err == (OS_ERR *)0)           //如果 p_err 为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return ((OS_SEM_CTR)0);         //返回0（有错误），停止执行
+            return ((OS_SEM_CTR)0);         //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u//如果启用（默认启用）了参数检测功能
-    switch (opt)                            //根据选项分类处理
+        switch (opt)                            //根据选项分类处理
         {
-    case OS_OPT_POST_NONE:              //如果选项在预期之内
-    case OS_OPT_POST_NO_SCHED:
-    break;                         //跳出
+        case OS_OPT_POST_NONE:              //如果选项在预期之内
+        case OS_OPT_POST_NO_SCHED:
+        break;                         //跳出
 
-    default:                            //如果选项超出预期
+        default:                            //如果选项超出预期
             *p_err =  OS_ERR_OPT_INVALID;   //错误类型为“选项非法”
-    return ((OS_SEM_CTR)0u);       //返回0（有错误），停止执行
+            return ((OS_SEM_CTR)0u);       //返回0（有错误），停止执行
         }
     #endif
 
         ts = OS_TS_GET();                                      //获取时间戳
 
     #if OS_CFG_ISR_POST_DEFERRED_EN > 0u//如果启用了中断延迟发布
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0)  //如果该函数是在中断中被调用
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0)  //如果该函数是在中断中被调用
         {
             OS_IntQPost((OS_OBJ_TYPE)OS_OBJ_TYPE_TASK_SIGNAL,
-    //将该信号量发布到中断消息队列
+            //将该信号量发布到中断消息队列
                         (void      *)p_tcb,
                         (void      *)0,
                         (OS_MSG_SIZE)0,
@@ -84,7 +84,7 @@
                         (OS_OPT     )0,
                         (CPU_TS     )ts,
                         (OS_ERR    *)p_err);	(4)
-    return ((OS_SEM_CTR)0);                           //返回0（尚未发布）
+            return ((OS_SEM_CTR)0);                           //返回0（尚未发布）
         }
     #endif
 
@@ -93,7 +93,7 @@
                             ts,
                             p_err);		(5)
 
-    return (ctr);                                 //返回信号的当前计数值
+        return (ctr);                                 //返回信号的当前计数值
     }
 
 
@@ -121,65 +121,65 @@
     {
         OS_SEM_CTR  ctr;
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
         OS_CRITICAL_ENTER();                               //进入临界段
-    if (p_tcb == (OS_TCB *)0)             (5)//如果 p_tcb 为空
+        if (p_tcb == (OS_TCB *)0)             (5)//如果 p_tcb 为空
         {
             p_tcb = OSTCBCurPtr;                   //将任务信号量发给自己（任务）
         }
         p_tcb->TS = ts;                            //记录信号量被发布的时间戳
         *p_err     = OS_ERR_NONE;                           //错误类型为“无错误”
-    switch (p_tcb->TaskState)              (6)
-    //跟吴目标任务的任务状态分类处理
+        switch (p_tcb->TaskState)              (6)
+        //跟吴目标任务的任务状态分类处理
         {
-    case OS_TASK_STATE_RDY:                        //如果目标任务没有等待状态
-    case OS_TASK_STATE_DLY:
-    case OS_TASK_STATE_SUSPENDED:
-    case OS_TASK_STATE_DLY_SUSPENDED:		(7)
-    switch (sizeof(OS_SEM_CTR))
+        case OS_TASK_STATE_RDY:                        //如果目标任务没有等待状态
+        case OS_TASK_STATE_DLY:
+        case OS_TASK_STATE_SUSPENDED:
+        case OS_TASK_STATE_DLY_SUSPENDED:		(7)
+        switch (sizeof(OS_SEM_CTR))
             {						//判断是否将导致该信
-    case 1u:                                     //号量计数值溢出，如
-    if (p_tcb->SemCtr == DEF_INT_08U_MAX_VAL)   //果溢出，则开中断，
+                case 1u:                                     //号量计数值溢出，如
+                if (p_tcb->SemCtr == DEF_INT_08U_MAX_VAL)   //果溢出，则开中断，
                 {
                     OS_CRITICAL_EXIT();                     //返回错误类型为“计
                     *p_err = OS_ERR_SEM_OVF;                //数值溢出”，返回0
-    return ((OS_SEM_CTR)0);                 //（有错误），不继续
+                    return ((OS_SEM_CTR)0);                 //（有错误），不继续
                 }                                           //执行。
-    break;
+                break;
 
-    case 2u:
-    if (p_tcb->SemCtr == DEF_INT_16U_MAX_VAL)
+                case 2u:
+                if (p_tcb->SemCtr == DEF_INT_16U_MAX_VAL)
                 {
                     OS_CRITICAL_EXIT();
                     *p_err = OS_ERR_SEM_OVF;
-    return ((OS_SEM_CTR)0);
+                    return ((OS_SEM_CTR)0);
                 }
-    break;
+                break;
 
-    case 4u:
-    if (p_tcb->SemCtr == DEF_INT_32U_MAX_VAL)
+                case 4u:
+                if (p_tcb->SemCtr == DEF_INT_32U_MAX_VAL)
                 {
                     OS_CRITICAL_EXIT();
                     *p_err = OS_ERR_SEM_OVF;
-    return ((OS_SEM_CTR)0);
+                    return ((OS_SEM_CTR)0);
                 }
-    break;
+                break;
 
-    default:
-    break;
+            default:
+            break;
             }
             p_tcb->SemCtr++;                (8)//信号量计数值不溢出则加1
             ctr = p_tcb->SemCtr;            (9)//获取信号量的当前计数值
             OS_CRITICAL_EXIT();                           //退出临界段
-    break;                                        //跳出
+            break;                                        //跳出
 
-    case OS_TASK_STATE_PEND:                           //如果任务有等待状态
-    case OS_TASK_STATE_PEND_TIMEOUT:
-    case OS_TASK_STATE_PEND_SUSPENDED:
-    case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:(10)
-    if (p_tcb->PendOn == OS_TASK_PEND_ON_TASK_SEM)   	//如果正等待任务信号量
+            case OS_TASK_STATE_PEND:                           //如果任务有等待状态
+            case OS_TASK_STATE_PEND_TIMEOUT:
+            case OS_TASK_STATE_PEND_SUSPENDED:
+            case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:(10)
+            if (p_tcb->PendOn == OS_TASK_PEND_ON_TASK_SEM)   	//如果正等待任务信号量
             {
                 OS_Post((OS_PEND_OBJ *)0,                //发布信号量给目标任务
                         (OS_TCB      *)p_tcb,
@@ -188,58 +188,58 @@
                         (CPU_TS       )ts);		(11)
                 ctr = p_tcb->SemCtr;                   //获取信号量的当前计数值
                 OS_CRITICAL_EXIT_NO_SCHED();           //退出临界段（无调度）
-    if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0)   //如果选择了调度任务
+                if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0)   //如果选择了调度任务
                 {
                     OSSched();                    (12)//调度任务
                 }
             }
-    else//如果没等待任务信号量
+            else//如果没等待任务信号量
             {
-    switch (sizeof(OS_SEM_CTR))       (13)//判断是否将导致
+                switch (sizeof(OS_SEM_CTR))       (13)//判断是否将导致
                 {
-    case 1u:                                  //该信号量计数值
-    if (p_tcb->SemCtr == DEF_INT_08U_MAX_VAL)   //如果溢出，
+                    case 1u:                                  //该信号量计数值
+                    if (p_tcb->SemCtr == DEF_INT_08U_MAX_VAL)   //如果溢出，
                     {
                         OS_CRITICAL_EXIT();                  //则开中断，返回
                         *p_err = OS_ERR_SEM_OVF;             //错误类型为“计
-    return ((OS_SEM_CTR)0);             //数值溢出”，返
+                        return ((OS_SEM_CTR)0);             //数值溢出”，返
                     }         //回0（有错误），
-    break;    //不继续执行。
+                    break;    //不继续执行。
 
-    case 2u:
-    if (p_tcb->SemCtr == DEF_INT_16U_MAX_VAL)
+                    case 2u:
+                    if (p_tcb->SemCtr == DEF_INT_16U_MAX_VAL)
                     {
                         OS_CRITICAL_EXIT();
                         *p_err = OS_ERR_SEM_OVF;
-    return ((OS_SEM_CTR)0);
+                        return ((OS_SEM_CTR)0);
                     }
-    break;
+                    break;
 
-    case 4u:
-    if (p_tcb->SemCtr == DEF_INT_32U_MAX_VAL)
+                    case 4u:
+                    if (p_tcb->SemCtr == DEF_INT_32U_MAX_VAL)
                     {
                         OS_CRITICAL_EXIT();
                         *p_err = OS_ERR_SEM_OVF;
-    return ((OS_SEM_CTR)0);
+                        return ((OS_SEM_CTR)0);
                     }
-    break;
+                    break;
 
-    default:
-    break;
+                    default:
+                    break;
                 }
                 p_tcb->SemCtr++;                       //信号量计数值不溢出则加1
                 ctr = p_tcb->SemCtr;                  //获取信号量的当前计数值
                 OS_CRITICAL_EXIT();                   //退出临界段
             }
-    break;                                    //跳出
+            break;                                    //跳出
 
-    default:                          (14)//如果任务状态超出预期
+            default:                          (14)//如果任务状态超出预期
             OS_CRITICAL_EXIT();                      //退出临界段
             *p_err = OS_ERR_STATE_INVALID;            //错误类型为“状态非法”
             ctr   = (OS_SEM_CTR)0;                 //清零 ctr
-    break;                                   //跳出
+            break;                                   //跳出
         }
-    return (ctr);  //返回信号量的当前计数值
+        return (ctr);  //返回信号量的当前计数值
     }
 
 
@@ -314,80 +314,80 @@ OSTaskSemPend()源码具体见 代码清单:任务信号量-4_ 。
     {
         OS_SEM_CTR    ctr;
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL//如果启用了安全检测
-    if (p_err == (OS_ERR *)0)            //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0)            //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION();  //执行安全检测异常函数
-    return ((OS_SEM_CTR)0);          //返回0（有错误），停止执行
+            return ((OS_SEM_CTR)0);          //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u//如果启用了中断中非法调用检测
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0)    //如果该函数在中断中被调用
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0)    //如果该函数在中断中被调用
         {
             *p_err = OS_ERR_PEND_ISR;                //返回错误类型为“在中断中等待”
-    return ((OS_SEM_CTR)0);                 //返回0（有错误），停止执行
+            return ((OS_SEM_CTR)0);                 //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u//如果启用了参数检测
-    switch (opt)                            //根据选项分类处理
+        switch (opt)                            //根据选项分类处理
         {
-    case OS_OPT_PEND_BLOCKING:          //如果选项在预期内
-    case OS_OPT_PEND_NON_BLOCKING:
-    break;                         //直接跳出
+        case OS_OPT_PEND_BLOCKING:          //如果选项在预期内
+        case OS_OPT_PEND_NON_BLOCKING:
+        break;                         //直接跳出
 
-    default:                            //如果选项超出预期
+        default:                            //如果选项超出预期
             *p_err = OS_ERR_OPT_INVALID;    //错误类型为“选项非法”
-    return ((OS_SEM_CTR)0);        //返回0（有错误），停止执行
+            return ((OS_SEM_CTR)0);        //返回0（有错误），停止执行
         }
     #endif
 
-    if (p_ts != (CPU_TS *)0)        //如果 p_ts 非空
+        if (p_ts != (CPU_TS *)0)        //如果 p_ts 非空
         {
             *p_ts  = (CPU_TS  )0;        //清零（初始化）p_ts
         }
 
         CPU_CRITICAL_ENTER();                        //关中断
-    if (OSTCBCurPtr->SemCtr > (OS_SEM_CTR)0)     //如果任务信号量当前可用
+        if (OSTCBCurPtr->SemCtr > (OS_SEM_CTR)0)     //如果任务信号量当前可用
         {
             OSTCBCurPtr->SemCtr--;         (5)//信号量计数器减1
             ctr    = OSTCBCurPtr->SemCtr;    (6)//获取信号量的当前计数值
-    if (p_ts != (CPU_TS *)0)                 //如果 p_ts 非空
+            if (p_ts != (CPU_TS *)0)                 //如果 p_ts 非空
             {
                 *p_ts  = OSTCBCurPtr->TS;       (7)//返回信号量被发布的时间戳
             }
     #if OS_CFG_TASK_PROFILE_EN > 0u	(8)
             OSTCBCurPtr->SemPendTime = OS_TS_GET() - OSTCBCurPtr->TS;     //更新任务等待
-    if (OSTCBCurPtr->SemPendTimeMax < OSTCBCurPtr->SemPendTime)   //任务信号量的
+            if (OSTCBCurPtr->SemPendTimeMax < OSTCBCurPtr->SemPendTime)   //任务信号量的
             {
                 OSTCBCurPtr->SemPendTimeMax = OSTCBCurPtr->SemPendTime;   //最长时间记录。
             }//如果启用任务统计的宏，计算任务信号量从被提交到获取所用时间及最大时间
     #endif
             CPU_CRITICAL_EXIT();                     //开中断
             *p_err = OS_ERR_NONE;                     //错误类型为“无错误”
-    return (ctr);                            //返回信号量的当前计数值
+            return (ctr);                            //返回信号量的当前计数值
         }
-    /* 如果任务信号量当前不可用 */			(9)
-    if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0) //如果选择了不阻塞任务
+        /* 如果任务信号量当前不可用 */			(9)
+        if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0) //如果选择了不阻塞任务
         {
             CPU_CRITICAL_EXIT();                              //开中断
             *p_err = OS_ERR_PEND_WOULD_BLOCK;        //错误类型为“缺乏阻塞”
-    return ((OS_SEM_CTR)0);                  //返回0（有错误），停止执行
+            return ((OS_SEM_CTR)0);                  //返回0（有错误），停止执行
         }
-    else(10)//如果选择了阻塞任务
+        else(10)//如果选择了阻塞任务
         {
-    if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0)    //如果调度器被锁
+            if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0)    //如果调度器被锁
             {
                 CPU_CRITICAL_EXIT();                          //开中断
                 *p_err = OS_ERR_SCHED_LOCKED;//错误类型为“调度器被锁”
-    return ((OS_SEM_CTR)0);              //返回0（有错误），停止执行
+                return ((OS_SEM_CTR)0);              //返回0（有错误），停止执行
             }
         }
-    /* 如果调度器未被锁 */
+        /* 如果调度器未被锁 */
         OS_CRITICAL_ENTER_CPU_EXIT();                      //锁调度器，重开中断
         OS_Pend((OS_PEND_DATA *)0,                        //阻塞任务，等待信号量。
                 (OS_PEND_OBJ  *)0,                            //不需插入等待列表。
@@ -396,44 +396,44 @@ OSTaskSemPend()源码具体见 代码清单:任务信号量-4_ 。
         OS_CRITICAL_EXIT_NO_SCHED();                          //开调度器（无调度）
 
         OSSched();                          	(12)//调度任务
-    /* 任务获得信号量后得以继续运行 */
+        /* 任务获得信号量后得以继续运行 */
         CPU_CRITICAL_ENTER();                  	(13)//关中断
-    switch (OSTCBCurPtr->PendStatus)             //根据任务的等待状态分类处理
+        switch (OSTCBCurPtr->PendStatus)             //根据任务的等待状态分类处理
         {
-    case OS_STATUS_PEND_OK:              (14)//如果任务成功获得信号量
-    if (p_ts != (CPU_TS *)0)              //返回信号量被发布的时间戳
+            case OS_STATUS_PEND_OK:              (14)//如果任务成功获得信号量
+            if (p_ts != (CPU_TS *)0)              //返回信号量被发布的时间戳
             {
                 *p_ts                    =  OSTCBCurPtr->TS;
     #if OS_CFG_TASK_PROFILE_EN > 0u//更新最长等待时间记录
                 OSTCBCurPtr->SemPendTime = OS_TS_GET() - OSTCBCurPtr->TS;
-    if (OSTCBCurPtr->SemPendTimeMax < OSTCBCurPtr->SemPendTime)
+                if (OSTCBCurPtr->SemPendTimeMax < OSTCBCurPtr->SemPendTime)
                 {
                     OSTCBCurPtr->SemPendTimeMax = OSTCBCurPtr->SemPendTime;
                 }
     #endif
             }
             *p_err = OS_ERR_NONE;                         //错误类型为“无错误”
-    break;                                       //跳出
+            break;                                       //跳出
 
-    case OS_STATUS_PEND_ABORT:             (15)//如果等待被中止
-    if (p_ts != (CPU_TS *)0)                     //返回被终止时的时间戳
+            case OS_STATUS_PEND_ABORT:             (15)//如果等待被中止
+            if (p_ts != (CPU_TS *)0)                     //返回被终止时的时间戳
             {
                 *p_ts  =  OSTCBCurPtr->TS;
             }
             *p_err = OS_ERR_PEND_ABORT;              //错误类型为“等待被中止”
-    break;                                  //跳出
+            break;                                  //跳出
 
-    case OS_STATUS_PEND_TIMEOUT:         (16)//如果等待超时
-    if (p_ts != (CPU_TS *)0)                     //返回时间戳为0
+            case OS_STATUS_PEND_TIMEOUT:         (16)//如果等待超时
+            if (p_ts != (CPU_TS *)0)                     //返回时间戳为0
             {
                 *p_ts  = (CPU_TS  )0;
             }
             *p_err = OS_ERR_TIMEOUT;                      //错误类型为“等待超时”
-    break;                                       //跳出
+            break;                                       //跳出
 
-    default:                               (17)//如果等待状态超出预期
+            default:                               (17)//如果等待状态超出预期
             *p_err = OS_ERR_STATUS_INVALID;               //错误类型为“状态非法”
-    break;                                       //跳出
+            break;                                       //跳出
         }
         ctr = OSTCBCurPtr->SemCtr;                    //获取信号量的当前计数值
         CPU_CRITICAL_EXIT();                           //开中断
@@ -543,36 +543,36 @@ OSTaskSemPend()源码具体见 代码清单:任务信号量-4_ 。
 
         OSInit(&err);       //初始化μC/OS-III
 
-    /* 创建起始任务 */
+        /* 创建起始任务 */
         OSTaskCreate((OS_TCB     *)&AppTaskStartTCB,
-    //任务控制块地址
+                    //任务控制块地址
                     (CPU_CHAR   *)"App Task Start",
-    //任务名称
+                    //任务名称
                     (OS_TASK_PTR ) AppTaskStart,
-    //任务函数
+                    //任务函数
                     (void       *) 0,
-    //传递给任务函数（形参p_arg）的实参
+                    //传递给任务函数（形参p_arg）的实参
                     (OS_PRIO     ) APP_TASK_START_PRIO,
-    //任务的优先级
+                    //任务的优先级
                     (CPU_STK    *)&AppTaskStartStk[0],
-    //任务栈的基地址
+                    //任务栈的基地址
                     (CPU_STK_SIZE) APP_TASK_START_STK_SIZE / 10,
-    //任务栈空间剩下1/10时限制其增长
+                    //任务栈空间剩下1/10时限制其增长
                     (CPU_STK_SIZE) APP_TASK_START_STK_SIZE,
-    //任务栈空间（单位：sizeof(CPU_STK)）
+                    //任务栈空间（单位：sizeof(CPU_STK)）
                     (OS_MSG_QTY  ) 5u,
-    //任务可接收的最大消息数
+                    //任务可接收的最大消息数
                     (OS_TICK     ) 0u,
-    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
+                    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
                     (void       *) 0,
-    //任务扩展（0表不扩展）
+                    //任务扩展（0表不扩展）
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK |  OS_OPT_TASK_STK_CLR),
-    //任务选项
+                    //任务选项
                     (OS_ERR     *)&err);
-    //返回错误类型
+                    //返回错误类型
 
         OSStart(&err);
-    //启动多任务管理（交由μC/OS-III控制）
+        //启动多任务管理（交由μC/OS-III控制）
 
     }
 
@@ -584,21 +584,21 @@ OSTaskSemPend()源码具体见 代码清单:任务信号量-4_ 。
 
         (void)p_arg;
 
-    //板级初始化
+        //板级初始化
         BSP_Init();
 
-    //初始化 CPU 组件（时间戳、关中断时间测量和主机名）
+        //初始化 CPU 组件（时间戳、关中断时间测量和主机名）
         CPU_Init();
 
-    //获取 CPU 内核时钟频率（SysTick 工作时钟）
+        //获取 CPU 内核时钟频率（SysTick 工作时钟）
         cpu_clk_freq = BSP_CPU_ClkFreq();
-    //根据用户设定的时钟节拍频率计算 SysTick 定时器的计数值
+        //根据用户设定的时钟节拍频率计算 SysTick 定时器的计数值
         cnts = cpu_clk_freq / (CPU_INT32U)OSCfg_TickRate_Hz;
-    //调用 SysTick 初始化函数，设置定时器计数值和启动定时器
+        //调用 SysTick 初始化函数，设置定时器计数值和启动定时器
         OS_CPU_SysTickInit(cnts);
 
         Mem_Init();
-    //初始化内存管理组件（堆内存池和内存池表）
+        //初始化内存管理组件（堆内存池和内存池表）
 
     #if OS_CFG_STAT_TASK_EN > 0u
     //如果启用（默认启用）了统计任务
@@ -606,67 +606,67 @@ OSTaskSemPend()源码具体见 代码清单:任务信号量-4_ 。
     #endif
 
         CPU_IntDisMeasMaxCurReset();
-    //复位（清零）当前最大关中断时间
+        //复位（清零）当前最大关中断时间
 
 
-    /* 创建 AppTaskPost 任务 */
+        /* 创建 AppTaskPost 任务 */
         OSTaskCreate((OS_TCB     *)&AppTaskPostTCB,
-    //任务控制块地址
+                    //任务控制块地址
                     (CPU_CHAR   *)"App Task Post",
-    //任务名称
+                    //任务名称
                     (OS_TASK_PTR ) AppTaskPost,
-    //任务函数
+                    //任务函数
                     (void       *) 0,
-    //传递给任务函数（形参p_arg）的实参
+                    //传递给任务函数（形参p_arg）的实参
                     (OS_PRIO     ) APP_TASK_POST_PRIO,
-    //任务的优先级
+                    //任务的优先级
                     (CPU_STK    *)&AppTaskPostStk[0],
-    //任务栈的基地址
+                    //任务栈的基地址
                     (CPU_STK_SIZE) APP_TASK_POST_STK_SIZE / 10,
-    //任务栈空间剩下1/10时限制其增长
+                    //任务栈空间剩下1/10时限制其增长
                     (CPU_STK_SIZE) APP_TASK_POST_STK_SIZE,
-    //任务栈空间（单位：sizeof(CPU_STK)）
+                    //任务栈空间（单位：sizeof(CPU_STK)）
                     (OS_MSG_QTY  ) 5u,
-    //任务可接收的最大消息数
+                    //任务可接收的最大消息数
                     (OS_TICK     ) 0u,
-    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
+                    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
                     (void       *) 0,
-    //任务扩展（0表不扩展）
+                    //任务扩展（0表不扩展）
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
-    //任务选项
+                    //任务选项
                     (OS_ERR     *)&err);
-    //返回错误类型
+                    //返回错误类型
 
-    /* 创建 AppTaskPend 任务 */
+        /* 创建 AppTaskPend 任务 */
         OSTaskCreate((OS_TCB     *)&AppTaskPendTCB,
-    //任务控制块地址
+                    //任务控制块地址
                     (CPU_CHAR   *)"App Task Pend",
-    //任务名称
+                    //任务名称
                     (OS_TASK_PTR ) AppTaskPend,
-    //任务函数
+                    //任务函数
                     (void       *) 0,
-    //传递给任务函数（形参p_arg）的实参
+                    //传递给任务函数（形参p_arg）的实参
                     (OS_PRIO     ) APP_TASK_PEND_PRIO,
-    //任务的优先级
+                    //任务的优先级
                     (CPU_STK    *)&AppTaskPendStk[0],
-    //任务栈的基地址
+                    //任务栈的基地址
                     (CPU_STK_SIZE) APP_TASK_PEND_STK_SIZE / 10,
-    //任务栈空间剩下1/10时限制其增长
+                    //任务栈空间剩下1/10时限制其增长
                     (CPU_STK_SIZE) APP_TASK_PEND_STK_SIZE,
-    //任务栈空间（单位：sizeof(CPU_STK)）
+                    //任务栈空间（单位：sizeof(CPU_STK)）
                     (OS_MSG_QTY  ) 5u,
-    //任务可接收的最大消息数
+                    //任务可接收的最大消息数
                     (OS_TICK     ) 0u,
-    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
+                    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
                     (void       *) 0,
-    //任务扩展（0表不扩展）
+                    //任务扩展（0表不扩展）
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
-    //任务选项
+                    //任务选项
                     (OS_ERR     *)&err);
-    //返回错误类型
+                    //返回错误类型
 
         OSTaskDel ( & AppTaskStartTCB, & err );
-    //删除起始任务本身，该任务不再运行
+        //删除起始任务本身，该任务不再运行
 
     }
 
@@ -680,26 +680,26 @@ OSTaskSemPend()源码具体见 代码清单:任务信号量-4_ 。
         (void)p_arg;
 
 
-    while (DEF_TRUE)
-    //任务体
+        while (DEF_TRUE)
+        //任务体
         {
-    if ( Key_Scan ( macKEY1_GPIO_PORT, macKEY1_GPIO_PIN, 1, & ucKey1Press ) )
-    //如果KEY1被按下
+            if ( Key_Scan ( macKEY1_GPIO_PORT, macKEY1_GPIO_PIN, 1, & ucKey1Press ) )
+            //如果KEY1被按下
             {
                 printf("发送任务信号量\n");
-    /* 发布任务信号量 */
+                /* 发布任务信号量 */
                 OSTaskSemPost((OS_TCB  *)&AppTaskPendTCB,
-    //目标任务
+                            //目标任务
                             (OS_OPT   )OS_OPT_POST_NONE,
-    //没选项要求
+                            //没选项要求
                             (OS_ERR  *)&err);
-    //返回错误类型
+                            //返回错误类型
 
 
             }
 
             OSTimeDlyHMSM ( 0, 0, 0, 20, OS_OPT_TIME_DLY, & err );
-    //每20ms扫描一次
+            //每20ms扫描一次
 
         }
 
@@ -714,29 +714,28 @@ OSTaskSemPend()源码具体见 代码清单:任务信号量-4_ 。
 
         (void)p_arg;
         cpu_clk_freq = BSP_CPU_ClkFreq();
-    //获取CPU时钟，时间戳是以该时钟计数
+        //获取CPU时钟，时间戳是以该时钟计数
 
 
-    while (DEF_TRUE)                                    //任务体
+        while (DEF_TRUE)                                    //任务体
         {
-    /* 阻塞任务，直到KEY1被按下 */
+            /* 阻塞任务，直到KEY1被按下 */
             OSTaskSemPend ((OS_TICK   )0,                     //无期限等待
                             (OS_OPT    )OS_OPT_PEND_BLOCKING,
-    //如果信号量不可用就等待
+                            //如果信号量不可用就等待
                             (CPU_TS   *)&ts,
-    //获取信号量被发布的时间戳
+                            //获取信号量被发布的时间戳
                             (OS_ERR   *)&err);                 //返回错误类型
 
             ts = OS_TS_GET() - ts;
-    //计算信号量从发布到接收的时间差
+            //计算信号量从发布到接收的时间差
 
             macLED1_TOGGLE ();                     //切换LED1的亮灭状态
 
             OS_CRITICAL_ENTER();
-    //进入临界段，避免串口打印被打断
+            //进入临界段，避免串口打印被打断
 
-            printf ( "任务信号量从被发送到被接收的时间差是%dus\n\n",
-                    ts / ( cpu_clk_freq / 1000000 ) );
+            printf ( "任务信号量从被发送到被接收的时间差是%dus\n\n",ts / ( cpu_clk_freq / 1000000 ) );
 
             OS_CRITICAL_EXIT();                               //退出临界段
 

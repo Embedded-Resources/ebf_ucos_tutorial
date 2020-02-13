@@ -440,7 +440,7 @@ os_cpu_c.c
         (OS_PROBE_HOOKS_EN          == 1))
     CPU_INT32U  OSProbe_TmrRd (void)
     {
-    return ((CPU_INT32U)DWT_CYCCNT);
+        return ((CPU_INT32U)DWT_CYCCNT);
     }
     #endif
 
@@ -463,7 +463,7 @@ os_cpu_c.c
     #if (CPU_CFG_TS_TMR_EN == DEF_ENABLED)
     CPU_TS_TMR  CPU_TS_TmrRd (void)
     {
-    return ((CPU_TS_TMR)DWT_CYCCNT);
+        return ((CPU_TS_TMR)DWT_CYCCNT);
     }
     #endif
 
@@ -757,7 +757,7 @@ os_cfg_app.h是系统应用配置的头文件，简单来说就是系统默认�
     */
     int main(void)
     {
-    /*暂时没有在main里面创建任务应用任务 */
+        /*暂时没有在main里面创建任务应用任务 */
     }
 
 

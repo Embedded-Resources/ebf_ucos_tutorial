@@ -76,35 +76,33 @@
     {
         CPU_TS   ts;
 
-
-
     #ifdef OS_SAFETY_CRITICAL//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return;                         //返回，停止执行
+            return;                         //返回，停止执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u//如果启用了参数检测
-    switch (opt)                          //根据选项分类处理
+        switch (opt)                          //根据选项分类处理
         {
-    case OS_OPT_POST_FIFO:            //如果选项在预期内
-    case OS_OPT_POST_LIFO:
-    case OS_OPT_POST_FIFO | OS_OPT_POST_NO_SCHED:
-    case OS_OPT_POST_LIFO | OS_OPT_POST_NO_SCHED:
-    break;                       //直接跳出
+        case OS_OPT_POST_FIFO:            //如果选项在预期内
+        case OS_OPT_POST_LIFO:
+        case OS_OPT_POST_FIFO | OS_OPT_POST_NO_SCHED:
+        case OS_OPT_POST_LIFO | OS_OPT_POST_NO_SCHED:
+        break;                       //直接跳出
 
-    default:                          //如果选项超出预期
+        default:                          //如果选项超出预期
             *p_err = OS_ERR_OPT_INVALID;  //错误类型为“选项非法”
-    return;                      //返回，停止执行
+            return;                      //返回，停止执行
         }
     #endif
 
         ts = OS_TS_GET();                                  //获取时间戳
 
     #if OS_CFG_ISR_POST_DEFERRED_EN > 0u//如果启用了中断延迟发布
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0)       //如果该函数在中断中被调用
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0)       //如果该函数在中断中被调用
         {
             OS_IntQPost((OS_OBJ_TYPE)OS_OBJ_TYPE_TASK_MSG, //将消息先发布到中断消息队列
                         (void      *)p_tcb,
@@ -114,7 +112,7 @@
                         (OS_OPT     )opt,
                         (CPU_TS     )ts,
                         (OS_ERR    *)p_err);		(6)
-    return;                                         //返回
+            return;                                         //返回
         }
     #endif
 
@@ -149,28 +147,28 @@
 
     #if OS_CFG_TASK_Q_EN > 0u//如果启用了任务消息队列
     void  OS_TaskQPost (OS_TCB       *p_tcb,    //目标任务
-    void         *p_void,   //消息内容地址
+                        void         *p_void,   //消息内容地址
                         OS_MSG_SIZE   msg_size, //消息长度
                         OS_OPT        opt,      //选项
                         CPU_TS        ts,       //时间戳
                         OS_ERR       *p_err)    //返回错误类型
     {
         CPU_SR_ALLOC();  //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
         OS_CRITICAL_ENTER();                                   //进入临界段
-    if (p_tcb == (OS_TCB *)0)                (1)//如果 p_tcb 为空
+        if (p_tcb == (OS_TCB *)0)                (1)//如果 p_tcb 为空
         {
             p_tcb = OSTCBCurPtr;                          //目标任务为自身
         }
         *p_err  = OS_ERR_NONE;                            //错误类型为“无错误”
-    switch (p_tcb->TaskState)                (2)//根据任务状态分类处理
+        switch (p_tcb->TaskState)                (2)//根据任务状态分类处理
         {
-    case OS_TASK_STATE_RDY:                          //如果目标任务没等待状态
-    case OS_TASK_STATE_DLY:
-    case OS_TASK_STATE_SUSPENDED:
-    case OS_TASK_STATE_DLY_SUSPENDED:
+            case OS_TASK_STATE_RDY:                          //如果目标任务没等待状态
+            case OS_TASK_STATE_DLY:
+            case OS_TASK_STATE_SUSPENDED:
+            case OS_TASK_STATE_DLY_SUSPENDED:
             OS_MsgQPut(&p_tcb->MsgQ,                    //把消息放入任务消息队列
                     p_void,
                     msg_size,
@@ -178,13 +176,13 @@
                     ts,
                     p_err);			(3)
             OS_CRITICAL_EXIT();                           //退出临界段
-    break;                                        //跳出
+            break;                                        //跳出
 
-    case OS_TASK_STATE_PEND:                        //如果目标任务有等待状态
-    case OS_TASK_STATE_PEND_TIMEOUT:
-    case OS_TASK_STATE_PEND_SUSPENDED:
-    case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
-    if (p_tcb->PendOn == OS_TASK_PEND_ON_TASK_Q) //如果等的是任务消息队列
+            case OS_TASK_STATE_PEND:                        //如果目标任务有等待状态
+            case OS_TASK_STATE_PEND_TIMEOUT:
+            case OS_TASK_STATE_PEND_SUSPENDED:
+            case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
+            if (p_tcb->PendOn == OS_TASK_PEND_ON_TASK_Q) //如果等的是任务消息队列
             {
                 OS_Post((OS_PEND_OBJ *)0,                 //把消息发布给目标任务
                         p_tcb,
@@ -192,12 +190,12 @@
                         msg_size,
                         ts);			(4)
                 OS_CRITICAL_EXIT_NO_SCHED();              //退出临界段（无调度）
-    if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0u)   //如果要调度任务
+                if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0u)   //如果要调度任务
                 {
                     OSSched();                                    //调度任务
                 }
             }
-    else(5)//如果没在等待任务消息队列
+            else(5)//如果没在等待任务消息队列
             {
                 OS_MsgQPut(&p_tcb->MsgQ,             //把消息放入任务消息队列
                         p_void,
@@ -207,12 +205,12 @@
                         p_err);
                 OS_CRITICAL_EXIT();                      //退出临界段
             }
-    break;                                       //跳出
+            break;                                       //跳出
 
-    default:                             (6)//如果状态超出预期
+            default:                             (6)//如果状态超出预期
             OS_CRITICAL_EXIT();                          //退出临界段
             *p_err = OS_ERR_STATE_INVALID;                //错误类型为“状态非法”
-    break;                                       //跳出
+            break;                                       //跳出
         }
     }
     #endif
@@ -272,46 +270,46 @@
                         OS_ERR       *p_err)      (5)	//返回错误类型
     {
         OS_MSG_Q     *p_msg_q;
-    void         *p_void;
+        void         *p_void;
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return ((void *)0);             //返回0（有错误），停止执行
+            return ((void *)0);             //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u//如果启用了中断中非法调用检测
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0)    //如果该函数在中断中被调用
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0)    //如果该函数在中断中被调用
         {
             *p_err = OS_ERR_PEND_ISR;                //错误类型为“在中断中中止等待”
-    return ((void *)0);                     //返回0（有错误），停止执行
+            return ((void *)0);                     //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u//如果启用了参数检测
-    if (p_msg_size == (OS_MSG_SIZE *)0)      //如果 p_msg_size 为空
+        if (p_msg_size == (OS_MSG_SIZE *)0)      //如果 p_msg_size 为空
         {
             *p_err = OS_ERR_PTR_INVALID;          //错误类型为“指针不可用”
-    return ((void *)0);                  //返回0（有错误），停止执行
+            return ((void *)0);                  //返回0（有错误），停止执行
         }
-    switch (opt)                             //根据选项分类处理
+        switch (opt)                             //根据选项分类处理
         {
-    case OS_OPT_PEND_BLOCKING:           //如果选项在预期内
-    case OS_OPT_PEND_NON_BLOCKING:
-    break;                          //直接跳出
+        case OS_OPT_PEND_BLOCKING:           //如果选项在预期内
+        case OS_OPT_PEND_NON_BLOCKING:
+        break;                          //直接跳出
 
-    default:                             //如果选项超出预期
+        default:                             //如果选项超出预期
             *p_err = OS_ERR_OPT_INVALID;     //错误类型为“选项非法”
-    return ((void *)0);             //返回0（有错误），停止执行
+            return ((void *)0);             //返回0（有错误），停止执行
         }
     #endif
 
-    if (p_ts != (CPU_TS *)0)      //如果 p_ts 非空
+        if (p_ts != (CPU_TS *)0)      //如果 p_ts 非空
         {
             *p_ts  = (CPU_TS  )0;      //初始化（清零）p_ts，待用于返回时间戳
         }
@@ -322,39 +320,39 @@
                             p_msg_size,
                             p_ts,
                             p_err);	(7)
-    if (*p_err == OS_ERR_NONE)                            //如果获取消息成功
+        if (*p_err == OS_ERR_NONE)                            //如果获取消息成功
         {
     #if OS_CFG_TASK_PROFILE_EN > 0u
 
-    if (p_ts != (CPU_TS *)0)
+            if (p_ts != (CPU_TS *)0)
             {
                 OSTCBCurPtr->MsgQPendTime = OS_TS_GET() - *p_ts;
-    if (OSTCBCurPtr->MsgQPendTimeMax < OSTCBCurPtr->MsgQPendTime)
+                if (OSTCBCurPtr->MsgQPendTimeMax < OSTCBCurPtr->MsgQPendTime)
                 {
                     OSTCBCurPtr->MsgQPendTimeMax = OSTCBCurPtr->MsgQPendTime;
                 }
             }
     #endif
             CPU_CRITICAL_EXIT();                             //开中断
-    return (p_void);                                 //返回消息内容
+            return (p_void);                                 //返回消息内容
         }
-    /* 如果获取消息不成功（队列里没有消息） */	(8)
-    if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0) //如果选择了不阻塞任务
+        /* 如果获取消息不成功（队列里没有消息） */	(8)
+        if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0) //如果选择了不阻塞任务
         {
             *p_err = OS_ERR_PEND_WOULD_BLOCK;            //错误类型为“缺乏阻塞”
             CPU_CRITICAL_EXIT();                             //开中断
-    return ((void *)0);                     //返回0（有错误），停止执行
+            return ((void *)0);                     //返回0（有错误），停止执行
         }
-    else(9)//如果选择了阻塞任务
+        else(9)//如果选择了阻塞任务
         {
-    if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0)   //如果调度器被锁
+            if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0)   //如果调度器被锁
             {
                 CPU_CRITICAL_EXIT();                         //开中断
                 *p_err = OS_ERR_SCHED_LOCKED;          //错误类型为“调度器被锁”
-    return ((void *)0);                     //返回0（有错误），停止执行
+                return ((void *)0);                     //返回0（有错误），停止执行
             }
         }
-    /* 如果调度器未被锁 */
+        /* 如果调度器未被锁 */
         OS_CRITICAL_ENTER_CPU_EXIT();          (10)//锁调度器，重开中断
         OS_Pend((OS_PEND_DATA *)0,             (11)//阻塞当前任务，等待消息
                 (OS_PEND_OBJ  *)0,
@@ -363,51 +361,51 @@
         OS_CRITICAL_EXIT_NO_SCHED();                    //解锁调度器（无调度）
 
         OSSched();                             (12)//调度任务
-    /* 当前任务（获得消息队列的消息）得以继续运行 */
+            /* 当前任务（获得消息队列的消息）得以继续运行 */
         CPU_CRITICAL_ENTER();                (13)//关中断
-    switch (OSTCBCurPtr->PendStatus)           //根据任务的等待状态分类处理
+        switch (OSTCBCurPtr->PendStatus)           //根据任务的等待状态分类处理
         {
-    case OS_STATUS_PEND_OK:               (14)//如果任务已成功获得消息
+            case OS_STATUS_PEND_OK:               (14)//如果任务已成功获得消息
             p_void      = OSTCBCurPtr->MsgPtr;          //提取消息内容地址
             *p_msg_size  = OSTCBCurPtr->MsgSize;         //提取消息长度
-    if (p_ts != (CPU_TS *)0)                    //如果 p_ts 非空
+            if (p_ts != (CPU_TS *)0)                    //如果 p_ts 非空
             {
                 *p_ts  = OSTCBCurPtr->TS;            //获取任务等到消息时的时间戳
     #if OS_CFG_TASK_PROFILE_EN > 0u
 
                 OSTCBCurPtr->MsgQPendTime = OS_TS_GET() - OSTCBCurPtr->TS;
-    if (OSTCBCurPtr->MsgQPendTimeMax < OSTCBCurPtr->MsgQPendTime)
+                if (OSTCBCurPtr->MsgQPendTimeMax < OSTCBCurPtr->MsgQPendTime)
                 {
                     OSTCBCurPtr->MsgQPendTimeMax = OSTCBCurPtr->MsgQPendTime;
                 }
     #endif
             }
             *p_err = OS_ERR_NONE;                        //错误类型为“无错误”
-    break;                                      //跳出
+            break;                                      //跳出
 
-    case OS_STATUS_PEND_ABORT:           (15)//如果等待被中止
+            case OS_STATUS_PEND_ABORT:           (15)//如果等待被中止
             p_void     = (void      *)0;                //返回消息内容为空
             *p_msg_size = (OS_MSG_SIZE)0;                //返回消息大小为0
-    if (p_ts  != (CPU_TS *)0)                   //如果 p_ts 非空
+            if (p_ts  != (CPU_TS *)0)                   //如果 p_ts 非空
             {
                 *p_ts   = (CPU_TS  )0;                   //清零 p_ts
             }
             *p_err      =  OS_ERR_PEND_ABORT;            //错误类型为“等待被中止”
-    break;                                      //跳出
+            break;                                      //跳出
 
-    case OS_STATUS_PEND_TIMEOUT:          (16)//如果等待超时，
-    default:                                         //或者任务状态超出预期。
+            case OS_STATUS_PEND_TIMEOUT:          (16)//如果等待超时，
+            default:                                         //或者任务状态超出预期。
             p_void     = (void      *)0;                //返回消息内容为空
             *p_msg_size = (OS_MSG_SIZE)0;                //返回消息大小为0
-    if (p_ts  != (CPU_TS *)0)                   //如果 p_ts 非空
+            if (p_ts  != (CPU_TS *)0)                   //如果 p_ts 非空
             {
                 *p_ts   =  OSTCBCurPtr->TS;
             }
             *p_err      =  OS_ERR_TIMEOUT;               //错误类为“等待超时”
-    break;                                      //跳出
+            break;                                      //跳出
         }
         CPU_CRITICAL_EXIT();                                 //开中断
-    return (p_void);                    (17)//返回消息内容地址
+        return (p_void);                    (17)//返回消息内容地址
     }
     #endif
 

@@ -64,25 +64,25 @@
     *********************************************************************/
     static void BSP_Init(void)
     {
-    /*
+        /*
         * STM32中断优先级分组为4，即4bit都用来表示抢占优先级，范围为：0~15
         * 优先级分组只需要分组一次即可，以后如果有其他的任务需要用到中断，
         * 都统一用这个优先级分组，千万不要再分组，切忌。
         */
         NVIC_PriorityGroupConfig( NVIC_PriorityGroup_4 );
 
-    /* LED 初始化 */
+        /* LED 初始化 */
         LED_GPIO_Config();			(1)
 
-    /* 测试硬件是否正常工作 */		(2)
+        /* 测试硬件是否正常工作 */		(2)
         LED1_ON;
 
-    /* 其他硬件初始化和测试 */
+        /* 其他硬件初始化和测试 */
 
-    /* 让程序停在这里，不再继续往下执行 */
-    while (1);			(3)
+        /* 让程序停在这里，不再继续往下执行 */
+        while (1);			(3)
 
-    /* 串口初始化	*/
+        /* 串口初始化	*/
         USART_Config();
 
     }
@@ -149,13 +149,13 @@
 
     static voidLED_Task (void* parameter)
     {
-    while (1)					(1)
+        while (1)					(1)
         {
             LED1_ON;
-    OSTimeDly (500,OS_OPT_TIME_DLY,&err);/* 延时500个tick */(2)
+            OSTimeDly (500,OS_OPT_TIME_DLY,&err);/* 延时500个tick */(2)
 
             LED1_OFF;
-    OSTimeDly (500,OS_OPT_TIME_DLY,&err);/* 延时500个tick */
+            OSTimeDly (500,OS_OPT_TIME_DLY,&err);/* 延时500个tick */
 
         }
     }
@@ -196,7 +196,7 @@
                 (OS_MSG_QTY  ) 5u,				(9)
                 (OS_TICK     ) 0u,				(10)
                 (void       *) 0,					(11)
-    (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), (12)
+                (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), (12)
                 (OS_ERR     *)&err);					(13)
 
 
@@ -285,59 +285,12 @@ app.c全貌
     #include <includes.h>
 
 
-    /*
-    *******************************************************
-    *                           LOCAL DEFINES
-    ************************************************************************
-    */
-
-    /*
-    *************************************************************************
-    *                             TCB
-    ************************************************************************
-    */
-
-    static  OS_TCB   AppTaskStartTCB;
-
-
-    /*
-    ************************************************************
-    *                              STACKS
-    *************************************************************************
-    */
-
-    static  CPU_STK  AppTaskStartStk[APP_TASK_START_STK_SIZE];
-
-
-    /*
-    **************************************************************
-    *                            FUNCTION PROTOTYPES
-    ***********************************************************************
-    */
-
-    static  void  AppTaskStart  (void *p_arg);
-
-
-    /*
-    *************************************************************************
-    *                                                main()
-    *
-    * Description : This is the standard entry point for C code.
-    *              It is assumed that your code will callmain() once
-    *		you have performed all necessary initialization.
-    * Arguments   : none
-    *
-    * Returns     : none
-    ************************************************************************
-    */
-
     int  main (void)
     {
         OS_ERR  err;
 
 
-        OSInit(&err);                     /* Init μC/OS-III.
-            */
+        OSInit(&err);                     /* Init μC/OS-III.*/
 
         OSTaskCreate((OS_TCB     *)&AppTaskStartTCB, /* Create the start task
                     */
@@ -351,12 +304,10 @@ app.c全貌
                     (OS_MSG_QTY  ) 5u,
                     (OS_TICK     ) 0u,
                     (void       *) 0,
-    (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+                    (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                     (OS_ERR     *)&err);
 
-    OSStart(&err);/* Start multitasking(i.e.give control to μC/OS-III).*/
-
-
+        OSStart(&err);/* Start multitasking(i.e.give control to μC/OS-III).*/
 
     }
 
@@ -390,8 +341,8 @@ app.c全貌
                 */
         CPU_Init();
         /*Determine SysTick reference freq*/
-    cpu_clk_freq = BSP_CPU_ClkFreq();
-    /* Determine nbr SysTick increments */
+        cpu_clk_freq = BSP_CPU_ClkFreq();
+        /* Determine nbr SysTick increments */
         cnts = cpu_clk_freq / (CPU_INT32U)OSCfg_TickRate_Hz;
 
         OS_CPU_SysTickInit(cnts); /* Init μC/OS periodic time src (SysTick).
@@ -409,7 +360,7 @@ app.c全貌
 
 
     while (DEF_TRUE) {  	/* Task body, always written as an
-                infinite loop.*/
+            infinite loop.*/
             macLED1_TOGGLE ();
             OSTimeDly ( 5000, OS_OPT_TIME_DLY, & err );
         }
@@ -433,7 +384,7 @@ LED3 任务为 LED3 每隔 10 秒切换一次亮灭状态，首先在“ app_cfg
 
 .. code-block:: c
     :caption: 代码清单:创建任务-10app.c全貌
-    :emphasize-lines: 27-31,39-43,65-78,129-173,181-193,201-213,221-233
+    :emphasize-lines: 26-29,37-40,62-75,125-167,177-189,197-209,217-229
     :name: 代码清单:创建任务-10
     :linenos:
 
@@ -453,7 +404,6 @@ LED3 任务为 LED3 每隔 10 秒切换一次亮灭状态，首先在“ app_cfg
     */
 
     static  OS_TCB   AppTaskStartTCB;
-
     static  OS_TCB   AppTaskLed1TCB;
     static  OS_TCB   AppTaskLed2TCB;
     static  OS_TCB   AppTaskLed3TCB;
@@ -466,7 +416,6 @@ LED3 任务为 LED3 每隔 10 秒切换一次亮灭状态，首先在“ app_cfg
     */
 
     static  CPU_STK  AppTaskStartStk[APP_TASK_START_STK_SIZE];
-
     static  CPU_STK  AppTaskLed1Stk [ APP_TASK_LED1_STK_SIZE ];
     static  CPU_STK  AppTaskLed2Stk [ APP_TASK_LED2_STK_SIZE ];
     static  CPU_STK  AppTaskLed3Stk [ APP_TASK_LED3_STK_SIZE ];
@@ -479,7 +428,6 @@ LED3 任务为 LED3 每隔 10 秒切换一次亮灭状态，首先在“ app_cfg
     */
 
     static  void  AppTaskStart  (void *p_arg);
-
     static  void  AppTaskLed1  ( void * p_arg );
     static  void  AppTaskLed2  ( void * p_arg );
     static  void  AppTaskLed3  ( void * p_arg );
@@ -500,13 +448,13 @@ LED3 任务为 LED3 每隔 10 秒切换一次亮灭状态，首先在“ app_cfg
 
     int  main (void)
     {
-    OS_ERR  err;
+        OS_ERR  err;
 
 
-    OSInit(&err);             /* Init μC/OS-III.
+        OSInit(&err);             /* Init μC/OS-III.
             */
 
-    OSTaskCreate((OS_TCB     *)&AppTaskStartTCB,	/*Create the
+        OSTaskCreate((OS_TCB     *)&AppTaskStartTCB,	/*Create the
                     start task  */
                     (CPU_CHAR   *)"App Task Start",
                     (OS_TASK_PTR ) AppTaskStart,
@@ -521,8 +469,7 @@ LED3 任务为 LED3 每隔 10 秒切换一次亮灭状态，首先在“ app_cfg
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                     (OS_ERR     *)&err);
 
-    OSStart(&err);                /* Start multitasking (i.e. give
-                    control to μC/OS-III). */
+        OSStart(&err);                /* Start multitasking (i.e. givecontrol to μC/OS-III). */
 
 
     }
@@ -586,7 +533,7 @@ LED3 任务为 LED3 每隔 10 秒切换一次亮灭状态，首先在“ app_cfg
                     (OS_MSG_QTY  ) 5u,
                     (OS_TICK     ) 0u,
                     (void       *) 0,
-    (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+                    (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                     (OS_ERR     *)&err);
 
         OSTaskCreate((OS_TCB     *)&AppTaskLed2TCB, /*Create the Led2 task*/
@@ -600,7 +547,7 @@ LED3 任务为 LED3 每隔 10 秒切换一次亮灭状态，首先在“ app_cfg
                     (OS_MSG_QTY  ) 5u,
                     (OS_TICK     ) 0u,
                     (void       *) 0,
-    (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+                    (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                     (OS_ERR     *)&err);
 
         OSTaskCreate((OS_TCB     *)&AppTaskLed3TCB, /*Create the Led3 task*/
@@ -614,7 +561,7 @@ LED3 任务为 LED3 每隔 10 秒切换一次亮灭状态，首先在“ app_cfg
                     (OS_MSG_QTY  ) 5u,
                     (OS_TICK     ) 0u,
                     (void       *) 0,
-    (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+                    (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                     (OS_ERR     *)&err);
 
 
@@ -638,7 +585,7 @@ LED3 任务为 LED3 每隔 10 秒切换一次亮灭状态，首先在“ app_cfg
         (void)p_arg;
 
 
-    while (DEF_TRUE) {    /* Task body, always written as an infinite
+        while (DEF_TRUE) {    /* Task body, always written as an infinite
             loop.*/
             macLED1_TOGGLE ();
             OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err );
@@ -662,7 +609,7 @@ LED3 任务为 LED3 每隔 10 秒切换一次亮灭状态，首先在“ app_cfg
         (void)p_arg;
 
 
-    while (DEF_TRUE) {          /* Task body, always written as an
+        while (DEF_TRUE) {          /* Task body, always written as an
                 infinite loop.  */
             macLED2_TOGGLE ();
             OSTimeDly ( 5000, OS_OPT_TIME_DLY, & err );

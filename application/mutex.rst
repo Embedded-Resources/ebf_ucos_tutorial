@@ -224,46 +224,46 @@ PendList链表与OwnerNestingCtr变量等，为的是方便系统来管理互斥
                         OS_ERR    *p_err)   (3)	//返回错误类型
     {
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL(4)//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return;                         //返回，不继续执行
+            return;                         //返回，不继续执行
         }
     #endif
 
     #ifdef OS_SAFETY_CRITICAL_IEC61508(5)//如果启用（默认禁用）了安全关键
-    //如果是在调用 OSSafetyCriticalStart()后创建
-    if (OSSafetyCriticalStartFlag == DEF_TRUE)
+        //如果是在调用 OSSafetyCriticalStart()后创建
+        if (OSSafetyCriticalStartFlag == DEF_TRUE)
         {
             *p_err = OS_ERR_ILLEGAL_CREATE_RUN_TIME; //错误类型为“非法创建内核对象”
-    return;                                  //返回，不继续执行
+            return;                                  //返回，不继续执行
         }
     #endif
 
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u       (6)
-    //如果启用（默认启用）了中断中非法调用检测
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0)     //如果该函数是在中断中被调用
+        //如果启用（默认启用）了中断中非法调用检测
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0)     //如果该函数是在中断中被调用
         {
             *p_err = OS_ERR_CREATE_ISR;             //错误类型为“在中断函数中定时”
-    return;                                  //返回，不继续执行
+            return;                                  //返回，不继续执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u(7)//如果启用（默认启用）了参数检测
-    if (p_mutex == (OS_MUTEX *)0) //如果参数 p_mutex 为空
+        if (p_mutex == (OS_MUTEX *)0) //如果参数 p_mutex 为空
         {
             *p_err = OS_ERR_OBJ_PTR_NULL;  //错误类型为“创建对象为空”
-    return;                       //返回，不继续执行
+            return;                       //返回，不继续执行
         }
     #endif
 
         OS_CRITICAL_ENTER();              //进入临界段，初始化互斥量指标
-    //标记创建对象数据结构为互斥量
-    p_mutex->Type              =  OS_OBJ_TYPE_MUTEX;  (8)
+        //标记创建对象数据结构为互斥量
+        p_mutex->Type              =  OS_OBJ_TYPE_MUTEX;  (8)
         p_mutex->NamePtr           =  p_name;		(9)
         p_mutex->OwnerTCBPtr       = (OS_TCB       *)0;	(10)
         p_mutex->OwnerNestingCtr   = (OS_NESTING_CTR)0; (11)
@@ -364,48 +364,48 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
         OS_TCB        *p_tcb_owner;
         CPU_TS         ts;
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL(4)//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return ((OS_OBJ_QTY)0);         //返回0（有错误），停止执行
+            return ((OS_OBJ_QTY)0);         //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u(5)//如果启用了中断中非法调用检测
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0)  //如果该函数在中断中被调用
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0)  //如果该函数在中断中被调用
         {
             *p_err = OS_ERR_DEL_ISR;               //错误类型为“在中断中中止等待”
-    return ((OS_OBJ_QTY)0);               //返回0（有错误），停止执行
+            return ((OS_OBJ_QTY)0);               //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u(6)//如果启用了参数检测
-    if (p_mutex == (OS_MUTEX *)0)         //如果 p_mutex 为空
+        if (p_mutex == (OS_MUTEX *)0)         //如果 p_mutex 为空
         {
             *p_err = OS_ERR_OBJ_PTR_NULL;      //错误类型为“对象为空”
-    return ((OS_OBJ_QTY)0);           //返回0（有错误），停止执行
+            return ((OS_OBJ_QTY)0);           //返回0（有错误），停止执行
         }
-    switch (opt)                   (7)//根据选项分类处理
+        switch (opt)                   (7)//根据选项分类处理
         {
-    case OS_OPT_DEL_NO_PEND:          //如果选项在预期内
-    case OS_OPT_DEL_ALWAYS:
-    break;                       //直接跳出
+        case OS_OPT_DEL_NO_PEND:          //如果选项在预期内
+        case OS_OPT_DEL_ALWAYS:
+        break;                       //直接跳出
 
-    default:                     (8)//如果选项超出预期
+        default:                     (8)//如果选项超出预期
             *p_err =  OS_ERR_OPT_INVALID; //错误类型为“选项非法”
-    return ((OS_OBJ_QTY)0);      //返回0（有错误），停止执行
+            return ((OS_OBJ_QTY)0);      //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_OBJ_TYPE_CHK_EN > 0u(9)//如果启用了对象类型检测
-    if (p_mutex->Type != OS_OBJ_TYPE_MUTEX)   //如果 p_mutex 非互斥量类型
+        if (p_mutex->Type != OS_OBJ_TYPE_MUTEX)   //如果 p_mutex 非互斥量类型
         {
             *p_err = OS_ERR_OBJ_TYPE;              //错误类型为“对象类型错误”
-    return ((OS_OBJ_QTY)0);               //返回0（有错误），停止执行
+            return ((OS_OBJ_QTY)0);               //返回0（有错误），停止执行
         }
     #endif
 
@@ -413,71 +413,71 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
         p_pend_list = &p_mutex->PendList;     (10)//获取互斥量的等待列表
         cnt         = p_pend_list->NbrEntries;  (11)//获取等待该互斥量的任务数
         nbr_tasks   = cnt;
-    switch (opt)                     (12)//根据选项分类处理
+        switch (opt)                     (12)//根据选项分类处理
         {
-    case OS_OPT_DEL_NO_PEND:         (13)//如果只在没任务等待时删除互斥量
-    if (nbr_tasks == (OS_OBJ_QTY)0)    //如果没有任务在等待该互斥量
+            case OS_OPT_DEL_NO_PEND:         (13)//如果只在没任务等待时删除互斥量
+            if (nbr_tasks == (OS_OBJ_QTY)0)    //如果没有任务在等待该互斥量
             {
     #if OS_CFG_DBG_EN > 0u//如果启用了调试代码和变量
                 OS_MutexDbgListRemove(p_mutex);//将该互斥量从互斥量调试列表移除
     #endif
                 OSMutexQty--;            (14)//互斥量数目减1
-        OS_MutexClr(p_mutex);    (15)//清除互斥量内容
+                OS_MutexClr(p_mutex);    (15)//清除互斥量内容
                 OS_CRITICAL_EXIT();            //退出临界段
-        *p_err = OS_ERR_NONE;    (16)//错误类型为“无错误”
+                *p_err = OS_ERR_NONE;    (16)//错误类型为“无错误”
             }
-    else(17)//如果有任务在等待该互斥量
+            else(17)//如果有任务在等待该互斥量
             {
                 OS_CRITICAL_EXIT();            	//退出临界段
                 *p_err = OS_ERR_TASK_WAITING;  //错误类型为“有任务正在等待”
             }
-    break;                             //跳出
+            break;                             //跳出
 
-    case OS_OPT_DEL_ALWAYS:            (18)//如果必须删除互斥量
+            case OS_OPT_DEL_ALWAYS:            (18)//如果必须删除互斥量
             p_tcb_owner = p_mutex->OwnerTCBPtr;     (19)//获取互斥量持有任务
-    if ((p_tcb_owner       != (OS_TCB *)0) &&//如果持有任务存在，
+            if ((p_tcb_owner       != (OS_TCB *)0) &&//如果持有任务存在，
                     (p_tcb_owner->Prio !=  p_mutex->OwnerOriginalPrio))
-    //而且优先级被提升过。		(20)
+                    //而且优先级被提升过。		(20)
             {
-    switch (p_tcb_owner->TaskState)     (21)//根据其任务状态处理
+            switch (p_tcb_owner->TaskState)     (21)//根据其任务状态处理
                 {
-    case OS_TASK_STATE_RDY:          (22)//如果是就绪状态
+                    case OS_TASK_STATE_RDY:          (22)//如果是就绪状态
                     OS_RdyListRemove(p_tcb_owner);       //将任务从就绪列表移除
                     p_tcb_owner->Prio = p_mutex->OwnerOriginalPrio;(23)//还原任务的优先级
                     OS_PrioInsert(p_tcb_owner->Prio);   (24)
-    //将该优先级插入优先级表格
+                    //将该优先级插入优先级表格
                     OS_RdyListInsertTail(p_tcb_owner); (25)//将任务重插入就绪列表
-    break;                                         //跳出
+                    break;                                         //跳出
 
-    case OS_TASK_STATE_DLY:              (26)//如果是延时状态
-    case OS_TASK_STATE_SUSPENDED:          //如果是被挂起状态
-    case OS_TASK_STATE_DLY_SUSPENDED:       //如果是延时中被挂起状态
-                    p_tcb_owner->Prio = p_mutex->OwnerOriginalPrio;//还原任务的优先级
-    break;
+                    case OS_TASK_STATE_DLY:              (26)//如果是延时状态
+                    case OS_TASK_STATE_SUSPENDED:          //如果是被挂起状态
+                    case OS_TASK_STATE_DLY_SUSPENDED:       //如果是延时中被挂起状态
+                                    p_tcb_owner->Prio = p_mutex->OwnerOriginalPrio;//还原任务的优先级
+                    break;
 
-    case OS_TASK_STATE_PEND:      (27)//如果是无期限等待状态
-    case OS_TASK_STATE_PEND_TIMEOUT:         //如果是有期限等待状态
-    case OS_TASK_STATE_PEND_SUSPENDED:
-    //如果是无期等待中被挂状态
-    case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
-    //如果是有期等待中被挂状态
+                    case OS_TASK_STATE_PEND:      (27)//如果是无期限等待状态
+                    case OS_TASK_STATE_PEND_TIMEOUT:         //如果是有期限等待状态
+                    case OS_TASK_STATE_PEND_SUSPENDED:
+                    //如果是无期等待中被挂状态
+                    case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
+                    //如果是有期等待中被挂状态
                     OS_PendListChangePrio(p_tcb_owner,
-    //改变任务在等待列表的位置
+                    //改变任务在等待列表的位置
                                         p_mutex->OwnerOriginalPrio);
-    break;
+                    break;
 
-    default:                       (28)//如果状态超出预期
+                    default:                       (28)//如果状态超出预期
                     OS_CRITICAL_EXIT();
                     *p_err = OS_ERR_STATE_INVALID;
-    //错误类型为“任务状态非法”
-    return ((OS_OBJ_QTY)0);
-    //返回0（有错误），停止执行
+                    //错误类型为“任务状态非法”
+                    return ((OS_OBJ_QTY)0);
+                    //返回0（有错误），停止执行
                 }
             }
 
             ts = OS_TS_GET();                    (29)//获取时间戳
-    while(cnt > 0u)                     (30)
-    //移除该互斥量等待列表中的所有任务。
+            while(cnt > 0u)                     (30)
+            //移除该互斥量等待列表中的所有任务。
             {
                 p_pend_data = p_pend_list->HeadPtr;
                 p_tcb       = p_pend_data->TCBPtr;
@@ -491,7 +491,7 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
     #endif
             OSMutexQty--;                (32)//互斥量数目减1
             OS_MutexClr(p_mutex);         (33)//清除互斥量内容
-    OS_CRITICAL_EXIT_NO_SCHED();  (34)//退出临界段，但不调度
+            OS_CRITICAL_EXIT_NO_SCHED();  (34)//退出临界段，但不调度
             OSSched();                    (35)//调度最高优先级任务运行
             *p_err = OS_ERR_NONE;(36)//错误类型为“无错误”
     break;                             //跳出
@@ -501,8 +501,8 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
             *p_err = OS_ERR_OPT_INVALID;        //错误类型为“选项非法”
     break;                             //跳出
         }
-    return (nbr_tasks);               (38)
-    //返回删除前互斥量等待列表中的任务数
+        return (nbr_tasks);               (38)
+        //返回删除前互斥量等待列表中的任务数
     }
     #endif
 
@@ -636,138 +636,138 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
         OS_PEND_DATA  pend_data;
         OS_TCB       *p_tcb;
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return;                         //返回，不继续执行
+            return;                         //返回，不继续执行
         }
     #endif
 
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u//如果启用了中断中非法调用检测
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0)   //如果该函数在中断中被调用
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0)   //如果该函数在中断中被调用
         {
             *p_err = OS_ERR_PEND_ISR;               //错误类型为“在中断中等待”
-    return;                                //返回，不继续执行
+            return;                                //返回，不继续执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u//如果启用了参数检测
-    if (p_mutex == (OS_MUTEX *)0)        //如果 p_mutex 为空
+        if (p_mutex == (OS_MUTEX *)0)        //如果 p_mutex 为空
         {
             *p_err = OS_ERR_OBJ_PTR_NULL;     //返回错误类型为“内核对象为空”
-    return;                          //返回，不继续执行
+            return;                          //返回，不继续执行
         }
-    switch (opt)                         //根据选项分类处理
+        switch (opt)                         //根据选项分类处理
         {
-    case OS_OPT_PEND_BLOCKING:       //如果选项在预期内
-    case OS_OPT_PEND_NON_BLOCKING:
-    break;
+        case OS_OPT_PEND_BLOCKING:       //如果选项在预期内
+        case OS_OPT_PEND_NON_BLOCKING:
+        break;
 
-    default:                         //如果选项超出预期
+        default:                         //如果选项超出预期
             *p_err = OS_ERR_OPT_INVALID; //错误类型为“选项非法”
-    return;                     //返回，不继续执行
+            return;                     //返回，不继续执行
         }
     #endif
 
     #if OS_CFG_OBJ_TYPE_CHK_EN > 0u//如果启用了对象类型检测
-    if (p_mutex->Type != OS_OBJ_TYPE_MUTEX)   //如果 p_mutex 非互斥量类型
+        if (p_mutex->Type != OS_OBJ_TYPE_MUTEX)   //如果 p_mutex 非互斥量类型
         {
             *p_err = OS_ERR_OBJ_TYPE;              //错误类型为“内核对象类型错误”
-    return;                               //返回，不继续执行
+            return;                               //返回，不继续执行
         }
     #endif
 
-    if (p_ts != (CPU_TS *)0)    //如果 p_ts 非空
+        if (p_ts != (CPU_TS *)0)    //如果 p_ts 非空
         {
             *p_ts  = (CPU_TS  )0;    //初始化（清零）p_ts，待用于返回时间戳
         }
 
         CPU_CRITICAL_ENTER();                                //关中断
-    if (p_mutex->OwnerNestingCtr == (OS_NESTING_CTR)0)(6)//如果互斥量可用
+        if (p_mutex->OwnerNestingCtr == (OS_NESTING_CTR)0)(6)//如果互斥量可用
         {
             p_mutex->OwnerTCBPtr       =  OSTCBCurPtr; (7)//让当前任务持有互斥量
-    p_mutex->OwnerOriginalPrio =  OSTCBCurPtr->Prio; (8)//保存持有任务的优先级
+            p_mutex->OwnerOriginalPrio =  OSTCBCurPtr->Prio; (8)//保存持有任务的优先级
             p_mutex->OwnerNestingCtr   = (OS_NESTING_CTR)1; (9)//开始嵌套
-    if (p_ts != (CPU_TS *)0)                         //如果 p_ts 非空
+            if (p_ts != (CPU_TS *)0)                         //如果 p_ts 非空
             {
                 *p_ts  = p_mutex->TS;          (10)//返回互斥量的时间戳记录
             }
             CPU_CRITICAL_EXIT();                             //开中断
             *p_err = OS_ERR_NONE;                         //错误类型为“无错误”
-    return;                                          //返回，不继续执行
+            return;                                          //返回，不继续执行
         }
     /* 如果互斥量不可用 */		 (11)
     if (OSTCBCurPtr == p_mutex->OwnerTCBPtr) //如果当前任务已经持有该互斥量
         {
             p_mutex->OwnerNestingCtr++;      (12)//互斥量嵌套数加1
-    if (p_ts != (CPU_TS *)0)               //如果 p_ts 非空
+            if (p_ts != (CPU_TS *)0)               //如果 p_ts 非空
             {
                 *p_ts  = p_mutex->TS;               //返回互斥量的时间戳记录
             }
             CPU_CRITICAL_EXIT();                   //开中断
             *p_err = OS_ERR_MUTEX_OWNER;    (13)//错误类型为“任务已持有互斥量”
-    return;                                //返回，不继续执行
+            return;                                //返回，不继续执行
         }
-    /* 如果当前任务非持有该互斥量 */	(14)
-    if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0) //如果选择了不阻塞任务
+        /* 如果当前任务非持有该互斥量 */	(14)
+        if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0) //如果选择了不阻塞任务
         {
             CPU_CRITICAL_EXIT();                            //开中断
             *p_err = OS_ERR_PEND_WOULD_BLOCK;             //错误类型为“渴求阻塞”
-    return;                                         //返回，不继续执行
+            return;                                         //返回，不继续执行
         }
-    else(15)//如果选择了阻塞任务
+        else(15)//如果选择了阻塞任务
         {
-    if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0)  //如果调度器被锁
+            if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0)  //如果调度器被锁
             {
                 CPU_CRITICAL_EXIT();                        //开中断
                 *p_err = OS_ERR_SCHED_LOCKED;             //错误类型为“调度器被锁”
-    return;                                     //返回，不继续执行
+                return;                                     //返回，不继续执行
             }
         }
-    /* 如果调度器未被锁 */			(16)
+        /* 如果调度器未被锁 */			(16)
         OS_CRITICAL_ENTER_CPU_EXIT();                     //锁调度器，并重开中断
         p_tcb = p_mutex->OwnerTCBPtr;                //获取互斥量持有任务
-    if (p_tcb->Prio > OSTCBCurPtr->Prio)   	(17)
-    //如果持有任务优先级低于当前任务
+        if (p_tcb->Prio > OSTCBCurPtr->Prio)   	(17)
+        //如果持有任务优先级低于当前任务
         {
-    switch (p_tcb->TaskState)       	(18)
-    //根据持有任务的任务状态分类处理
+            switch (p_tcb->TaskState)       	(18)
+            //根据持有任务的任务状态分类处理
             {
-    case OS_TASK_STATE_RDY:                        //如果是就绪状态
+                case OS_TASK_STATE_RDY:                        //如果是就绪状态
                 OS_RdyListRemove(p_tcb);                //从就绪列表移除持有任务
                 p_tcb->Prio = OSTCBCurPtr->Prio;      (19)
-    //提升持有任务的优先级到当前任务
+                //提升持有任务的优先级到当前任务
                 OS_PrioInsert(p_tcb->Prio);      (20)//将该优先级插入优先级表格
                 OS_RdyListInsertHead(p_tcb);      (21)//将持有任务插入就绪列表
-    break;                                    //跳出
+                break;                                    //跳出
 
-    case OS_TASK_STATE_DLY:                        //如果是延时状态
-    case OS_TASK_STATE_DLY_SUSPENDED:           //如果是延时中被挂起状态
-    case OS_TASK_STATE_SUSPENDED:                  //如果是被挂起状态
+                case OS_TASK_STATE_DLY:                        //如果是延时状态
+                case OS_TASK_STATE_DLY_SUSPENDED:           //如果是延时中被挂起状态
+                case OS_TASK_STATE_SUSPENDED:                  //如果是被挂起状态
                 p_tcb->Prio = OSTCBCurPtr->Prio;      (22)
-    //提升持有任务的优先级到当前任务
-    break;                                    //跳出
+                //提升持有任务的优先级到当前任务
+                break;                                    //跳出
 
-    case OS_TASK_STATE_PEND:                   //如果是无期限等待状态
-    case OS_TASK_STATE_PEND_TIMEOUT:           //如果是有期限等待状态
-    case OS_TASK_STATE_PEND_SUSPENDED:     //如果是无期限等待中被挂起状态
-    case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:   //如果是有期限等待中被挂起状态
+                case OS_TASK_STATE_PEND:                   //如果是无期限等待状态
+                case OS_TASK_STATE_PEND_TIMEOUT:           //如果是有期限等待状态
+                case OS_TASK_STATE_PEND_SUSPENDED:     //如果是无期限等待中被挂起状态
+                case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:   //如果是有期限等待中被挂起状态
                 OS_PendListChangePrio(p_tcb,       //改变持有任务在等待列表的位置
                                     OSTCBCurPtr->Prio);(23)
-    break;                                    //跳出
+                break;                                    //跳出
 
-    default:                          (24)//如果任务状态超出预期
+                default:                          (24)//如果任务状态超出预期
                 OS_CRITICAL_EXIT();                       //开中断
                 *p_err = OS_ERR_STATE_INVALID;       //错误类型为“任务状态非法”
-    return;                                   //返回，不继续执行
+                return;                                   //返回，不继续执行
             }
         }
-    /*
-    阻塞任务，将当前任务脱离就绪列表，并插入节拍列表和等待列表。*/
+        /*
+        阻塞任务，将当前任务脱离就绪列表，并插入节拍列表和等待列表。*/
         OS_Pend(&pend_data,
                 (OS_PEND_OBJ *)((void *)p_mutex),
                 OS_TASK_PEND_ON_MUTEX,
@@ -778,43 +778,43 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
         OSSched();                    (26)//调度最高优先级任务运行
 
         CPU_CRITICAL_ENTER();                 //开中断
-    switch (OSTCBCurPtr->PendStatus)(27)//根据当前运行任务的等待状态分类处理
+        switch (OSTCBCurPtr->PendStatus)(27)//根据当前运行任务的等待状态分类处理
         {
-    case OS_STATUS_PEND_OK:     (28)//如果等待正常（获得互斥量）
-    if (p_ts != (CPU_TS *)0)     //如果 p_ts 非空
+            case OS_STATUS_PEND_OK:     (28)//如果等待正常（获得互斥量）
+            if (p_ts != (CPU_TS *)0)     //如果 p_ts 非空
             {
                 *p_ts  = OSTCBCurPtr->TS; //返回互斥量最后一次被释放的时间戳
             }
             *p_err = OS_ERR_NONE;   (29)//错误类型为“无错误”
-    break;                       //跳出
+            break;                       //跳出
 
-    case OS_STATUS_PEND_ABORT:   (30)//如果等待被中止
-    if (p_ts != (CPU_TS *)0)     //如果 p_ts 非空
+            case OS_STATUS_PEND_ABORT:   (30)//如果等待被中止
+            if (p_ts != (CPU_TS *)0)     //如果 p_ts 非空
             {
                 *p_ts  = OSTCBCurPtr->TS; //返回等待被中止时的时间戳
             }
             *p_err = OS_ERR_PEND_ABORT;   //错误类型为“等待被中止”
-    break;                       //跳出
+            break;                       //跳出
 
-    case OS_STATUS_PEND_TIMEOUT:  (31)//如果超时内为获得互斥量
-    if (p_ts != (CPU_TS *)0)     //如果 p_ts 非空
+            case OS_STATUS_PEND_TIMEOUT:  (31)//如果超时内为获得互斥量
+            if (p_ts != (CPU_TS *)0)     //如果 p_ts 非空
             {
                 *p_ts  = (CPU_TS  )0;     //清零 p_ts
             }
             *p_err = OS_ERR_TIMEOUT;      //错误类型为“超时”
-    break;                       //跳出
+            break;                       //跳出
 
-    case OS_STATUS_PEND_DEL:     (32)//如果互斥量已被删除
-    if (p_ts != (CPU_TS *)0)     //如果 p_ts 非空
+            case OS_STATUS_PEND_DEL:     (32)//如果互斥量已被删除
+            if (p_ts != (CPU_TS *)0)     //如果 p_ts 非空
             {
                 *p_ts  = OSTCBCurPtr->TS; //返回互斥量被删除时的时间戳
             }
             *p_err = OS_ERR_OBJ_DEL;      //错误类型为“对象被删除”
-    break;                       //跳出
+            break;                       //跳出
 
-    default:                   (33)//根据等待状态超出预期
+            default:                   (33)//根据等待状态超出预期
             *p_err = OS_ERR_STATUS_INVALID;//错误类型为“状态非法”
-    break;                        //跳出
+            break;                        //跳出
         }
         CPU_CRITICAL_EXIT();                   //开中断
     }

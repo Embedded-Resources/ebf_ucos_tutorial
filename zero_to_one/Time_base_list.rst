@@ -105,18 +105,18 @@
         CPU_STK         *StkPtr;
         CPU_STK_SIZE    StkSize;
 
-    /* 任务延时周期个数 */
+        /* 任务延时周期个数 */
         OS_TICK         TaskDelayTicks;
 
-    /* 任务优先级 */
+        /* 任务优先级 */
         OS_PRIO         Prio;
 
-    /* 就绪列表双向链表的下一个指针 */
+        /* 就绪列表双向链表的下一个指针 */
         OS_TCB          *NextPtr;
-    /* 就绪列表双向链表的前一个指针 */
+        /* 就绪列表双向链表的前一个指针 */
         OS_TCB          *PrevPtr;
 
-    /*时基列表相关字段*/
+        /* 时基列表相关字段 */
         OS_TCB          *TickNextPtr;(1)
         OS_TCB          *TickPrevPtr;(2)
         OS_TICK_SPOKE   *TickSpokePtr;(5)
@@ -163,7 +163,7 @@ OS_TickListInit()函数用于初始化时基列表，即将全局变量OSCfg_Tic
         OS_TICK_SPOKE_IX   i;
         OS_TICK_SPOKE     *p_spoke;
 
-    for (i = 0u; i < OSCfg_TickWheelSize; i++) {
+        for (i = 0u; i < OSCfg_TickWheelSize; i++) {
             p_spoke                = (OS_TICK_SPOKE *)&OSCfg_TickWheel[i];
             p_spoke->FirstPtr      = (OS_TCB        *)0;
             p_spoke->NbrEntries    = (OS_OBJ_QTY     )0u;
@@ -205,67 +205,78 @@ OS_TickListInsert()函数用于往时基列表中插入一个任务TCB，具体�
         p_tcb->TickCtrMatch = OSTickCtr + time;(1)
         p_tcb->TickRemain   = time;(2)
 
-    spoke   = (OS_TICK_SPOKE_IX)(p_tcb->TickCtrMatch % OSCfg_TickWheelSize);(3)
+        spoke   = (OS_TICK_SPOKE_IX)(p_tcb->TickCtrMatch % OSCfg_TickWheelSize);(3)
         p_spoke = &OSCfg_TickWheel[spoke];(4)
 
-    /* 插入 OSCfg_TickWheel[spoke] 的第一个节点 */
-    if (p_spoke->NbrEntries == (OS_OBJ_QTY)0u) {(5)
+        /* 插入 OSCfg_TickWheel[spoke] 的第一个节点 */
+        if (p_spoke->NbrEntries == (OS_OBJ_QTY)0u) (5)
+        {
             p_tcb->TickNextPtr   = (OS_TCB   *)0;
             p_tcb->TickPrevPtr   = (OS_TCB   *)0;
             p_spoke->FirstPtr    =  p_tcb;
             p_spoke->NbrEntries  = (OS_OBJ_QTY)1u;
         }
-    /* 如果插入的不是第一个节点，则按照TickRemain大小升序排列 */
-    else {(6)
-    /* 获取第一个节点指针 */
+        /* 如果插入的不是第一个节点，则按照TickRemain大小升序排列 */
+        else (6)
+        {
+            /* 获取第一个节点指针 */
             p_tcb1 = p_spoke->FirstPtr;
-    while (p_tcb1 != (OS_TCB *)0) {
-    /* 计算比较节点的剩余时间 */
+            while (p_tcb1 != (OS_TCB *)0)
+            {
+                /* 计算比较节点的剩余时间 */
                 p_tcb1->TickRemain = p_tcb1->TickCtrMatch - OSTickCtr;
 
-    /* 插入比较节点的后面 */
-    if (p_tcb->TickRemain > p_tcb1->TickRemain) {
-    if (p_tcb1->TickNextPtr != (OS_TCB *)0) {
-    /* 寻找下一个比较节点 */
+                /* 插入比较节点的后面 */
+                if (p_tcb->TickRemain > p_tcb1->TickRemain)
+                {
+                    if (p_tcb1->TickNextPtr != (OS_TCB *)0)
+                    {
+                        /* 寻找下一个比较节点 */
                         p_tcb1 =  p_tcb1->TickNextPtr;
-                    } else {  /* 在最后一个节点插入 */
+                    }
+                    else
+                    {  /* 在最后一个节点插入 */
                         p_tcb->TickNextPtr   = (OS_TCB *)0;
                         p_tcb->TickPrevPtr   =  p_tcb1;
                         p_tcb1->TickNextPtr  =  p_tcb;
                         p_tcb1               = (OS_TCB *)0;(7)
                     }
                 }
-    /* 插入比较节点的前面 */
-    else {
-    /* 在第一个节点插入 */
-    if (p_tcb1->TickPrevPtr == (OS_TCB *)0) {
+                /* 插入比较节点的前面 */
+                else
+                {
+                    /* 在第一个节点插入 */
+                    if (p_tcb1->TickPrevPtr == (OS_TCB *)0) {
                         p_tcb->TickPrevPtr   = (OS_TCB *)0;
                         p_tcb->TickNextPtr   =  p_tcb1;
                         p_tcb1->TickPrevPtr  =  p_tcb;
                         p_spoke->FirstPtr    =  p_tcb;
-                    } else {
-    /* 插入两个节点之间 */
+                    }
+                    else
+                    {
+                        /* 插入两个节点之间 */
                         p_tcb0               =  p_tcb1->TickPrevPtr;
                         p_tcb->TickPrevPtr   =  p_tcb0;
                         p_tcb->TickNextPtr   =  p_tcb1;
                         p_tcb0->TickNextPtr  =  p_tcb;
                         p_tcb1->TickPrevPtr  =  p_tcb;
                     }
-    /* 跳出while循环 */
+                    /* 跳出while循环 */
                     p_tcb1 = (OS_TCB *)0;(8)
                 }
             }
 
-    /* 节点成功插入 */
+            /* 节点成功插入 */
             p_spoke->NbrEntries++;(9)
         }
 
-    /* 刷新NbrEntriesMax的值 */
-    if (p_spoke->NbrEntriesMax < p_spoke->NbrEntries) {(10)
+        /* 刷新NbrEntriesMax的值 */
+        if (p_spoke->NbrEntriesMax < p_spoke->NbrEntries) (10)
+        {
             p_spoke->NbrEntriesMax = p_spoke->NbrEntries;
         }
 
-    /* 任务TCB中的TickSpokePtr回指根节点 */
+        /* 任务TCB中的TickSpokePtr回指根节点 */
         p_tcb->TickSpokePtr = p_spoke;(11)
     }
 
@@ -322,43 +333,48 @@ OS_TickListRemove()用于从时基列表删除一个指定的TCB节点，具体�
         OS_TCB         *p_tcb1;
         OS_TCB         *p_tcb2;
 
-    /* 获取任务TCB所在链表的根指针 */
+        /* 获取任务TCB所在链表的根指针 */
         p_spoke = p_tcb->TickSpokePtr;(1)
 
-    /* 确保任务在链表中 */
-    if (p_spoke != (OS_TICK_SPOKE *)0) {
-    /* 将剩余时间清零 */
+        /* 确保任务在链表中 */
+        if (p_spoke != (OS_TICK_SPOKE *)0)
+        {
+            /* 将剩余时间清零 */
             p_tcb->TickRemain = (OS_TICK)0u;
 
-    /* 要移除的刚好是第一个节点 */
-    if (p_spoke->FirstPtr == p_tcb) {(2)
-    /* 更新第一个节点，原来的第一个节点需要被移除 */
+            /* 要移除的刚好是第一个节点 */
+            if (p_spoke->FirstPtr == p_tcb) (2)
+            {
+                /* 更新第一个节点，原来的第一个节点需要被移除 */
                 p_tcb1            = (OS_TCB *)p_tcb->TickNextPtr;
                 p_spoke->FirstPtr = p_tcb1;
-    if (p_tcb1 != (OS_TCB *)0) {
+                if (p_tcb1 != (OS_TCB *)0)
+                {
                     p_tcb1->TickPrevPtr = (OS_TCB *)0;
                 }
             }
-    /* 要移除的不是第一个节点 */(3)
-    else {
-    /* 保存要移除的节点的前后节点的指针 */
+            /* 要移除的不是第一个节点 */(3)
+            else
+            {
+                /* 保存要移除的节点的前后节点的指针 */
                 p_tcb1              = p_tcb->TickPrevPtr;
                 p_tcb2              = p_tcb->TickNextPtr;
 
-    /* 节点移除，将节点前后的两个节点连接在一起 */
+                /* 节点移除，将节点前后的两个节点连接在一起 */
                 p_tcb1->TickNextPtr = p_tcb2;
-    if (p_tcb2 != (OS_TCB *)0) {
+                if (p_tcb2 != (OS_TCB *)0)
+                {
                     p_tcb2->TickPrevPtr = p_tcb1;
                 }
             }
 
-    /* 复位任务TCB中时基列表相关的字段成员 */(4)
+            /* 复位任务TCB中时基列表相关的字段成员 */(4)
             p_tcb->TickNextPtr  = (OS_TCB        *)0;
             p_tcb->TickPrevPtr  = (OS_TCB        *)0;
             p_tcb->TickSpokePtr = (OS_TICK_SPOKE *)0;
             p_tcb->TickCtrMatch = (OS_TICK        )0u;
 
-    /* 节点减1 */
+            /* 节点减1 */
             p_spoke->NbrEntries--;(5)
         }
     }
@@ -395,10 +411,10 @@ OS_TickListUpdate()在每个SysTick周期到来时在OSTimeTick()被调用，用
 
         CPU_SR_ALLOC();
 
-    /* 进入临界段 */
+        /* 进入临界段 */
         OS_CRITICAL_ENTER();
 
-    /* 时基计数器++ */
+        /* 时基计数器++ */
         OSTickCtr++;(1)
 
         spoke    = (OS_TICK_SPOKE_IX)(OSTickCtr % OSCfg_TickWheelSize);(2)
@@ -407,31 +423,38 @@ OS_TickListUpdate()在每个SysTick周期到来时在OSTimeTick()被调用，用
         p_tcb    = p_spoke->FirstPtr;
         done     = DEF_FALSE;
 
-    while (done == DEF_FALSE) {
-    if (p_tcb != (OS_TCB *)0) {(3)
+        while (done == DEF_FALSE)
+        {
+            if (p_tcb != (OS_TCB *)0) (3)
+            {
                 p_tcb_next = p_tcb->TickNextPtr;
 
                 p_tcb->TickRemain = p_tcb->TickCtrMatch - OSTickCtr;(4)
 
-    /* 节点延时时间到 */
-    if (OSTickCtr == p_tcb->TickCtrMatch) {(5)
-    /* 让任务就绪 */
+                /* 节点延时时间到 */
+                if (OSTickCtr == p_tcb->TickCtrMatch) (5)
+                {
+                    /* 让任务就绪 */
                     OS_TaskRdy(p_tcb);
-                } else {(6)
-    /* 如果第一个节点延时期未满，则退出while循环
-    因为链表是根据升序排列的，第一个节点延时期未满，那后面的肯定未满 */
+                }
+                else (6)
+                {
+                    /* 如果第一个节点延时期未满，则退出while循环
+                    因为链表是根据升序排列的，第一个节点延时期未满，那后面的肯定未满 */
                     done = DEF_TRUE;
                 }
 
-    /* 如果第一个节点延时期满，则继续遍历链表，看看还有没有延时期满的任务
-    如果有，则让它就绪 */
+                /* 如果第一个节点延时期满，则继续遍历链表，看看还有没有延时期满的任务
+                如果有，则让它就绪 */
                 p_tcb = p_tcb_next;(7)
-            } else {
+            }
+            else
+            {
                 done  = DEF_TRUE;(8)
             }
         }
 
-    /* 退出临界段 */
+        /* 退出临界段 */
         OS_CRITICAL_EXIT();
     }
 
@@ -471,10 +494,10 @@ OS_TickListUpdate()在每个SysTick周期到来时在OSTimeTick()被调用，用
 
     void  OS_TaskRdy (OS_TCB  *p_tcb)
     {
-    /* 从时基列表删除 */
+        /* 从时基列表删除 */
         OS_TickListRemove(p_tcb);
 
-    /* 插入就绪列表 */
+        /* 插入就绪列表 */
         OS_RdyListInsert(p_tcb);
     }
 
@@ -507,27 +530,27 @@ OS_TickListUpdate()在每个SysTick周期到来时在OSTimeTick()被调用，用
     {
         CPU_SR_ALLOC();
 
-    /* 进入临界区 */
+        /* 进入临界区 */
         OS_CRITICAL_ENTER();
     #if 0
-    /* 设置延时时间 */
+        /* 设置延时时间 */
         OSTCBCurPtr->TaskDelayTicks = dly;
 
-    /* 从就绪列表中移除 */
-    //OS_RdyListRemove(OSTCBCurPtr);
+        /* 从就绪列表中移除 */
+        //OS_RdyListRemove(OSTCBCurPtr);
         OS_PrioRemove(OSTCBCurPtr->Prio);
     #endif
 
-    /* 插入时基列表 */
+        /* 插入时基列表 */
         OS_TickListInsert(OSTCBCurPtr, dly);
 
-    /* 从就绪列表移除 */
+        /* 从就绪列表移除 */
         OS_RdyListRemove(OSTCBCurPtr);
 
-    /* 退出临界区 */
+        /* 退出临界区 */
         OS_CRITICAL_EXIT();
 
-    /* 任务调度 */
+        /* 任务调度 */
         OSSched();
     }
 
@@ -546,32 +569,35 @@ OS_TickListUpdate()在每个SysTick周期到来时在OSTimeTick()被调用，用
     void  OSTimeTick (void)
     {
     #if 0
-    unsigned int i;
+        unsigned int i;
         CPU_SR_ALLOC();
 
-    /* 进入临界区 */
+        /* 进入临界区 */
         OS_CRITICAL_ENTER();
 
-    for (i=0; i<OS_CFG_PRIO_MAX; i++) {
-    if (OSRdyList[i].HeadPtr->TaskDelayTicks > 0) {
+        for (i=0; i<OS_CFG_PRIO_MAX; i++)
+        {
+            if (OSRdyList[i].HeadPtr->TaskDelayTicks > 0)
+            {
                 OSRdyList[i].HeadPtr->TaskDelayTicks --;
-    if (OSRdyList[i].HeadPtr->TaskDelayTicks == 0) {
-    /* 为0则表示延时时间到，让任务就绪 */
-    //OS_RdyListInsert (OSRdyList[i].HeadPtr);
+                if (OSRdyList[i].HeadPtr->TaskDelayTicks == 0)
+                {
+                    /* 为0则表示延时时间到，让任务就绪 */
+                    //OS_RdyListInsert (OSRdyList[i].HeadPtr);
                     OS_PrioInsert(i);
                 }
             }
         }
 
-    /* 退出临界区 */
+        /* 退出临界区 */
         OS_CRITICAL_EXIT();
 
     #endif
 
-    /* 更新时基列表 */
+        /* 更新时基列表 */
         OS_TickListUpdate();
 
-    /* 任务调度 */
+        /* 任务调度 */
         OSSched();
     }
 

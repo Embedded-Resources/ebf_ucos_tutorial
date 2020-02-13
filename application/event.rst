@@ -179,11 +179,11 @@
                         OS_ERR       *p_err)  (4)	//返回错误类型
     {
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL(5)//如果启用了安全检测
-    if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
             return;                         //返回，停止执行
@@ -191,7 +191,7 @@
     #endif
 
     #ifdef OS_SAFETY_CRITICAL_IEC61508(6)//如果启用了安全关键
-    if (OSSafetyCriticalStartFlag == DEF_TRUE)   //如果OSSafetyCriticalStart()后创建
+        if (OSSafetyCriticalStartFlag == DEF_TRUE)   //如果OSSafetyCriticalStart()后创建
         {
             *p_err = OS_ERR_ILLEGAL_CREATE_RUN_TIME;  //错误类型为“非法创建内核对象”
             return;                                  //返回，停止执行
@@ -199,7 +199,7 @@
     #endif
 
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u(7)//如果启用了中断中非法调用检测
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0)   //如果该函数是在中断中被调用
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0)   //如果该函数是在中断中被调用
         {
             *p_err = OS_ERR_CREATE_ISR;             //错误类型为“在中断中创建对象”
             return;                                //返回，停止执行
@@ -207,7 +207,7 @@
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u(8)//如果启用了参数检测
-    if (p_grp == (OS_FLAG_GRP *)0)   //如果 p_grp 为空
+        if (p_grp == (OS_FLAG_GRP *)0)   //如果 p_grp 为空
         {
             *p_err = OS_ERR_OBJ_PTR_NULL; //错误类型为“创建对象为空”
             return;                      //返回，停止执行
@@ -317,58 +317,58 @@
         OS_TCB           *p_tcb;
         CPU_TS            ts;
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL(4)//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return ((OS_OBJ_QTY)0);         //返回0（有错误），停止执行
+            return ((OS_OBJ_QTY)0);         //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u(5)//如果启用了中断中非法调用检测
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0)   //如果该函数在中断中被调用
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0)   //如果该函数在中断中被调用
         {
             *p_err = OS_ERR_DEL_ISR;                //错误类型为“在中断中删除对象”
-    return ((OS_OBJ_QTY)0);                //返回0（有错误），停止执行
+            return ((OS_OBJ_QTY)0);                //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u(6)//如果启用了参数检测
-    if (p_grp == (OS_FLAG_GRP *)0)        //如果 p_grp 为空
+        if (p_grp == (OS_FLAG_GRP *)0)        //如果 p_grp 为空
         {
             *p_err  = OS_ERR_OBJ_PTR_NULL;     //错误类型为“对象为空”
-    return ((OS_OBJ_QTY)0);           //返回0（有错误），停止执行
+            return ((OS_OBJ_QTY)0);           //返回0（有错误），停止执行
         }
-    switch (opt)                (7)//根据选项分类处理
+        switch (opt)                (7)//根据选项分类处理
         {
-    case OS_OPT_DEL_NO_PEND:          //如果选项在预期内
-    case OS_OPT_DEL_ALWAYS:
-    break;                       //直接跳出
+        case OS_OPT_DEL_NO_PEND:          //如果选项在预期内
+        case OS_OPT_DEL_ALWAYS:
+        break;                       //直接跳出
 
-    default:                   (8)//如果选项超出预期
+        default:                   (8)//如果选项超出预期
             *p_err = OS_ERR_OPT_INVALID;  //错误类型为“选项非法”
-    return ((OS_OBJ_QTY)0);      //返回0（有错误），停止执行
+            return ((OS_OBJ_QTY)0);      //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_OBJ_TYPE_CHK_EN > 0u(9)//如果启用了对象类型检测
-    if (p_grp->Type != OS_OBJ_TYPE_FLAG)  //如果 p_grp 不是事件类型
+        if (p_grp->Type != OS_OBJ_TYPE_FLAG)  //如果 p_grp 不是事件类型
         {
             *p_err = OS_ERR_OBJ_TYPE;          //错误类型为“对象类型有误”
-    return ((OS_OBJ_QTY)0);           //返回0（有错误），停止执行
+            return ((OS_OBJ_QTY)0);           //返回0（有错误），停止执行
         }
     #endif
         OS_CRITICAL_ENTER();                         //进入临界段
         p_pend_list = &p_grp->PendList;       (10)//获取消息队列的等待列表
         cnt         = p_pend_list->NbrEntries;   (11)//获取等待该队列的任务数
         nbr_tasks   = cnt;                          //按照任务数目逐个处理
-    switch (opt)                    (12)//根据选项分类处理
+        switch (opt)                    (12)//根据选项分类处理
         {
-    case OS_OPT_DEL_NO_PEND:        (13)//如果只在没任务等待时进行删除
-    if (nbr_tasks == (OS_OBJ_QTY)0)     //如果没有任务在等待该事件
+            case OS_OPT_DEL_NO_PEND:        (13)//如果只在没任务等待时进行删除
+            if (nbr_tasks == (OS_OBJ_QTY)0)     //如果没有任务在等待该事件
             {
     #if OS_CFG_DBG_EN > 0u//如果启用了调试代码和变量
                 OS_FlagDbgListRemove(p_grp); (14)//将该事件从事件调试列表移除
@@ -379,16 +379,16 @@
                 OS_CRITICAL_EXIT();             //退出临界段
                 *p_err = OS_ERR_NONE;     (17)//错误类型为“无错误”
             }
-    else
+            else
             {
                 OS_CRITICAL_EXIT();             //退出临界段
                 *p_err = OS_ERR_TASK_WAITING;  (18)//错误类型为“有任务在等待事件”
             }
-    break;                              //跳出
+            break;                              //跳出
 
-    case OS_OPT_DEL_ALWAYS:           (19)//如果必须删除事件
+            case OS_OPT_DEL_ALWAYS:           (19)//如果必须删除事件
             ts = OS_TS_GET();             (20)//获取时间戳
-    while (cnt > 0u)              (21)//逐个移除该事件等待列表中的任务
+            while (cnt > 0u)              (21)//逐个移除该事件等待列表中的任务
             {
                 p_pend_data = p_pend_list->HeadPtr;
                 p_tcb       = p_pend_data->TCBPtr;
@@ -405,14 +405,14 @@
             OS_CRITICAL_EXIT_NO_SCHED();   		//退出临界段（无调度）
             OSSched();                      (25)//调度任务
             *p_err = OS_ERR_NONE;     (26)//错误类型为“无错误”
-    break;                              //跳出
+            break;                              //跳出
 
-    default:                       (27)//如果选项超出预期
+            default:                       (27)//如果选项超出预期
             OS_CRITICAL_EXIT();                 //退出临界段
             *p_err = OS_ERR_OPT_INVALID;         //错误类型为“选项非法”
-    break;                              //跳出
+            break;                              //跳出
         }
-    return (nbr_tasks);          (28)//返回删除事件前等待其的任务数
+        return (nbr_tasks);          (28)//返回删除事件前等待其的任务数
     }
     #endif
 
@@ -526,44 +526,44 @@ OSFlagPost()函数源码具体见 代码清单:事件-6_ 。
 
 
     #ifdef OS_SAFETY_CRITICAL//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return ((OS_FLAGS)0);           //返回0，停止执行
+            return ((OS_FLAGS)0);           //返回0，停止执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u//如果启用（默认启用）了参数检测
-    if (p_grp == (OS_FLAG_GRP *)0)       //如果参数 p_grp 为空
+        if (p_grp == (OS_FLAG_GRP *)0)       //如果参数 p_grp 为空
         {
             *p_err  = OS_ERR_OBJ_PTR_NULL;    //错误类型为“事件对象为空”
-    return ((OS_FLAGS)0);            //返回0，停止执行
+            return ((OS_FLAGS)0);            //返回0，停止执行
         }
-    switch (opt)                        //根据选项分类处理
+        switch (opt)                        //根据选项分类处理
         {
-    case OS_OPT_POST_FLAG_SET:       //如果选项在预期之内
-    case OS_OPT_POST_FLAG_CLR:
-    case OS_OPT_POST_FLAG_SET | OS_OPT_POST_NO_SCHED:
-    case OS_OPT_POST_FLAG_CLR | OS_OPT_POST_NO_SCHED:
-    break;                      //直接跳出
+        case OS_OPT_POST_FLAG_SET:       //如果选项在预期之内
+        case OS_OPT_POST_FLAG_CLR:
+        case OS_OPT_POST_FLAG_SET | OS_OPT_POST_NO_SCHED:
+        case OS_OPT_POST_FLAG_CLR | OS_OPT_POST_NO_SCHED:
+        break;                      //直接跳出
 
-    default:                         //如果选项超出预期
+        default:                         //如果选项超出预期
             *p_err = OS_ERR_OPT_INVALID; //错误类型为“选项非法”
-    return ((OS_FLAGS)0);       //返回0，停止执行
+            return ((OS_FLAGS)0);       //返回0，停止执行
         }
     #endif
 
     #if OS_CFG_OBJ_TYPE_CHK_EN > 0u//如果启用了对象类型检测
-    if (p_grp->Type != OS_OBJ_TYPE_FLAG)   //如果 p_grp 不是事件类型
+        if (p_grp->Type != OS_OBJ_TYPE_FLAG)   //如果 p_grp 不是事件类型
         {
             *p_err = OS_ERR_OBJ_TYPE;           //错误类型“对象类型有误”
-    return ((OS_FLAGS)0);              //返回0，停止执行
+            return ((OS_FLAGS)0);              //返回0，停止执行
         }
     #endif
 
         ts = OS_TS_GET();                             //获取时间戳
-    #if OS_CFG_ISR_POST_DEFERRED_EN > 0u(1)//如果启用了中断延迟发布
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0)      //如果该函数是在中断中被调用
+        #if OS_CFG_ISR_POST_DEFERRED_EN > 0u(1)//如果启用了中断延迟发布
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0)      //如果该函数是在中断中被调用
         {
             OS_IntQPost((OS_OBJ_TYPE)OS_OBJ_TYPE_FLAG,//将该事件发布到中断消息队列
                         (void      *)p_grp,
@@ -573,17 +573,17 @@ OSFlagPost()函数源码具体见 代码清单:事件-6_ 。
                         (OS_OPT     )opt,
                         (CPU_TS     )ts,
                         (OS_ERR    *)p_err);
-    return ((OS_FLAGS)0);                     //返回0，停止执行
+            return ((OS_FLAGS)0);                     //返回0，停止执行
         }
     #endif
-    /* 如果没有启用中断延迟发布 */
+        /* 如果没有启用中断延迟发布 */
         flags_cur = OS_FlagPost(p_grp,               //将事件直接发布
                                 flags,
                                 opt,
                                 ts,
                                 p_err);	(2)
 
-    return (flags_cur);                         //返回当前标志位的值
+        return (flags_cur);                         //返回当前标志位的值
     }
 
 
@@ -817,54 +817,54 @@ OSFlagPost()的运用很简单，举个例子，比如我们要记录一个事�
         (void)p_arg;
 
 
-    while (DEF_TRUE) {                            //任务体
-    //如果KEY1被按下
-    if ( Key_ReadStatus ( macKEY1_GPIO_PORT, macKEY1_GPIO_PIN, 1 ) == 1 )
+            while (DEF_TRUE) {                            //任务体
+            //如果KEY1被按下
+            if ( Key_ReadStatus ( macKEY1_GPIO_PORT, macKEY1_GPIO_PIN, 1 ) == 1 )
             {
                 macLED1_ON ();                                    //点亮LED1
 
                 OSFlagPost ((OS_FLAG_GRP  *)&flag_grp,
-    //将标志组的BIT0置1
+                            //将标志组的BIT0置1
                             (OS_FLAGS      )KEY1_EVENT,
                             (OS_OPT        )OS_OPT_POST_FLAG_SET,
                             (OS_ERR       *)&err);
 
             }
-    else//如果KEY1被释放
+            else//如果KEY1被释放
             {
                 macLED1_OFF ();     //熄灭LED1
 
                 OSFlagPost ((OS_FLAG_GRP  *)&flag_grp,
-    //将标志组的BIT0清零
+                            //将标志组的BIT0清零
                             (OS_FLAGS      )KEY1_EVENT,
                             (OS_OPT        )OS_OPT_POST_FLAG_CLR,
                             (OS_ERR       *)&err);
 
             }
-        //如果KEY2被按下
-    if ( Key_ReadStatus ( macKEY2_GPIO_PORT, macKEY2_GPIO_PIN, 1 ) == 1 )
+            //如果KEY2被按下
+            if ( Key_ReadStatus ( macKEY2_GPIO_PORT, macKEY2_GPIO_PIN, 1 ) == 1 )
             {
                 macLED2_ON ();                              //点亮LED2
 
                 OSFlagPost ((OS_FLAG_GRP  *)&flag_grp,
-    //将标志组的BIT1置1
+                            //将标志组的BIT1置1
                             (OS_FLAGS      )KEY2_EVENT,
                             (OS_OPT        )OS_OPT_POST_FLAG_SET,
                             (OS_ERR       *)&err);
 
             }
-    else//如果KEY2被释放
+            else//如果KEY2被释放
             {
             macLED2_OFF ();    //熄灭LED2
 
                 OSFlagPost ((OS_FLAG_GRP  *)&flag_grp,
-    //将标志组的BIT1清零
+                            //将标志组的BIT1清零
                             (OS_FLAGS      )KEY2_EVENT,
                             (OS_OPT        )OS_OPT_POST_FLAG_CLR,
                             (OS_ERR       *)&err);
 
             }
-        //每20ms扫描一次
+            //每20ms扫描一次
             OSTimeDlyHMSM ( 0, 0, 0, 20, OS_OPT_TIME_DLY, & err );
 
         }
@@ -902,119 +902,119 @@ OSFlagPend()函数源码具体见 代码清单:事件-9_ 。
         OS_OPT        mode;
         OS_PEND_DATA  pend_data;
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return ((OS_FLAGS)0);           //返回0（有错误），停止执行
+            return ((OS_FLAGS)0);           //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u//如果启用了中断中非法调用检测
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0)    //如果该函数在中断中被调用
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0)    //如果该函数在中断中被调用
         {
             *p_err = OS_ERR_PEND_ISR;                //错误类型为“在中断中中止等待”
-    return ((OS_FLAGS)0);                   //返回0（有错误），停止执行
+            return ((OS_FLAGS)0);                   //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u//如果启用了参数检测
-    if (p_grp == (OS_FLAG_GRP *)0)       //如果 p_grp 为空
+        if (p_grp == (OS_FLAG_GRP *)0)       //如果 p_grp 为空
         {
             *p_err = OS_ERR_OBJ_PTR_NULL;     //错误类型为“对象为空”
-    return ((OS_FLAGS)0);            //返回0（有错误），停止执行
+            return ((OS_FLAGS)0);            //返回0（有错误），停止执行
         }
-    switch (opt)                 (7)//根据选项分类处理
+        switch (opt)                 (7)//根据选项分类处理
         {
-    case OS_OPT_PEND_FLAG_CLR_ALL:   //如果选项在预期内
-    case OS_OPT_PEND_FLAG_CLR_ANY:
-    case OS_OPT_PEND_FLAG_SET_ALL:
-    case OS_OPT_PEND_FLAG_SET_ANY:
-    case OS_OPT_PEND_FLAG_CLR_ALL | OS_OPT_PEND_FLAG_CONSUME:
-    case OS_OPT_PEND_FLAG_CLR_ANY | OS_OPT_PEND_FLAG_CONSUME:
-    case OS_OPT_PEND_FLAG_SET_ALL | OS_OPT_PEND_FLAG_CONSUME:
-    case OS_OPT_PEND_FLAG_SET_ANY | OS_OPT_PEND_FLAG_CONSUME:
-    case OS_OPT_PEND_FLAG_CLR_ALL | OS_OPT_PEND_NON_BLOCKING:
-    case OS_OPT_PEND_FLAG_CLR_ANY | OS_OPT_PEND_NON_BLOCKING:
-    case OS_OPT_PEND_FLAG_SET_ALL | OS_OPT_PEND_NON_BLOCKING:
-    case OS_OPT_PEND_FLAG_SET_ANY | OS_OPT_PEND_NON_BLOCKING:
-    case OS_OPT_PEND_FLAG_CLR_ALL | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_NON_BLOCKING:
-    case OS_OPT_PEND_FLAG_CLR_ANY | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_NON_BLOCKING:
-    case OS_OPT_PEND_FLAG_SET_ALL | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_NON_BLOCKING:
-    ase OS_OPT_PEND_FLAG_SET_ANY | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_NON_BLOCKING:
-    break;                     //直接跳出
+        case OS_OPT_PEND_FLAG_CLR_ALL:   //如果选项在预期内
+        case OS_OPT_PEND_FLAG_CLR_ANY:
+        case OS_OPT_PEND_FLAG_SET_ALL:
+        case OS_OPT_PEND_FLAG_SET_ANY:
+        case OS_OPT_PEND_FLAG_CLR_ALL | OS_OPT_PEND_FLAG_CONSUME:
+        case OS_OPT_PEND_FLAG_CLR_ANY | OS_OPT_PEND_FLAG_CONSUME:
+        case OS_OPT_PEND_FLAG_SET_ALL | OS_OPT_PEND_FLAG_CONSUME:
+        case OS_OPT_PEND_FLAG_SET_ANY | OS_OPT_PEND_FLAG_CONSUME:
+        case OS_OPT_PEND_FLAG_CLR_ALL | OS_OPT_PEND_NON_BLOCKING:
+        case OS_OPT_PEND_FLAG_CLR_ANY | OS_OPT_PEND_NON_BLOCKING:
+        case OS_OPT_PEND_FLAG_SET_ALL | OS_OPT_PEND_NON_BLOCKING:
+        case OS_OPT_PEND_FLAG_SET_ANY | OS_OPT_PEND_NON_BLOCKING:
+        case OS_OPT_PEND_FLAG_CLR_ALL | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_NON_BLOCKING:
+        case OS_OPT_PEND_FLAG_CLR_ANY | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_NON_BLOCKING:
+        case OS_OPT_PEND_FLAG_SET_ALL | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_NON_BLOCKING:
+        ase OS_OPT_PEND_FLAG_SET_ANY | OS_OPT_PEND_FLAG_CONSUME | OS_OPT_PEND_NON_BLOCKING:
+        break;                     //直接跳出
 
-    default:                    (8)//如果选项超出预期
+        default:                    (8)//如果选项超出预期
             *p_err = OS_ERR_OPT_INVALID;//错误类型为“选项非法”
-    return ((OS_OBJ_QTY)0);    //返回0（有错误），停止执行
+            return ((OS_OBJ_QTY)0);    //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_OBJ_TYPE_CHK_EN > 0u//如果启用了对象类型检测
-    if (p_grp->Type != OS_OBJ_TYPE_FLAG)   //如果 p_grp 不是事件类型
+        if (p_grp->Type != OS_OBJ_TYPE_FLAG)   //如果 p_grp 不是事件类型
         {
             *p_err = OS_ERR_OBJ_TYPE;           //错误类型为“对象类型有误”
-    return ((OS_FLAGS)0);              //返回0（有错误），停止执行
+            return ((OS_FLAGS)0);              //返回0（有错误），停止执行
         }
     #endif
 
-    if ((opt & OS_OPT_PEND_FLAG_CONSUME) != (OS_OPT)0)(9)//选择了标志位匹配后自动取反
+        if ((opt & OS_OPT_PEND_FLAG_CONSUME) != (OS_OPT)0)(9)//选择了标志位匹配后自动取反
         {
             consume = DEF_TRUE;
         }
-    else(10)//未选择标志位匹配后自动取反
+        else(10)//未选择标志位匹配后自动取反
         {
             consume = DEF_FALSE;
         }
 
-    if (p_ts != (CPU_TS *)0)        //如果 p_ts 非空
+        if (p_ts != (CPU_TS *)0)        //如果 p_ts 非空
         {
             *p_ts = (CPU_TS)0;           //初始化（清零）p_ts，待用于返回时间戳
         }
 
         mode = opt & OS_OPT_PEND_FLAG_MASK; (11)//从选项中提取对标志位的要求
         CPU_CRITICAL_ENTER();                 //关中断
-    switch (mode)                (12)//根据事件触发模式分类处理
+        switch (mode)                (12)//根据事件触发模式分类处理
         {
-    case OS_OPT_PEND_FLAG_SET_ALL:   (13)//如果要求所有标志位均要置1
+            case OS_OPT_PEND_FLAG_SET_ALL:   (13)//如果要求所有标志位均要置1
             flags_rdy = (OS_FLAGS)(p_grp->Flags & flags); //提取想要的标志位的值
-    if (flags_rdy == flags)        (14)//如果该值与期望值匹配
+            if (flags_rdy == flags)        (14)//如果该值与期望值匹配
             {
-    if (consume == DEF_TRUE)(15)//如果要求将标志位匹配后取反
+                if (consume == DEF_TRUE)(15)//如果要求将标志位匹配后取反
                 {
                     p_grp->Flags &= ~flags_rdy;           //清零事件的相关标志位
                 }
-    OSTCBCurPtr->FlagsRdy = flags_rdy; (16)//保存让任务脱离等待的标志值
-    if (p_ts != (CPU_TS *)0)            //如果 p_ts 非空
+                OSTCBCurPtr->FlagsRdy = flags_rdy; (16)//保存让任务脱离等待的标志值
+                if (p_ts != (CPU_TS *)0)            //如果 p_ts 非空
                 {
                     *p_ts  = p_grp->TS;          //获取任务等到事件时的时间戳
                 }
                 CPU_CRITICAL_EXIT();            //开中断
                 *p_err = OS_ERR_NONE;            //错误类型为“无错误”
-    return (flags_rdy);     (17)//返回让任务脱离等待的标志值
+                return (flags_rdy);     (17)//返回让任务脱离等待的标志值
             }
-    else(18)
-    //如果想要标志位的值与期望值不匹配
+            else(18)
+            //如果想要标志位的值与期望值不匹配
             {
-    if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0) //如果选择了不阻塞任务
+                if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0) //如果选择了不阻塞任务
                 {
                     CPU_CRITICAL_EXIT();                  //关中断
                     *p_err = OS_ERR_PEND_WOULD_BLOCK;     //错误类型为“渴求阻塞”
-    return ((OS_FLAGS)0);      (19)//返回0（有错误），停止执行
+                    return ((OS_FLAGS)0);      (19)//返回0（有错误），停止执行
                 }
-    else(20)//如果选择了阻塞任务
+                else(20)//如果选择了阻塞任务
                 {
-    if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0)   //如果调度器被锁
+                    if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0)   //如果调度器被锁
                     {
                         CPU_CRITICAL_EXIT();              //关中断
                         *p_err = OS_ERR_SCHED_LOCKED;    //错误类型为“调度器被锁”
-    return ((OS_FLAGS)0);   (21)//返回0（有错误），停止执行
+                        return ((OS_FLAGS)0);   (21)//返回0（有错误），停止执行
                     }
                 }
-    /* 如果调度器未被锁 */
+                /* 如果调度器未被锁 */
                 OS_CRITICAL_ENTER_CPU_EXIT();             //进入临界段，重开中断
                 OS_FlagBlock(&pend_data,             //阻塞当前运行任务，等待事件
                             p_grp,
@@ -1025,41 +1025,41 @@ OSFlagPend()函数源码具体见 代码清单:事件-9_ 。
             }
     break;                                        //跳出
 
-    case OS_OPT_PEND_FLAG_SET_ANY:      (23)//如果要求有标志位被置1即可
+            case OS_OPT_PEND_FLAG_SET_ANY:      (23)//如果要求有标志位被置1即可
             flags_rdy = (OS_FLAGS)(p_grp->Flags & flags); //提取想要的标志位的值
-    if (flags_rdy != (OS_FLAGS)0)     (24)//如果有位被置1
+            if (flags_rdy != (OS_FLAGS)0)     (24)//如果有位被置1
             {
-    if (consume == DEF_TRUE)           //如果要求将标志位匹配后取反
+                if (consume == DEF_TRUE)           //如果要求将标志位匹配后取反
                 {
                     p_grp->Flags &= ~flags_rdy;    //清零事件的相关标志位
                 }
                 OSTCBCurPtr->FlagsRdy = flags_rdy;  //保存让任务脱离等待的标志值
-    if (p_ts != (CPU_TS *)0)                  //如果 p_ts 非空
+                if (p_ts != (CPU_TS *)0)                  //如果 p_ts 非空
                 {
-    *p_ts  = p_grp->TS;          //获取任务等到事件时的时间戳
+                    *p_ts  = p_grp->TS;          //获取任务等到事件时的时间戳
                 }
                 CPU_CRITICAL_EXIT();                      //开中断
                 *p_err = OS_ERR_NONE;                      //错误类型为“无错误”
-    return (flags_rdy);      (25)//返回让任务脱离等待的标志值
+                return (flags_rdy);      (25)//返回让任务脱离等待的标志值
             }
-    else//如果没有位被置1
+            else//如果没有位被置1
             {
-    if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0)   //如果没设置阻塞任务
+                if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0)   //如果没设置阻塞任务
                 {
                     CPU_CRITICAL_EXIT();                  //关中断
                     *p_err = OS_ERR_PEND_WOULD_BLOCK;     //错误类型为“渴求阻塞”
-    return ((OS_FLAGS)0);     (26)//返回0（有错误），停止执行
+                    return ((OS_FLAGS)0);     (26)//返回0（有错误），停止执行
                 }
-    else//如果设置了阻塞任务
+                else//如果设置了阻塞任务
                 {
-    if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0)   //如果调度器被锁
+                    if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0)   //如果调度器被锁
                     {
                         CPU_CRITICAL_EXIT();              //关中断
                         *p_err = OS_ERR_SCHED_LOCKED;  //错误类型为“调度器被锁”
-    return ((OS_FLAGS)0);(27)//返回0（有错误），停止执行
+                        return ((OS_FLAGS)0);(27)//返回0（有错误），停止执行
                     }
                 }
-    /* 如果调度器没被锁 */
+                /* 如果调度器没被锁 */
                 OS_CRITICAL_ENTER_CPU_EXIT();      //进入临界段，重开中断
                 OS_FlagBlock(&pend_data,         //阻塞当前运行任务，等待事件
                             p_grp,
@@ -1068,46 +1068,46 @@ OSFlagPend()函数源码具体见 代码清单:事件-9_ 。
                             timeout);		(28)
                 OS_CRITICAL_EXIT_NO_SCHED();       //退出中断（无调度）
             }
-    break;                                        //跳出
+            break;                                        //跳出
 
     #if OS_CFG_FLAG_MODE_CLR_EN > 0u          (29)
-    //如果启用了标志位清零触发模式
-    case OS_OPT_PEND_FLAG_CLR_ALL:               //如果要求所有标志位均要清零
+            //如果启用了标志位清零触发模式
+            case OS_OPT_PEND_FLAG_CLR_ALL:               //如果要求所有标志位均要清零
             flags_rdy = (OS_FLAGS)(~p_grp->Flags & flags);//提取想要的标志位的值
-    if (flags_rdy == flags)            (30)//如果该值与期望值匹配
+            if (flags_rdy == flags)            (30)//如果该值与期望值匹配
             {
-    if(consume == DEF_TRUE)          //如果要求将标志位匹配后取反
+                if(consume == DEF_TRUE)          //如果要求将标志位匹配后取反
                 {
                     p_grp->Flags |= flags_rdy;  (31)//置1事件的相关标志位
                 }
                 OSTCBCurPtr->FlagsRdy = flags_rdy;  //保存让任务脱离等待的标志值
-    if (p_ts != (CPU_TS *)0)                  //如果 p_ts 非空
+                if (p_ts != (CPU_TS *)0)                  //如果 p_ts 非空
                 {
-    *p_ts  = p_grp->TS;           //获取任务等到事件时的时间戳
+                    *p_ts  = p_grp->TS;           //获取任务等到事件时的时间戳
                 }
                 CPU_CRITICAL_EXIT();               //开中断
                 *p_err = OS_ERR_NONE;              //错误类型为“无错误”
-    return (flags_rdy);                //返回0（有错误），停止执行
+                return (flags_rdy);                //返回0（有错误），停止执行
             }
-    else
-    //如果想要标志位的值与期望值不匹配
+            else
+            //如果想要标志位的值与期望值不匹配
             {
-    if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0) //如果选择了不阻塞任务
+                if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0) //如果选择了不阻塞任务
                 {
                     CPU_CRITICAL_EXIT();                  //关中断
                     *p_err = OS_ERR_PEND_WOULD_BLOCK;    //错误类型为“渴求阻塞”
-    return ((OS_FLAGS)0);   (32)//返回0（有错误），停止执行
+                    return ((OS_FLAGS)0);   (32)//返回0（有错误），停止执行
                 }
-    else//如果选择了阻塞任务
+                else//如果选择了阻塞任务
                 {
-    if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0)   //如果调度器被锁
+                    if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0)   //如果调度器被锁
                     {
                         CPU_CRITICAL_EXIT();           //关中断
                         *p_err = OS_ERR_SCHED_LOCKED;  //错误类型为“调度器被锁”
-    return ((OS_FLAGS)0); (33)//返回0（有错误），停止执行
+                        return ((OS_FLAGS)0); (33)//返回0（有错误），停止执行
                     }
                 }
-    /* 如果调度器未被锁 */
+                /* 如果调度器未被锁 */
                 OS_CRITICAL_ENTER_CPU_EXIT();        //进入临界段，重开中断
                 OS_FlagBlock(&pend_data,             //阻塞当前运行任务，等待事件
                             p_grp,
@@ -1116,43 +1116,43 @@ OSFlagPend()函数源码具体见 代码清单:事件-9_ 。
                             timeout);		(34)
                 OS_CRITICAL_EXIT_NO_SCHED();        //退出临界段（无调度）
             }
-    break;                                 //跳出
+            break;                                 //跳出
 
-    case OS_OPT_PEND_FLAG_CLR_ANY:     (35)//如果要求有标志位被清零即可
+            case OS_OPT_PEND_FLAG_CLR_ANY:     (35)//如果要求有标志位被清零即可
             flags_rdy = (OS_FLAGS)(~p_grp->Flags & flags);//提取想要的标志位的值
-    if (flags_rdy != (OS_FLAGS)0)                //如果有位被清零
+            if (flags_rdy != (OS_FLAGS)0)                //如果有位被清零
             {
-    if (consume == DEF_TRUE)           //如果要求将标志位匹配后取反
+                if (consume == DEF_TRUE)           //如果要求将标志位匹配后取反
                 {
                     p_grp->Flags |= flags_rdy; (36)//置1事件的相关标志位
                 }
                 OSTCBCurPtr->FlagsRdy = flags_rdy;   //保存让任务脱离等待的标志值
-    if (p_ts != (CPU_TS *)0)                 //如果 p_ts 非空
+                if (p_ts != (CPU_TS *)0)                 //如果 p_ts 非空
                 {
                     *p_ts  = p_grp->TS;             //获取任务等到事件时的时间戳
                 }
                 CPU_CRITICAL_EXIT();                     //开中断
                 *p_err = OS_ERR_NONE;                     //错误类型为“无错误”
-    return (flags_rdy);        (37)//返回0（有错误），停止执行
+                return (flags_rdy);        (37)//返回0（有错误），停止执行
             }
-    else//如果没有位被清零
+            else//如果没有位被清零
             {
-    if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0)   //如果没设置阻塞任务
+                if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0)   //如果没设置阻塞任务
                 {
                     CPU_CRITICAL_EXIT();                 //开中断
                     *p_err = OS_ERR_PEND_WOULD_BLOCK;     //错误类型为“渴求阻塞”
-    return ((OS_FLAGS)0);      (38)//返回0（有错误），停止执行
+                    return ((OS_FLAGS)0);      (38)//返回0（有错误），停止执行
                 }
-    else//如果设置了阻塞任务
+                else//如果设置了阻塞任务
                 {
-    if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0)   //如果调度器被锁
+                    if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0)   //如果调度器被锁
                     {
                         CPU_CRITICAL_EXIT();             //开中断
                         *p_err = OS_ERR_SCHED_LOCKED;   //错误类型为“调度器被锁”
-    return ((OS_FLAGS)0);   (39)//返回0（有错误），停止执行
+                        return ((OS_FLAGS)0);   (39)//返回0（有错误），停止执行
                     }
                 }
-    /* 如果调度器没被锁 */
+                /* 如果调度器没被锁 */
                 OS_CRITICAL_ENTER_CPU_EXIT();            //进入临界段，重开中断
                 OS_FlagBlock(&pend_data,           //阻塞当前运行任务，等待事件
                             p_grp,
@@ -1161,87 +1161,87 @@ OSFlagPend()函数源码具体见 代码清单:事件-9_ 。
                             timeout);		(40)
                 OS_CRITICAL_EXIT_NO_SCHED();             //退出中断（无调度）
             }
-    break;                                       //跳出
+            break;                                       //跳出
     #endif
 
-    default:                                 (41)//如果要求超出预期
+            default:                                 (41)//如果要求超出预期
             CPU_CRITICAL_EXIT();
             *p_err = OS_ERR_OPT_INVALID;                  //错误类型为“选项非法”
-    return ((OS_FLAGS)0);                   //返回0（有错误），停止执行
+            return ((OS_FLAGS)0);                   //返回0（有错误），停止执行
         }
 
         OSSched();                             (42)//任务调度
-    /* 任务等到了事件后得以继续运行 */
+        /* 任务等到了事件后得以继续运行 */
         CPU_CRITICAL_ENTER();                                 //关中断
-    switch (OSTCBCurPtr->PendStatus)       (43)
-    //根据运行任务的等待状态分类处理
+        switch (OSTCBCurPtr->PendStatus)       (43)
+        //根据运行任务的等待状态分类处理
         {
-    case OS_STATUS_PEND_OK:              (44)//如果等到了事件
-    if (p_ts != (CPU_TS *)0)                     //如果 p_ts 非空
+            case OS_STATUS_PEND_OK:              (44)//如果等到了事件
+            if (p_ts != (CPU_TS *)0)                     //如果 p_ts 非空
             {
                 *p_ts  = OSTCBCurPtr->TS;             //返回等到事件时的时间戳
             }
             *p_err = OS_ERR_NONE;                         //错误类型为“无错误”
-    break;                                       //跳出
+            break;                                       //跳出
 
-    case OS_STATUS_PEND_ABORT:           (45)//如果等待被中止
-    if (p_ts != (CPU_TS *)0)                     //如果 p_ts 非空
+            case OS_STATUS_PEND_ABORT:           (45)//如果等待被中止
+            if (p_ts != (CPU_TS *)0)                     //如果 p_ts 非空
             {
                 *p_ts  = OSTCBCurPtr->TS;             //返回等待被中止时的时间戳
             }
             CPU_CRITICAL_EXIT();                         //开中断
             *p_err = OS_ERR_PEND_ABORT;                 //错误类型为“等待被中止”
-    break;                                       //跳出
+            break;                                       //跳出
 
-    case OS_STATUS_PEND_TIMEOUT:          (46)//如果等待超时
-    if (p_ts != (CPU_TS *)0)                     //如果 p_ts 非空
+            case OS_STATUS_PEND_TIMEOUT:          (46)//如果等待超时
+            if (p_ts != (CPU_TS *)0)                     //如果 p_ts 非空
             {
                 *p_ts  = (CPU_TS  )0;                     //清零 p_ts
             }
             CPU_CRITICAL_EXIT();                         //开中断
             *p_err = OS_ERR_TIMEOUT;                      //错误类型为“超时”
-    break;                                       //跳出
+            break;                                       //跳出
 
-    case OS_STATUS_PEND_DEL:           (47)//如果等待对象被删除
-    if (p_ts != (CPU_TS *)0)                     //如果 p_ts 非空
+            case OS_STATUS_PEND_DEL:           (47)//如果等待对象被删除
+            if (p_ts != (CPU_TS *)0)                     //如果 p_ts 非空
             {
                 *p_ts  = OSTCBCurPtr->TS;              //返回对象被删时的时间戳
             }
             CPU_CRITICAL_EXIT();                         //开中断
             *p_err = OS_ERR_OBJ_DEL;                      //错误类型为“对象被删”
-    break;                                       //跳出
+            break;                                       //跳出
 
-    default:                             (48)//如果等待状态超出预期
+            default:                             (48)//如果等待状态超出预期
             CPU_CRITICAL_EXIT();                         //开中断
             *p_err = OS_ERR_STATUS_INVALID;               //错误类型为“状态非法”
-    break;                                       //跳出
+            break;                                       //跳出
         }
-    if (*p_err != OS_ERR_NONE)           (49)//如果有错误存在
+        if (*p_err != OS_ERR_NONE)           (49)//如果有错误存在
         {
-    return ((OS_FLAGS)0);               //返回0（有错误），停止执行
+            return ((OS_FLAGS)0);               //返回0（有错误），停止执行
         }
-    /* 如果没有错误存在 */
+        /* 如果没有错误存在 */
         flags_rdy = OSTCBCurPtr->FlagsRdy;    (50)//读取让任务脱离等待的标志值
-    if (consume == DEF_TRUE)
-    //如果需要取反触发事件的标志位
+        if (consume == DEF_TRUE)
+        //如果需要取反触发事件的标志位
         {
-    switch (mode)                    (51)//根据事件触发模式分类处理
+        switch (mode)                    (51)//根据事件触发模式分类处理
             {
-    case OS_OPT_PEND_FLAG_SET_ALL:       //如果是通过置1来标志事件的发生
-    case OS_OPT_PEND_FLAG_SET_ANY:
+                case OS_OPT_PEND_FLAG_SET_ALL:       //如果是通过置1来标志事件的发生
+                case OS_OPT_PEND_FLAG_SET_ANY:
                 p_grp->Flags &= ~flags_rdy;  (52)//清零事件里触发事件的标志位
-    break;                                   //跳出
+                break;                                   //跳出
 
     #if OS_CFG_FLAG_MODE_CLR_EN > 0u//如果启用了标志位清零触发模式
-    case OS_OPT_PEND_FLAG_CLR_ALL:       //如果是通过清零来标志事件的发生
-    case OS_OPT_PEND_FLAG_CLR_ANY:
+                case OS_OPT_PEND_FLAG_CLR_ALL:       //如果是通过清零来标志事件的发生
+                case OS_OPT_PEND_FLAG_CLR_ANY:
                 p_grp->Flags |=  flags_rdy;  (53)//置1事件里触发事件的标志位
-    break;                                   //跳出
+                break;                                   //跳出
     #endif
-    default:                                      //如果触发模式超出预期
+                default:                                      //如果触发模式超出预期
                 CPU_CRITICAL_EXIT();                     //开中断
                 *p_err = OS_ERR_OPT_INVALID;              //错误类型为“选项非法”
-    return ((OS_FLAGS)0);         (54)//返回0（有错误），停止执行
+                return ((OS_FLAGS)0);         (54)//返回0（有错误），停止执行
             }
         }
         CPU_CRITICAL_EXIT();                      //开中断
@@ -1390,10 +1390,10 @@ OSFlagPend()函数源码具体见 代码清单:事件-9_ 。
 
         (void)p_arg;
 
-    //任务体
-    while (DEF_TRUE)
+        //任务体
+        while (DEF_TRUE)
         {
-    //等待标志组的的BIT0和BIT1均被置1
+            //等待标志组的的BIT0和BIT1均被置1
             OSFlagPend ((OS_FLAG_GRP *)&flag_grp,
                         (OS_FLAGS     )( KEY1_EVENT | KEY2_EVENT ),
                         (OS_TICK      )0,
@@ -1404,7 +1404,7 @@ OSFlagPend()函数源码具体见 代码清单:事件-9_ 。
 
             LED3_ON ();        //点亮LED3
 
-    //等待标志组的的BIT0和BIT1有一个被清零
+            //等待标志组的的BIT0和BIT1有一个被清零
             OSFlagPend ((OS_FLAG_GRP *)&flag_grp,
                         (OS_FLAGS     )( KEY1_EVENT | KEY2_EVENT ),
                         (OS_TICK      )0,

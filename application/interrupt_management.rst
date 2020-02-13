@@ -331,8 +331,8 @@ OSTaskSuspend()和 OSTaskResume()等这些函数，如果没有使用中断延�
     {
         OS_OBJ_TYPE          Type;			(1)
         OS_INT_Q            *NextPtr;		(2)
-    void                *ObjPtr;		(3)
-    void                *MsgPtr;		(4)
+        void                *ObjPtr;		(3)
+        void                *MsgPtr;		(4)
         OS_MSG_SIZE          MsgSize;		(5)
         OS_FLAGS             Flags;		(6)
         OS_OPT               Opt;			(7)
@@ -378,40 +378,40 @@ OSTaskSuspend()和 OSTaskResume()等这些函数，如果没有使用中断延�
 
 
     #ifdef OS_SAFETY_CRITICAL
-    if (p_err == (OS_ERR *)0)
+        if (p_err == (OS_ERR *)0)
         {
             OS_SAFETY_CRITICAL_EXCEPTION();
-    return;
+            return;
         }
     #endif
 
-    /* 清空延迟提交过程中溢出的计数值 */
+        /* 清空延迟提交过程中溢出的计数值 */
         OSIntQOvfCtr = (OS_QTY)0u;
 
-    //延迟发布信息队列的基地址必须不为空指针
-    if (OSCfg_IntQBasePtr == (OS_INT_Q *)0)		(1)
+        //延迟发布信息队列的基地址必须不为空指针
+        if (OSCfg_IntQBasePtr == (OS_INT_Q *)0)		(1)
         {
             *p_err = OS_ERR_INT_Q;
-    return;
+            return;
         }
 
-    //延迟发布队列成员必须不小于 2 个
-    if (OSCfg_IntQSize < (OS_OBJ_QTY)2u)		(2)
+        //延迟发布队列成员必须不小于 2 个
+        if (OSCfg_IntQSize < (OS_OBJ_QTY)2u)		(2)
         {
             *p_err = OS_ERR_INT_Q_SIZE;
-    return;
+            return;
         }
 
-    //初始化延迟发布任务每次运行的最长时间记录变量
+        //初始化延迟发布任务每次运行的最长时间记录变量
         OSIntQTaskTimeMax = (CPU_TS)0;
 
-    //将定义的数据连接成一个单向链表
+        //将定义的数据连接成一个单向链表
         p_int_q           = OSCfg_IntQBasePtr;		(3)
         p_int_q_next      = p_int_q;
         p_int_q_next++;
-    for (i = 0u; i < OSCfg_IntQSize; i++)
+        for (i = 0u; i < OSCfg_IntQSize; i++)
         {
-    //每个信息块都进行初始化
+            //每个信息块都进行初始化
             p_int_q->Type    =  OS_OBJ_TYPE_NONE;
             p_int_q->ObjPtr  = (void      *)0;
             p_int_q->MsgPtr  = (void      *)0;
@@ -422,33 +422,33 @@ OSTaskSuspend()和 OSTaskResume()等这些函数，如果没有使用中断延�
             p_int_q++;
             p_int_q_next++;
         }
-    //将单向链表的首尾相连组成一个“圈
+        //将单向链表的首尾相连组成一个“圈
         p_int_q--;
         p_int_q_next        = OSCfg_IntQBasePtr;
         p_int_q->NextPtr    = p_int_q_next;			(4)
 
-    //队列出口和入口都指向第一个
+        //队列出口和入口都指向第一个
         OSIntQInPtr         = p_int_q_next;
         OSIntQOutPtr        = p_int_q_next;			(5)
 
-    //清空延迟发布队列中需要进行发布的内核对象个数
+        //清空延迟发布队列中需要进行发布的内核对象个数
         OSIntQNbrEntries    = (OS_OBJ_QTY)0u;
-    //清空延迟发布队列中历史发布的内核对象最大个数
+        //清空延迟发布队列中历史发布的内核对象最大个数
         OSIntQNbrEntriesMax = (OS_OBJ_QTY)0u;
 
 
-    if (OSCfg_IntQTaskStkBasePtr == (CPU_STK *)0)
+        if (OSCfg_IntQTaskStkBasePtr == (CPU_STK *)0)
         {
             *p_err = OS_ERR_INT_Q_STK_INVALID;
-    return;
+            return;
         }
 
-    if (OSCfg_IntQTaskStkSize < OSCfg_StkSizeMin)
+        if (OSCfg_IntQTaskStkSize < OSCfg_StkSizeMin)
         {
             *p_err = OS_ERR_INT_Q_STK_SIZE_INVALID;
-    return;
+            return;
         }
-    //创建延迟发布任务
+        //创建延迟发布任务
         OSTaskCreate((OS_TCB     *)&OSIntQTaskTCB,
                     (CPU_CHAR   *)((void *)"μC/OS-III ISR Queue Task"),
                     (OS_TASK_PTR )OS_IntQTask,
@@ -460,7 +460,7 @@ OSTaskSuspend()和 OSTaskResume()等这些函数，如果没有使用中断延�
                     (OS_MSG_QTY  )0u,
                     (OS_TICK     )0u,
                     (void       *)0,
-    (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+                    (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                     (OS_ERR     *)p_err);			(6)
     }
 
@@ -518,50 +518,50 @@ OS_IntQPost()源码具体见 代码清单:中断管理-5_ 。
     :linenos:
 
     void  OS_IntQPost (OS_OBJ_TYPE   type,      (1)//内核对象类型
-    void         *p_obj,     (2)//被发布的内核对象
-    void         *p_void,    (3)//消息队列或任务消息
+                        void         *p_obj,     (2)//被发布的内核对象
+                        void         *p_void,    (3)//消息队列或任务消息
                         OS_MSG_SIZE   msg_size,  (4)//消息的数目
                         OS_FLAGS      flags,     (5)//事件
                         OS_OPT        opt,       (6)//发布内核对象时的选项
                         CPU_TS        ts,        (7)//发布内核对象时的时间戳
-        OS_ERR       *p_err)     (8)//返回错误类型
+                        OS_ERR       *p_err)     (8)//返回错误类型
     {
         CPU_SR_ALLOC();  //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和定义一个
-    //局部变量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
-    //，开中断时将该值还原。
+        //局部变量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
+        //，开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL(9)//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0) {         //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0) {         //如果错误类型实参为空
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return;                         //返回，不继续执行
+            return;                         //返回，不继续执行
         }
     #endif
 
         CPU_CRITICAL_ENTER();                                   //关中断
-    if (OSIntQNbrEntries < OSCfg_IntQSize) { (10)//如果中断队列未占满
+        if (OSIntQNbrEntries < OSCfg_IntQSize) { (10)//如果中断队列未占满
 
             OSIntQNbrEntries++;			(11)
-        //更新中断队列的最大使用数目的历史记录
-    if (OSIntQNbrEntriesMax < OSIntQNbrEntries) {	(12)
+            //更新中断队列的最大使用数目的历史记录
+            if (OSIntQNbrEntriesMax < OSIntQNbrEntries) {	(12)
                 OSIntQNbrEntriesMax = OSIntQNbrEntries;
             }
-    /* 将要重新提交的内核对象的信息放入到中断队列入口的信息记录块 */(13)
+            /* 将要重新提交的内核对象的信息放入到中断队列入口的信息记录块 */(13)
             OSIntQInPtr->Type       = type; /*保存要发布的对象类型*/
             OSIntQInPtr->ObjPtr     = p_obj; /*保存指向要发布的对象的指针*/
             OSIntQInPtr->MsgPtr     = p_void;/*将信息保存到消息块的中*/
             OSIntQInPtr->MsgSize    = msg_size; /*保存信息的大小 */
             OSIntQInPtr->Flags      = flags; /*如果发布到事件标记组，则保存标志*/
-    OSIntQInPtr->Opt        = opt; /*保存选项*/
+            OSIntQInPtr->Opt        = opt; /*保存选项*/
             OSIntQInPtr->TS         = ts; /*保存时间戳信息*/	(14)
 
             OSIntQInPtr   =  OSIntQInPtr->NextPtr;  (15)//指向下一个中断队列入口
-    /* 让中断队列管理任务 OSIntQTask 就绪 */	(16)
+            /* 让中断队列管理任务 OSIntQTask 就绪 */	(16)
             OSRdyList[0].NbrEntries = (OS_OBJ_QTY)1; //更新就绪列表上的优先级0的任务数为1个
-    //就绪列表的头尾指针都指向OSIntQTask 任务
-    OSRdyList[0].HeadPtr = &OSIntQTaskTCB;
+            //就绪列表的头尾指针都指向OSIntQTask 任务
+            OSRdyList[0].HeadPtr = &OSIntQTaskTCB;
             OSRdyList[0].TailPtr    = &OSIntQTaskTCB;(17)
             OS_PrioInsert(0u);     (18)//在优先级列表中增加优先级0
-    if (OSPrioCur != 0) {    (19)//如果当前运行的不是 OSIntQTask 任务
+            if (OSPrioCur != 0) {    (19)//如果当前运行的不是 OSIntQTask 任务
                 OSPrioSaved         = OSPrioCur; //保存当前任务的优先级
             }
 
@@ -633,22 +633,22 @@ OS_IntQPost()源码具体见 代码清单:中断管理-5_ 。
         CPU_TS       ts_start;
         CPU_TS       ts_end;
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
         p_arg = p_arg;
-    while (DEF_ON)                                          //进入死循环
+        while (DEF_ON)                                          //进入死循环
         {
             done = DEF_FALSE;
-    while (done == DEF_FALSE)
+            while (done == DEF_FALSE)
             {
                 CPU_CRITICAL_ENTER();                           //关中断
-    if (OSIntQNbrEntries == (OS_OBJ_QTY)0u)  	(1)
+                if (OSIntQNbrEntries == (OS_OBJ_QTY)0u)  	(1)
                 {
 
-    //如果中断队列里的内核对象发布完毕
-    //从就绪列表移除中断队列管理任务OS_IntQTask
-    OSRdyList[0].NbrEntries = (OS_OBJ_QTY)0u;
+                    //如果中断队列里的内核对象发布完毕
+                    //从就绪列表移除中断队列管理任务OS_IntQTask
+                    OSRdyList[0].NbrEntries = (OS_OBJ_QTY)0u;
                     OSRdyList[0].HeadPtr    = (OS_TCB   *)0;
                     OSRdyList[0].TailPtr    = (OS_TCB   *)0;
                     OS_PrioRemove(0u);             (2)//从优先级表格移除优先级0
@@ -656,15 +656,15 @@ OS_IntQPost()源码具体见 代码清单:中断管理-5_ 。
                     OSSched();                     (3)//任务调度
                     done = DEF_TRUE;                            //退出循环
                 }
-    else
-    //如果中断队列里还有内核对象
+                else
+                //如果中断队列里还有内核对象
                 {
                     CPU_CRITICAL_EXIT();                        //开中断
                     ts_start = OS_TS_GET();                     //获取时间戳
                     OS_IntQRePost();             (4)//发布中断队列里的内核对象
                     ts_end   = OS_TS_GET() - ts_start;   //计算该次发布时间
-    if (OSIntQTaskTimeMax < ts_end)
-    //更新中断队列发布内核对象的最大时间的历史记录
+                    if (OSIntQTaskTimeMax < ts_end)
+                    //更新中断队列发布内核对象的最大时间的历史记录
                     {
                         OSIntQTaskTimeMax = ts_end;
                     }
@@ -704,9 +704,9 @@ OS_IntQPost()源码具体见 代码清单:中断管理-5_ 。
         OS_ERR  err;
 
 
-    switch (OSIntQOutPtr->Type)  (1)//根据内核对象类型分类处理
+        switch (OSIntQOutPtr->Type)  (1)//根据内核对象类型分类处理
         {
-    case OS_OBJ_TYPE_FLAG:      //如果对象类型是事件标志
+            case OS_OBJ_TYPE_FLAG:      //如果对象类型是事件标志
     #if OS_CFG_FLAG_EN > 0u//如果启用了事件标志，则发布事件标志
             (void)OS_FlagPost((OS_FLAG_GRP *) OSIntQOutPtr->ObjPtr,
                             (OS_FLAGS     ) OSIntQOutPtr->Flags,
@@ -714,9 +714,9 @@ OS_IntQPost()源码具体见 代码清单:中断管理-5_ 。
                             (CPU_TS       ) OSIntQOutPtr->TS,
                             (OS_ERR      *)&err);	(2)
     #endif
-    break;                 //跳出
+            break;                 //跳出
 
-    case OS_OBJ_TYPE_Q:         //如果对象类型是消息队列
+            case OS_OBJ_TYPE_Q:         //如果对象类型是消息队列
     #if OS_CFG_Q_EN > 0u//如果启用了消息队列，则发布消息队列
             OS_QPost((OS_Q      *) OSIntQOutPtr->ObjPtr,
                     (void      *) OSIntQOutPtr->MsgPtr,
@@ -725,18 +725,18 @@ OS_IntQPost()源码具体见 代码清单:中断管理-5_ 。
                     (CPU_TS     ) OSIntQOutPtr->TS,
                     (OS_ERR    *)&err);	(3)
     #endif
-    break;                 //跳出
+            break;                 //跳出
 
-    case OS_OBJ_TYPE_SEM:       //如果对象类型是信号量
+            case OS_OBJ_TYPE_SEM:       //如果对象类型是信号量
     #if OS_CFG_SEM_EN > 0u//如果启用了信号量，则发布信号量
             (void)OS_SemPost((OS_SEM *) OSIntQOutPtr->ObjPtr,
                             (OS_OPT  ) OSIntQOutPtr->Opt,
                             (CPU_TS  ) OSIntQOutPtr->TS,
                             (OS_ERR *)&err);	(4)
     #endif
-    break;                 //跳出
+            break;                 //跳出
 
-    case OS_OBJ_TYPE_TASK_MSG:  //如果对象类型是任务消息
+            case OS_OBJ_TYPE_TASK_MSG:  //如果对象类型是任务消息
     #if OS_CFG_TASK_Q_EN > 0u//如果启用了任务消息，则发布任务消息
             OS_TaskQPost((OS_TCB    *) OSIntQOutPtr->ObjPtr,
                         (void      *) OSIntQOutPtr->MsgPtr,
@@ -745,42 +745,42 @@ OS_IntQPost()源码具体见 代码清单:中断管理-5_ 。
                         (CPU_TS     ) OSIntQOutPtr->TS,
                         (OS_ERR    *)&err);	(5)
     #endif
-    break;                 //跳出
+            break;                 //跳出
 
-    case OS_OBJ_TYPE_TASK_RESUME:	//如果对象类型是恢复任务
+            case OS_OBJ_TYPE_TASK_RESUME:	//如果对象类型是恢复任务
     #if OS_CFG_TASK_SUSPEND_EN > 0u//如果启用了函数OSTaskResume()，恢复该任务
             (void)OS_TaskResume((OS_TCB *) OSIntQOutPtr->ObjPtr,
                                 (OS_ERR *)&err);	(6)
     #endif
-    break;                  //跳出
+            break;                  //跳出
 
-    case OS_OBJ_TYPE_TASK_SIGNAL://如果对象类型是任务信号量
-    (void)OS_TaskSemPost((OS_TCB *) OSIntQOutPtr->ObjPtr,//发布任务信号量
+            case OS_OBJ_TYPE_TASK_SIGNAL://如果对象类型是任务信号量
+            (void)OS_TaskSemPost((OS_TCB *) OSIntQOutPtr->ObjPtr,//发布任务信号量
                                 (OS_OPT  ) OSIntQOutPtr->Opt,
                                 (CPU_TS  ) OSIntQOutPtr->TS,
                                 (OS_ERR *)&err);	(7)
-    break;                  //跳出
+            break;                  //跳出
 
-    case OS_OBJ_TYPE_TASK_SUSPEND://如果对象类型是挂起任务
+            case OS_OBJ_TYPE_TASK_SUSPEND://如果对象类型是挂起任务
     #if OS_CFG_TASK_SUSPEND_EN > 0u//如果启用了函数 OSTaskSuspend()，挂起该任务
             (void)OS_TaskSuspend((OS_TCB *) OSIntQOutPtr->ObjPtr,
                                 (OS_ERR *)&err);	(8)
     #endif
-    break;                   //跳出
+            break;                   //跳出
 
-    case OS_OBJ_TYPE_TICK:      	(9)	//如果对象类型是时钟节拍
+            case OS_OBJ_TYPE_TICK:      	(9)	//如果对象类型是时钟节拍
     #if OS_CFG_SCHED_ROUND_ROBIN_EN > 0u//如果启用了时间片轮转调度，
-    OS_SchedRoundRobin(&OSRdyList[OSPrioSaved]); //轮转调度进中断前优先级任务
+            OS_SchedRoundRobin(&OSRdyList[OSPrioSaved]); //轮转调度进中断前优先级任务
     #endif
 
-    (void)OS_TaskSemPost((OS_TCB *)&OSTickTaskTCB,//发送信号量给时钟节拍任务
+            (void)OS_TaskSemPost((OS_TCB *)&OSTickTaskTCB,//发送信号量给时钟节拍任务
                                 (OS_OPT  ) OS_OPT_POST_NONE,
                                 (CPU_TS  ) OSIntQOutPtr->TS,
                                 (OS_ERR *)&err);	(10)
     #if OS_CFG_TMR_EN > 0u
-    //如果启用了软件定时器，发送信号量给定时器任务
+            //如果启用了软件定时器，发送信号量给定时器任务
             OSTmrUpdateCtr--;
-    if (OSTmrUpdateCtr == (OS_CTR)0u)
+            if (OSTmrUpdateCtr == (OS_CTR)0u)
             {
                 OSTmrUpdateCtr = OSTmrUpdateCnt;
                 ts             = OS_TS_GET();
@@ -790,10 +790,10 @@ OS_IntQPost()源码具体见 代码清单:中断管理-5_ 。
                                     (OS_ERR *)&err);	(11)
         }
     #endif
-    break;                  //跳出
+            break;                  //跳出
 
-    default:                (12)//如果内核对象类型超出预期
-    break;                  //直接跳出
+            default:                (12)//如果内核对象类型超出预期
+            break;                  //直接跳出
         }
     }
 

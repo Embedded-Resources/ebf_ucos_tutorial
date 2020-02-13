@@ -159,7 +159,6 @@ CPU_TS_Init()函数
     */
 
     typedef  CPU_INT32U  CPU_TS32;
-
     typedef  CPU_INT32U  CPU_TS_TMR_FREQ;
     typedef  CPU_TS32    CPU_TS;
     typedef  CPU_INT32U  CPU_TS_TMR;
@@ -192,18 +191,16 @@ CPU_TS_TmrInit()函数
     void  CPU_TS_TmrInit (void)
     {
         CPU_INT32U  fclk_freq;
-
-
         fclk_freq = BSP_CPU_ClkFreq();(2)
 
-    /* 启用DWT外设 */
+        /* 启用DWT外设 */
         BSP_REG_DEM_CR     |= (CPU_INT32U)BSP_BIT_DEM_CR_TRCENA;(1)
-    /* DWT CYCCNT寄存器计数清零 */
+        /* DWT CYCCNT寄存器计数清零 */
         BSP_REG_DWT_CYCCNT  = (CPU_INT32U)0u;
-    /* 注意：当使用软件仿真全速运行的时候，会先停在这里，
-    就好像在这里设置了一个断点一样，需要手动运行才能跳过，
-    当使用硬件仿真的时候却不会 */
-    /* 启用Cortex-M3 DWT CYCCNT寄存器 */
+        /* 注意：当使用软件仿真全速运行的时候，会先停在这里，
+        就好像在这里设置了一个断点一样，需要手动运行才能跳过，
+        当使用硬件仿真的时候却不会 */
+        /* 启用Cortex-M3 DWT CYCCNT寄存器 */
         BSP_REG_DWT_CR     |= (CPU_INT32U)BSP_BIT_DWT_CR_CYCCNTENA;
 
         CPU_TS_TmrFreqSet((CPU_TS_TMR_FREQ)fclk_freq);(3)
@@ -272,18 +269,15 @@ BSP_CPU_ClkFreq()函数
     {
     #if 0
         RCC_ClocksTypeDef  rcc_clocks;
-
-
         RCC_GetClocksFreq(&rcc_clocks);
     return ((CPU_INT32U)rcc_clocks.HCLK_Frequency);
     #else
         CPU_INT32U    CPU_HCLK;
 
-
-    /* 目前软件仿真我们使用25M的系统时钟 */
+        /* 目前软件仿真我们使用25M的系统时钟 */
         CPU_HCLK = 25000000;
 
-    return CPU_HCLK;
+        return CPU_HCLK;
     #endif
     }
 
@@ -322,11 +316,8 @@ CPU_TS_TmrRd()函数用于获取CYCNNT计数器的值，在cpu_core.c中定义�
     CPU_TS_TMR  CPU_TS_TmrRd (void)
     {
         CPU_TS_TMR  ts_tmr_cnts;
-
-
         ts_tmr_cnts = (CPU_TS_TMR)BSP_REG_DWT_CYCCNT;
-
-    return (ts_tmr_cnts);
+        return (ts_tmr_cnts);
     }
     #endif
 
@@ -385,19 +376,19 @@ main()函数
         OS_ERR err;
 
 
-    /* CPU初始化：1、初始化时间戳 */
+        /* CPU初始化：1、初始化时间戳 */
         CPU_Init();
 
-    /* 关闭中断 */
+        /* 关闭中断 */
         CPU_IntDis();
 
-    /* 配置SysTick 10ms 中断一次 */
+        /* 配置SysTick 10ms 中断一次 */
         OS_CPU_SysTickInit (10);
 
-    /* 初始化相关的全局变量 */
+        /* 初始化相关的全局变量 */
         OSInit(&err);
 
-    /* 创建任务 */
+        /* 创建任务 */
         OSTaskCreate ((OS_TCB*)      &Task1TCB,
                     (OS_TASK_PTR ) Task1,
                     (void *)       0,
@@ -412,18 +403,18 @@ main()函数
                     (CPU_STK_SIZE) TASK2_STK_SIZE,
                     (OS_ERR *)     &err);
 
-    /* 将任务加入到就绪列表 */
+        /* 将任务加入到就绪列表 */
         OSRdyList[0].HeadPtr = &Task1TCB;
         OSRdyList[1].HeadPtr = &Task2TCB;
 
-    /* 启动OS，将不再返回 */
+        /* 启动OS，将不再返回 */
         OSStart(&err);
     }
 
     /* 任务1 */
     void Task1( void *p_arg )
     {
-    for ( ;; ) {
+        for ( ;; ) {
             flag1 = 1;
 
             TimeStart = OS_TS_GET();

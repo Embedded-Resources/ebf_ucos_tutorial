@@ -57,62 +57,62 @@ CPUUsage（%） = 100*（1- OSStatTaskCtr / OSStatTaskCtrMax），
         OS_ERR   err;
         OS_TICK  dly;
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL//如果启用了安全检测
-    if (p_err == (OS_ERR *)0)                          //如果 p_err 为空
+        if (p_err == (OS_ERR *)0)                          //如果 p_err 为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION();               //执行安全检测异常函数
-    return;                                           //返回，停止执行
+            return;                                           //返回，停止执行
         }
     #endif
 
     #if (OS_CFG_TMR_EN > 0u)//如果启用了软件定时器
         OSTaskSuspend(&OSTmrTaskTCB, &err);        (1)//挂起软件定时任务
-    if (err != OS_ERR_NONE)                          //如果挂起失败
+        if (err != OS_ERR_NONE)                          //如果挂起失败
         {
             *p_err = err;                                     //返回失败原因
-    return;                                          //返回，停止执行
+            return;                                          //返回，停止执行
         }
     #endif
 
         OSTimeDly((OS_TICK )2,
-    //先延时两个节拍，为后面延时同步时钟节拍，增加准确性
+                //先延时两个节拍，为后面延时同步时钟节拍，增加准确性
                 (OS_OPT  )OS_OPT_TIME_DLY,
                 (OS_ERR *)&err);			(2)
-    if (err != OS_ERR_NONE)                              //如果延时失败
+        if (err != OS_ERR_NONE)                              //如果延时失败
         {
             *p_err = err;                                     //返回失败原因
-    return;                                          //返回，停止执行
+            return;                                          //返回，停止执行
         }
         CPU_CRITICAL_ENTER();                                //关中断
         OSStatTaskCtr = (OS_TICK)0;                          //清零空闲计数器
         CPU_CRITICAL_EXIT();                                 //开中断
-    /* 根据设置的宏计算统计任务的执行节拍数 */
+        /* 根据设置的宏计算统计任务的执行节拍数 */
         dly = (OS_TICK)0;				(3)
-    if (OSCfg_TickRate_Hz > OSCfg_StatTaskRate_Hz)
+        if (OSCfg_TickRate_Hz > OSCfg_StatTaskRate_Hz)
         {
             dly = (OS_TICK)(OSCfg_TickRate_Hz / OSCfg_StatTaskRate_Hz);
         }
-    if (dly == (OS_TICK)0)
+        if (dly == (OS_TICK)0)
         {
             dly =  (OS_TICK)(OSCfg_TickRate_Hz / (OS_RATE_HZ)10);
         }
-    /* 延时累加空闲计数器，获取最大空闲计数值 */
+        /* 延时累加空闲计数器，获取最大空闲计数值 */
         OSTimeDly(dly,
                 OS_OPT_TIME_DLY,
-    &err);				(4)
+                &err);				(4)
 
     #if (OS_CFG_TMR_EN > 0u)//如果启用了软件定时器
         OSTaskResume(&OSTmrTaskTCB, &err);          (5)//恢复软件定时器任务
-    if (err != OS_ERR_NONE)                          //如果恢复失败
+        if (err != OS_ERR_NONE)                          //如果恢复失败
         {
             *p_err = err;                                     //返回错误原因
-    return;                                          //返回，停止执行
+            return;                                          //返回，停止执行
         }
     #endif
-    /* 如果上面没产生错误 */
+        /* 如果上面没产生错误 */
         CPU_CRITICAL_ENTER();                                //关中断
         OSStatTaskTimeMax = (CPU_TS)0;                       //
 
@@ -488,97 +488,97 @@ CPUUsage（%） = 100*（1- OSStatTaskCtr / OSStatTaskCtrMax），
     void  OSTaskStkChk (OS_TCB        *p_tcb,       (1)//目标任务控制块的指针
                         CPU_STK_SIZE  *p_free,      (2)//返回空闲栈大小
                         CPU_STK_SIZE  *p_used,      (3)//返回已用栈大小
-    OS_ERR        *p_err)       (4)//返回错误类型
+                        OS_ERR        *p_err)       (4)//返回错误类型
     {
         CPU_STK_SIZE  free_stk;
         CPU_STK      *p_stk;
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL//如果启用了安全检测
-    if (p_err == (OS_ERR *)0)                      //如果 p_err 为空
+        if (p_err == (OS_ERR *)0)                      //如果 p_err 为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION();            //执行安全检测异常函数
-    return;                                    //返回，停止执行
+            return;                                    //返回，停止执行
         }
     #endif
 
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u//如果启用了中断中非法调用检测
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0)   //如果该函数是在中断中被调用
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0)   //如果该函数是在中断中被调用
         {
             *p_err = OS_ERR_TASK_STK_CHK_ISR;      //错误类型为“在中断中检测栈”
-    return;                                    //返回，停止执行
+            return;                                    //返回，停止执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u//如果启用了参数检测
-    if (p_free == (CPU_STK_SIZE*)0)                //如果 p_free 为空
+        if (p_free == (CPU_STK_SIZE*)0)                //如果 p_free 为空
         {
             *p_err  = OS_ERR_PTR_INVALID;               //错误类型为“指针非法”
-    return;                                    //返回，停止执行
+            return;                                    //返回，停止执行
         }
 
-    if (p_used == (CPU_STK_SIZE*)0)                //如果 p_used 为空
+        if (p_used == (CPU_STK_SIZE*)0)                //如果 p_used 为空
         {
             *p_err  = OS_ERR_PTR_INVALID;               //错误类型为“指针非法”
-    return;                                    //返回，停止执行
+            return;                                    //返回，停止执行
         }
     #endif
 
         CPU_CRITICAL_ENTER();                               //关中断
-    if (p_tcb == (OS_TCB *)0)             (5)//如果 p_tcb 为空
+        if (p_tcb == (OS_TCB *)0)             (5)//如果 p_tcb 为空
         {
             p_tcb = OSTCBCurPtr;
-    //目标任务为当前运行任务（自身）
+            //目标任务为当前运行任务（自身）
         }
 
-    if (p_tcb->StkPtr == (CPU_STK*)0)      (6)//如果目标任务的栈为空
+        if (p_tcb->StkPtr == (CPU_STK*)0)      (6)//如果目标任务的栈为空
         {
             CPU_CRITICAL_EXIT();                       //开中断
             *p_free = (CPU_STK_SIZE)0;                  //清零 p_free
             *p_used = (CPU_STK_SIZE)0;                    //清零 p_used
             *p_err  =  OS_ERR_TASK_NOT_EXIST;             //错误类型为“任务不存在
-    return;                                           //返回，停止执行
+            return;                                           //返回，停止执行
         }
-    /* 如果目标任务的栈非空 */
-    if ((p_tcb->Opt & OS_OPT_TASK_STK_CHK) == (OS_OPT)0) (7)
-    //如果目标任务没选择检测栈
+        /* 如果目标任务的栈非空 */
+        if ((p_tcb->Opt & OS_OPT_TASK_STK_CHK) == (OS_OPT)0) (7)
+        //如果目标任务没选择检测栈
         {
             CPU_CRITICAL_EXIT();                                //开中断
             *p_free = (CPU_STK_SIZE)0;                           //清零 p_free
             *p_used = (CPU_STK_SIZE)0;                           //清零 p_used
             *p_err  =  OS_ERR_TASK_OPT;
-    //错误类型为“任务选项有误”
-    return;                                             //返回，停止执行
+            //错误类型为“任务选项有误”
+            return;                                             //返回，停止执行
         }
         CPU_CRITICAL_EXIT();
-    //如果任务选择了检测栈，开中断
-    /* 开始计算目标任务的栈的空闲数目和已用数目 */
+        //如果任务选择了检测栈，开中断
+        /* 开始计算目标任务的栈的空闲数目和已用数目 */
         free_stk  = 0u;                           (8)//初始化计算栈工作
     #if CPU_CFG_STK_GROWTH == CPU_STK_GROWTH_HI_TO_LO
-    //如果CPU的栈是从高向低增长
+        //如果CPU的栈是从高向低增长
         p_stk = p_tcb->StkBasePtr;             (9)
-    //从目标任务栈最低地址开始计算
-    while (*p_stk == (CPU_STK)0)                      //计算值为0的栈数目
+        //从目标任务栈最低地址开始计算
+        while (*p_stk == (CPU_STK)0)                      //计算值为0的栈数目
         {
             p_stk++;
             free_stk++;				(10)
         }
     #else
-    //如果CPU的栈是从低向高增长
+        //如果CPU的栈是从低向高增长
         p_stk = p_tcb->StkBasePtr + p_tcb->StkSize - 1u;
-    //从目标任务栈最高地址开始计算
-    while (*p_stk == (CPU_STK)0)                      //计算值为0的栈数目
+        //从目标任务栈最高地址开始计算
+        while (*p_stk == (CPU_STK)0)                      //计算值为0的栈数目
         {
             free_stk++;
             p_stk--;				(11)
         }
     #endif
         *p_free = free_stk;
-    //返回目标任务栈的空闲数目
+        //返回目标任务栈的空闲数目
         *p_used = (p_tcb->StkSize - free_stk);  	(12)
-    //返回目标任务栈的已用数目
+        //返回目标任务栈的已用数目
         *p_err  = OS_ERR_NONE;                            //错误类型为“无错误”
     }
     #endif
@@ -894,7 +894,7 @@ CPU利用率及栈检测统计实验是在μC/OS中创建了四个任务，其�
         {
 
             OS_CRITICAL_ENTER();
-    //进入临界段，避免串口打印被打断
+            //进入临界段，避免串口打印被打断
             printf("---------------------------------------------------\n");
             printf ( "CPU利用率：%d.%d%%\r\n",
                     OSStatTaskCPUUsage / 100, OSStatTaskCPUUsage % 100 );
@@ -902,17 +902,17 @@ CPU利用率及栈检测统计实验是在μC/OS中创建了四个任务，其�
                 OSStatTaskCPUUsageMax / 100, OSStatTaskCPUUsageMax % 100 );
 
 
-    printf ( "LED1任务的CPU利用率：%d.%d%%\r\n",
+            printf ( "LED1任务的CPU利用率：%d.%d%%\r\n",
                 AppTaskLed1TCB.CPUUsageMax / 100, AppTaskLed1TCB.CPUUsageMax % 100 );
-    printf ( "LED1任务的CPU利用率：%d.%d%%\r\n",
+            printf ( "LED1任务的CPU利用率：%d.%d%%\r\n",
                 AppTaskLed2TCB.CPUUsageMax / 100, AppTaskLed2TCB.CPUUsageMax % 100 );
-    printf ( "LED1任务的CPU利用率：%d.%d%%\r\n",
-    AppTaskLed3TCB.CPUUsageMax / 100, AppTaskLed3TCB.CPUUsageMax % 100 );
-    printf ( "统计任务的CPU利用率：%d.%d%%\r\n",
-    AppTaskStatusTCB.CPUUsageMax / 100, AppTaskStatusTCB.CPUUsageMax % 100 ) ;
+            printf ( "LED1任务的CPU利用率：%d.%d%%\r\n",
+                AppTaskLed3TCB.CPUUsageMax / 100, AppTaskLed3TCB.CPUUsageMax % 100 );
+            printf ( "统计任务的CPU利用率：%d.%d%%\r\n",
+                AppTaskStatusTCB.CPUUsageMax / 100, AppTaskStatusTCB.CPUUsageMax % 100 ) ;
 
 
-        printf ( "LED1任务的已用和空闲栈大小分别为：%d,%d\r\n",
+            printf ( "LED1任务的已用和空闲栈大小分别为：%d,%d\r\n",
                     AppTaskLed1TCB.StkUsed, AppTaskLed1TCB.StkFree );
             printf ( "LED2任务的已用和空闲栈大小分别为：%d,%d\r\n",
                     AppTaskLed2TCB.StkUsed, AppTaskLed2TCB.StkFree );

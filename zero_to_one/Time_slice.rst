@@ -108,36 +108,36 @@ SysTick寄存器都是重新在cpu.h中定义，而我们自己编写的则是�
     {
         CPU_INT32U  prio;
 
-    /* 填写 SysTick 的重载计数值 */
+        /* 填写 SysTick 的重载计数值 */
         CPU_REG_NVIC_ST_RELOAD = cnts - 1u;
 
-    /* 设置 SysTick 中断优先级 */
+        /* 设置 SysTick 中断优先级 */
         prio  = CPU_REG_NVIC_SHPRI3;
         prio &= DEF_BIT_FIELD(24, 0);
         prio |= DEF_BIT_MASK(OS_CPU_CFG_SYSTICK_PRIO, 24);
 
         CPU_REG_NVIC_SHPRI3 = prio;
 
-    /* 启用 SysTick 的时钟源和启动计数器 */
+        /* 启用 SysTick 的时钟源和启动计数器 */
         CPU_REG_NVIC_ST_CTRL |= CPU_REG_NVIC_ST_CTRL_CLKSOURCE |
                                 CPU_REG_NVIC_ST_CTRL_ENABLE;
-    /* 启用 SysTick 的定时中断 */
+        /* 启用 SysTick 的定时中断 */
         CPU_REG_NVIC_ST_CTRL |= CPU_REG_NVIC_ST_CTRL_TICKINT;
     }
 
     #else/* 直接使用头文件ARMCM3.h里面现有的寄存器定义和函数来实现 */
     void  OS_CPU_SysTickInit (CPU_INT32U  ms)
     {
-    /* 设置重装载寄存器的值 */
+        /* 设置重装载寄存器的值 */
         SysTick->LOAD  = ms * SystemCoreClock / 1000 - 1;(1)
 
-    /* 配置中断优先级为最低 */
+        /* 配置中断优先级为最低 */
         NVIC_SetPriority (SysTick_IRQn, (1<<__NVIC_PRIO_BITS) - 1);(2)
 
-    /* 复位当前计数器的值 */
+        /* 复位当前计数器的值 */
         SysTick->VAL   = 0;(3)
 
-    /* 选择时钟源、启用中断、启用计数器 */
+        /* 选择时钟源、启用中断、启用计数器 */
         SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk |(4)
                         SysTick_CTRL_TICKINT_Msk   |(5)
                         SysTick_CTRL_ENABLE_Msk;(6)
@@ -185,7 +185,7 @@ SysTick中断服务函数很简单，里面仅调用了函数OSTimeTick()。OSTi
 
     void  OSTimeTick (void)
     {
-    /* 任务调度 */
+        /* 任务调度 */
         OSSched();
     }
 
@@ -199,9 +199,12 @@ OSTimeTick()很简单，里面仅调用了函数OSSched，OSSched函数暂时没
 
     void OSSched (void)
     {
-    if ( OSTCBCurPtr == OSRdyList[0].HeadPtr ) {
+        if ( OSTCBCurPtr == OSRdyList[0].HeadPtr )
+        {
             OSTCBHighRdyPtr = OSRdyList[1].HeadPtr;
-        } else {
+        }
+        else
+        {
             OSTCBHighRdyPtr = OSRdyList[0].HeadPtr;
         }
 
@@ -224,16 +227,16 @@ main()函数与上一章区别不大，仅仅是加入了SysTick相关的内容�
     {
         OS_ERR err;
 
-    /* 关闭中断 */
-    CPU_IntDis();(1)
+        /* 关闭中断 */
+        CPU_IntDis();(1)
 
-    /* 配置SysTick 10ms 中断一次 */
-    OS_CPU_SysTickInit (10);(2)
+        /* 配置SysTick 10ms 中断一次 */
+        OS_CPU_SysTickInit (10);(2)
 
-    /* 初始化相关的全局变量 */
+        /* 初始化相关的全局变量 */
         OSInit(&err);
 
-    /* 创建任务 */
+        /* 创建任务 */
         OSTaskCreate ((OS_TCB*)      &Task1TCB,
                     (OS_TASK_PTR ) Task1,
                     (void *)       0,
@@ -248,11 +251,11 @@ main()函数与上一章区别不大，仅仅是加入了SysTick相关的内容�
                     (CPU_STK_SIZE) TASK2_STK_SIZE,
                     (OS_ERR *)     &err);
 
-    /* 将任务加入到就绪列表 */
+        /* 将任务加入到就绪列表 */
         OSRdyList[0].HeadPtr = &Task1TCB;
         OSRdyList[1].HeadPtr = &Task2TCB;
 
-    /* 启动OS，将不再返回 */
+        /* 启动OS，将不再返回 */
         OSStart(&err);
     }
 
@@ -261,28 +264,28 @@ main()函数与上一章区别不大，仅仅是加入了SysTick相关的内容�
     /* 任务1 */
     void Task1( void *p_arg )
     {
-    for ( ;; ) {
+        for ( ;; ) {
             flag1 = 1;
             delay( 100 );
             flag1 = 0;
             delay( 100 );
 
-    /* 任务切换，这里是手动切换 */
-    //OSSched();(3)
+        /* 任务切换，这里是手动切换 */
+        //OSSched();(3)
         }
     }
 
     /* 任务2 */
     void Task2( void *p_arg )
     {
-    for ( ;; ) {
+        for ( ;; ) {
             flag2 = 1;
             delay( 100 );
             flag2 = 0;
             delay( 100 );
 
-    /* 任务切换，这里是手动切换 */
-    //OSSched();(4)
+            /* 任务切换，这里是手动切换 */
+            //OSSched();(4)
         }
     }
 

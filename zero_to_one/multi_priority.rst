@@ -37,27 +37,27 @@
 
     void OSInit (OS_ERR *p_err)
     {
-    /* 配置OS初始状态为停止态 */
+        /* 配置OS初始状态为停止态 */
         OSRunning =  OS_STATE_OS_STOPPED;
 
-    /* 初始化两个全局TCB，这两个TCB用于任务切换 */
+        /* 初始化两个全局TCB，这两个TCB用于任务切换 */
         OSTCBCurPtr = (OS_TCB *)0;
         OSTCBHighRdyPtr = (OS_TCB *)0;
 
-    /* 初始化优先级变量 */
+        /* 初始化优先级变量 */
         OSPrioCur                       = (OS_PRIO)0;
         OSPrioHighRdy                   = (OS_PRIO)0;
 
-    /* 初始化优先级表 */
+        /* 初始化优先级表 */
         OS_PrioInit();
 
-    /* 初始化就绪列表 */
+        /* 初始化就绪列表 */
         OS_RdyListInit();
 
-    /* 初始化空闲任务 */
+        /* 初始化空闲任务 */
         OS_IdleTaskInit(p_err);
-    if (*p_err != OS_ERR_NONE) {
-    return;
+        if (*p_err != OS_ERR_NONE) {
+            return;
         }
     }
 
@@ -78,15 +78,15 @@
         CPU_STK         *StkPtr;
         CPU_STK_SIZE    StkSize;
 
-    /* 任务延时周期个数 */
+        /* 任务延时周期个数 */
         OS_TICK         TaskDelayTicks;
 
-    /* 任务优先级 */
+        /* 任务优先级 */
         OS_PRIO         Prio;
 
-    /* 就绪列表双向链表的下一个指针 */
+        /* 就绪列表双向链表的下一个指针 */
         OS_TCB          *NextPtr;
-    /* 就绪列表双向链表的前一个指针 */
+        /* 就绪列表双向链表的前一个指针 */
         OS_TCB          *PrevPtr;
     };
 
@@ -113,10 +113,10 @@
         CPU_STK       *p_sp;
         CPU_SR_ALLOC();(2)
 
-    /* 初始化TCB为默认值 */
+        /* 初始化TCB为默认值 */
         OS_TaskInitTCB(p_tcb);(3)
 
-    /* 初始化栈 */
+        /* 初始化栈 */
         p_sp = OSTaskStkInit( p_task,
                             p_arg,
                             p_stk_base,
@@ -127,14 +127,14 @@
         p_tcb->StkPtr = p_sp;
         p_tcb->StkSize = stk_size;
 
-    /* 进入临界段 */
+        /* 进入临界段 */
         OS_CRITICAL_ENTER();(5)
 
-    /* 将任务添加到就绪列表 */(6)
+        /* 将任务添加到就绪列表 */(6)
         OS_PrioInsert(p_tcb->Prio);
         OS_RdyListInsertTail(p_tcb);
 
-    /* 退出临界段 */
+        /* 退出临界段 */
         OS_CRITICAL_EXIT();(7)
 
         *p_err = OS_ERR_NONE;
@@ -194,10 +194,10 @@
     /* 空闲任务初始化 */
     void  OS_IdleTaskInit(OS_ERR  *p_err)
     {
-    /* 初始化空闲任务计数器 */
+        /* 初始化空闲任务计数器 */
         OSIdleTaskCtr = (OS_IDLE_CTR)0;
 
-    /* 创建空闲任务 */
+        /* 创建空闲任务 */
         OSTaskCreate( (OS_TCB     *)&OSIdleTaskTCB,
                     (OS_TASK_PTR )OS_IdleTask,
                     (void       *)0,
@@ -227,24 +227,24 @@
     {
     if ( OSRunning == OS_STATE_OS_STOPPED ) {
     #if 0
-    /* 手动配置任务1先运行 */
+            /* 手动配置任务1先运行 */
             OSTCBHighRdyPtr = OSRdyList[0].HeadPtr;
     #endif
-    /* 寻找最高的优先级 */
+            /* 寻找最高的优先级 */
             OSPrioHighRdy   = OS_PrioGetHighest();(1)
             OSPrioCur       = OSPrioHighRdy;
 
-    /* 找到最高优先级的TCB */
+            /* 找到最高优先级的TCB */
             OSTCBHighRdyPtr = OSRdyList[OSPrioHighRdy].HeadPtr;(2)
             OSTCBCurPtr     = OSTCBHighRdyPtr;
 
-    /* 标记OS开始运行 */
+            /* 标记OS开始运行 */
             OSRunning       = OS_STATE_OS_RUNNING;
 
-    /* 启动任务切换，不会返回 */
+            /* 启动任务切换，不会返回 */
             OSStartHighRdy();
 
-    /* 不会运行到这里，运行到这里表示发生了致命的错误 */
+            /* 不会运行到这里，运行到这里表示发生了致命的错误 */
             *p_err = OS_ERR_FATAL_RETURN;
         } else {
             *p_err = OS_STATE_OS_RUNNING;
@@ -319,29 +319,29 @@ PendSV_Handler()函数中添加了优先级相关的代码，具体见 代码清
     void  OSTimeDly(OS_TICK dly)
     {
     #if 0
-    /* 设置延时时间 */
+        /* 设置延时时间 */
         OSTCBCurPtr->TaskDelayTicks = dly;
 
-    /* 进行任务调度 */
+        /* 进行任务调度 */
         OSSched();
     #endif
 
         CPU_SR_ALLOC();(1)
 
-    /* 进入临界区 */
+        /* 进入临界区 */
         OS_CRITICAL_ENTER();(2)
 
-    /* 设置延时时间 */
+        /* 设置延时时间 */
         OSTCBCurPtr->TaskDelayTicks = dly;
 
-    /* 从就绪列表中移除 */
-    //OS_RdyListRemove(OSTCBCurPtr);
+        /* 从就绪列表中移除 */
+        //OS_RdyListRemove(OSTCBCurPtr);
         OS_PrioRemove(OSTCBCurPtr->Prio);(3)
 
-    /* 退出临界区 */
+        /* 退出临界区 */
         OS_CRITICAL_EXIT();(4)
 
-    /* 任务调度 */
+        /* 任务调度 */
         OSSched();
     }
 
@@ -367,74 +367,92 @@ PendSV_Handler()函数中添加了优先级相关的代码，具体见 代码清
 
 .. code-block:: c
     :caption: 代码清单:优先级-10OSSched()函数
-    :emphasize-lines: 45-62
+    :emphasize-lines: 62-80
     :name: 代码清单:优先级-10
     :linenos:
 
     void OSSched(void)
     {
     #if 0
-    /* 如果当前任务是空闲任务，那么就去尝试执行任务1或者任务2，
-    看看他们的延时时间是否结束，如果任务的延时时间均没有到期，
-    那就返回继续执行空闲任务 */
-    if ( OSTCBCurPtr == &OSIdleTaskTCB ) {
-    if (OSRdyList[0].HeadPtr->TaskDelayTicks == 0) {
+        /* 如果当前任务是空闲任务，那么就去尝试执行任务1或者任务2，
+        看看他们的延时时间是否结束，如果任务的延时时间均没有到期，
+        那就返回继续执行空闲任务 */
+        if ( OSTCBCurPtr == &OSIdleTaskTCB )
+        {
+            if (OSRdyList[0].HeadPtr->TaskDelayTicks == 0)
+            {
                 OSTCBHighRdyPtr = OSRdyList[0].HeadPtr;
-            } else if (OSRdyList[1].HeadPtr->TaskDelayTicks == 0) {
-                OSTCBHighRdyPtr = OSRdyList[1].HeadPtr;
-            } else {
-    return;   /* 任务延时均没有到期则返回，继续执行空闲任务 */
             }
-        } else {
-    /*如果是task1或者task2的话，检查下另外一个任务,
-    如果另外的任务不在延时中，就切换到该任务，
-    否则，判断下当前任务是否应该进入延时状态，
-    如果是的话，就切换到空闲任务。否则就不进行任何切换 */
-    if (OSTCBCurPtr == OSRdyList[0].HeadPtr) {
-    if (OSRdyList[1].HeadPtr->TaskDelayTicks == 0) {
+            else if (OSRdyList[1].HeadPtr->TaskDelayTicks == 0)
+            {
+                OSTCBHighRdyPtr = OSRdyList[1].HeadPtr;
+            }
+            else
+            {
+                return;   /* 任务延时均没有到期则返回，继续执行空闲任务 */
+            }
+        }
+        else
+        {
+            /*如果是task1或者task2的话，检查下另外一个任务,
+            如果另外的任务不在延时中，就切换到该任务，
+            否则，判断下当前任务是否应该进入延时状态，
+            如果是的话，就切换到空闲任务。否则就不进行任何切换 */
+            if (OSTCBCurPtr == OSRdyList[0].HeadPtr)
+            {
+                if (OSRdyList[1].HeadPtr->TaskDelayTicks == 0)
+                {
                     OSTCBHighRdyPtr = OSRdyList[1].HeadPtr;
                 } else if (OSTCBCurPtr->TaskDelayTicks != 0) {
                     OSTCBHighRdyPtr = &OSIdleTaskTCB;
                 } else {
-    /* 返回，不进行切换，因为两个任务都处于延时中 */
-    return;
+                /* 返回，不进行切换，因为两个任务都处于延时中 */
+                return;
                 }
-            } else if (OSTCBCurPtr == OSRdyList[1].HeadPtr) {
-    if (OSRdyList[0].HeadPtr->TaskDelayTicks == 0) {
+            }
+            else if (OSTCBCurPtr == OSRdyList[1].HeadPtr)
+            {
+                if (OSRdyList[0].HeadPtr->TaskDelayTicks == 0)
+                {
                     OSTCBHighRdyPtr = OSRdyList[0].HeadPtr;
-                } else if (OSTCBCurPtr->TaskDelayTicks != 0) {
+                }
+                else if (OSTCBCurPtr->TaskDelayTicks != 0)
+                {
                     OSTCBHighRdyPtr = &OSIdleTaskTCB;
-                } else {
-    /* 返回，不进行切换，因为两个任务都处于延时中 */
-    return;
+                }
+                else
+                {
+                    /* 返回，不进行切换，因为两个任务都处于延时中 */
+                    return;
                 }
             }
         }
 
-    /* 任务切换 */
+        /* 任务切换 */
         OS_TASK_SW();
     #endif
 
         CPU_SR_ALLOC();(1)
 
-    /* 进入临界区 */
+        /* 进入临界区 */
         OS_CRITICAL_ENTER();(2)
 
-    /* 查找最高优先级的任务 */(3)
+        /* 查找最高优先级的任务 */(3)
         OSPrioHighRdy   = OS_PrioGetHighest();
         OSTCBHighRdyPtr = OSRdyList[OSPrioHighRdy].HeadPtr;
 
-    /* 如果最高优先级的任务是当前任务则直接返回，不进行任务切换 */(4)
-    if (OSTCBHighRdyPtr == OSTCBCurPtr) {
-    /* 退出临界区 */
+        /* 如果最高优先级的任务是当前任务则直接返回，不进行任务切换 */(4)
+        if (OSTCBHighRdyPtr == OSTCBCurPtr)
+        {
+            /* 退出临界区 */
             OS_CRITICAL_EXIT();
 
-    return;
+            return;
         }
-    /* 退出临界区 */
+        /* 退出临界区 */
         OS_CRITICAL_EXIT();(5)
 
-    /* 任务切换 */
+        /* 任务切换 */
         OS_TASK_SW();(6)
     }
 
@@ -460,42 +478,47 @@ OSTimeTick()函数在SysTick中断服务函数中被调用，是一个周期函�
 
 .. code-block:: c
     :caption: 代码清单:优先级-11OSTimeTick()函数
-    :emphasize-lines: 4-7,18-27,29-30
+    :emphasize-lines: 4-7,20-32,34-35
     :name: 代码清单:优先级-11
     :linenos:
 
     void  OSTimeTick (void)
     {
-    unsigned int i;
-    CPU_SR_ALLOC();(1)
+        unsigned int i;
+        CPU_SR_ALLOC();(1)
 
-    /* 进入临界区 */
+        /* 进入临界区 */
         OS_CRITICAL_ENTER();(2)
 
     /* 扫描就绪列表中所有任务的TaskDelayTicks，如果不为0，则减1 */
     #if 0
-    for (i=0; i<OS_CFG_PRIO_MAX; i++) {
-    if (OSRdyList[i].HeadPtr->TaskDelayTicks > 0) {
+        for (i=0; i<OS_CFG_PRIO_MAX; i++)
+        {
+            if (OSRdyList[i].HeadPtr->TaskDelayTicks > 0)
+            {
                 OSRdyList[i].HeadPtr->TaskDelayTicks --;
             }
         }
     #endif
 
-    for (i=0; i<OS_CFG_PRIO_MAX; i++) {(3)
-    if (OSRdyList[i].HeadPtr->TaskDelayTicks > 0) {
+        for (i=0; i<OS_CFG_PRIO_MAX; i++) (3)
+        {
+            if (OSRdyList[i].HeadPtr->TaskDelayTicks > 0)
+            {
                 OSRdyList[i].HeadPtr->TaskDelayTicks --;
-    if (OSRdyList[i].HeadPtr->TaskDelayTicks == 0) {
-    /* 为0则表示延时时间到，让任务就绪 */
-    //OS_RdyListInsert (OSRdyList[i].HeadPtr);
+                if (OSRdyList[i].HeadPtr->TaskDelayTicks == 0)
+                {
+                    /* 为0则表示延时时间到，让任务就绪 */
+                    //OS_RdyListInsert (OSRdyList[i].HeadPtr);
                     OS_PrioInsert(i);
                 }
             }
         }
 
-    /* 退出临界区 */
+        /* 退出临界区 */
         OS_CRITICAL_EXIT();(4)
 
-    /* 任务调度 */
+        /* 任务调度 */
         OSSched();
     }
 
@@ -579,19 +602,19 @@ main()函数具体见 代码清单:优先级-12_ ，修改部分代码已经加�
         OS_ERR err;
 
 
-    /* CPU初始化：1、初始化时间戳 */
+        /* CPU初始化：1、初始化时间戳 */
         CPU_Init();
 
-    /* 关闭中断 */
+        /* 关闭中断 */
         CPU_IntDis();
 
-    /* 配置SysTick 10ms 中断一次 */
+        /* 配置SysTick 10ms 中断一次 */
         OS_CPU_SysTickInit (10);
 
-    /* 初始化相关的全局变量 */
+        /* 初始化相关的全局变量 */
         OSInit(&err);(1)
 
-    /* 创建任务 */
+        /* 创建任务 */
         OSTaskCreate( (OS_TCB*)&Task1TCB,
                     (OS_TASK_PTR )Task1,
                     (void *)0,
@@ -621,7 +644,7 @@ main()函数具体见 代码清单:优先级-12_ ，修改部分代码已经加�
         OSRdyList[1].HeadPtr = &Task2TCB;
     #endif
 
-    /* 启动OS，将不再返回 */
+        /* 启动OS，将不再返回 */
         OSStart(&err);
     }
 
@@ -633,14 +656,14 @@ main()函数具体见 代码清单:优先级-12_ ，修改部分代码已经加�
     /* 软件延时 */
     void delay (uint32_t count)
     {
-    for (; count!=0; count--);
+        for (; count!=0; count--);
     }
 
 
 
     void Task1( void *p_arg )
     {
-    for ( ;; ) {
+        for ( ;; ) {
             flag1 = 1;
             OSTimeDly(2);
             flag1 = 0;
@@ -650,7 +673,7 @@ main()函数具体见 代码清单:优先级-12_ ，修改部分代码已经加�
 
     void Task2( void *p_arg )
     {
-    for ( ;; ) {
+        for ( ;; ) {
             flag2 = 1;
             OSTimeDly(2);
             flag2 = 0;
@@ -660,7 +683,7 @@ main()函数具体见 代码清单:优先级-12_ ，修改部分代码已经加�
 
     void Task3( void *p_arg )
     {
-    for ( ;; ) {
+        for ( ;; ) {
             flag3 = 1;
             OSTimeDly(2);
             flag3 = 0;

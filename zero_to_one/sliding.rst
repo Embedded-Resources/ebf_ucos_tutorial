@@ -25,18 +25,18 @@
         CPU_STK         *StkPtr;
         CPU_STK_SIZE    StkSize;
 
-    /* 任务延时周期个数 */
+        /* 任务延时周期个数 */
         OS_TICK         TaskDelayTicks;
 
-    /* 任务优先级 */
+        /* 任务优先级 */
         OS_PRIO         Prio;
 
-    /* 就绪列表双向链表的下一个指针 */
+        /* 就绪列表双向链表的下一个指针 */
         OS_TCB          *NextPtr;
-    /* 就绪列表双向链表的前一个指针 */
+        /* 就绪列表双向链表的前一个指针 */
         OS_TCB          *PrevPtr;
 
-    /*时基列表相关字段*/
+        /*时基列表相关字段*/
         OS_TCB          *TickNextPtr;
         OS_TCB          *TickPrevPtr;
         OS_TICK_SPOKE   *TickSpokePtr;
@@ -44,7 +44,7 @@
         OS_TICK         TickCtrMatch;
         OS_TICK         TickRemain;
 
-    /* 时间片相关字段 */
+        /* 时间片相关字段 */
         OS_TICK              TimeQuanta;(1)
         OS_TICK              TimeQuantaCtr;(2)
     };
@@ -90,49 +90,50 @@ OS_SchedRoundRobin()函数
         OS_TCB   *p_tcb;
         CPU_SR_ALLOC();
 
-    /*  进入临界段 */
+        /*  进入临界段 */
         CPU_CRITICAL_ENTER();
 
         p_tcb = p_rdy_list->HeadPtr;(2)
 
-    /* 如果TCB节点为空，则退出 */
-    if (p_tcb == (OS_TCB *)0) {(3)
+        /* 如果TCB节点为空，则退出 */
+        if (p_tcb == (OS_TCB *)0) (3)
+        {
             CPU_CRITICAL_EXIT();
-    return;
+            return;
         }
 
-    /* 如果是空闲任务，也退出 */
-    if (p_tcb == &OSIdleTaskTCB) {(4)
+        /* 如果是空闲任务，也退出 */
+        if (p_tcb == &OSIdleTaskTCB) {(4)
             CPU_CRITICAL_EXIT();
-    return;
+            return;
         }
 
-    /* 时间片自减 */
-    if (p_tcb->TimeQuantaCtr > (OS_TICK)0) {(5)
+        /* 时间片自减 */
+        if (p_tcb->TimeQuantaCtr > (OS_TICK)0) {(5)
             p_tcb->TimeQuantaCtr--;
         }
 
-    /* 时间片没有用完，则退出 */
-    if (p_tcb->TimeQuantaCtr > (OS_TICK)0) {(6)
+        /* 时间片没有用完，则退出 */
+        if (p_tcb->TimeQuantaCtr > (OS_TICK)0) {(6)
             CPU_CRITICAL_EXIT();
-    return;
+            return;
         }
 
-    /* 如果当前优先级只有一个任务，则退出 */
-    if (p_rdy_list->NbrEntries < (OS_OBJ_QTY)2) {(7)
+        /* 如果当前优先级只有一个任务，则退出 */
+        if (p_rdy_list->NbrEntries < (OS_OBJ_QTY)2) {(7)
             CPU_CRITICAL_EXIT();
-    return;
+            return;
         }
 
-    /* 时间片耗完，将任务放到链表的最后一个节点 */
+        /* 时间片耗完，将任务放到链表的最后一个节点 */
         OS_RdyListMoveHeadToTail(p_rdy_list);(8)
 
-    /* 重新获取任务节点 */
+        /* 重新获取任务节点 */
         p_tcb = p_rdy_list->HeadPtr;(9)
-    /* 重载默认的时间片计数值 */
+        /* 重载默认的时间片计数值 */
         p_tcb->TimeQuantaCtr = p_tcb->TimeQuanta;
 
-    /* 退出临界段 */
+        /* 退出临界段 */
         CPU_CRITICAL_EXIT();
     }
     #endif/* OS_CFG_SCHED_ROUND_ROBIN_EN > 0u */
@@ -173,15 +174,15 @@ OS_SchedRoundRobin()函数
 
     void  OSTimeTick (void)
     {
-    /* 更新时基列表 */
+        /* 更新时基列表 */
         OS_TickListUpdate();
 
     #if OS_CFG_SCHED_ROUND_ROBIN_EN > 0u
-    /* 时间片调度 */
+        /* 时间片调度 */
         OS_SchedRoundRobin(&OSRdyList[OSPrioCur]);
     #endif
 
-    /* 任务调度 */
+        /* 任务调度 */
         OSSched();
     }
 
@@ -199,20 +200,20 @@ OS_SchedRoundRobin()函数
 
     void OSTaskCreate (OS_TCB        *p_tcb,
                     OS_TASK_PTR   p_task,
-    void          *p_arg,
+                    void          *p_arg,
                     OS_PRIO       prio,
                     CPU_STK       *p_stk_base,
                     CPU_STK_SIZE  stk_size,
-    OS_TICK       time_quanta,(1)
+                    OS_TICK       time_quanta,(1)
                     OS_ERR        *p_err)
     {
         CPU_STK       *p_sp;
         CPU_SR_ALLOC();
 
-    /* 初始化TCB为默认值 */
+        /* 初始化TCB为默认值 */
         OS_TaskInitTCB(p_tcb);
 
-    /* 初始化栈 */
+        /* 初始化栈 */
         p_sp = OSTaskStkInit( p_task,
                             p_arg,
                             p_stk_base,
@@ -223,20 +224,20 @@ OS_SchedRoundRobin()函数
         p_tcb->StkPtr = p_sp;
         p_tcb->StkSize = stk_size;
 
-    /* 时间片相关初始化 */
+        /* 时间片相关初始化 */
         p_tcb->TimeQuanta    = time_quanta;(2)
     #if OS_CFG_SCHED_ROUND_ROBIN_EN > 0u
         p_tcb->TimeQuantaCtr = time_quanta;(3)
     #endif
 
-    /* 进入临界段 */
+        /* 进入临界段 */
         OS_CRITICAL_ENTER();
 
-    /* 将任务添加到就绪列表 */
+        /* 将任务添加到就绪列表 */
         OS_PrioInsert(p_tcb->Prio);
         OS_RdyListInsertTail(p_tcb);
 
-    /* 退出临界段 */
+        /* 退出临界段 */
         OS_CRITICAL_EXIT();
 
         *p_err = OS_ERR_NONE;
@@ -265,17 +266,17 @@ OS_SchedRoundRobin()函数
 
     void  OS_IdleTaskInit(OS_ERR  *p_err)
     {
-    /* 初始化空闲任务计数器 */
+        /* 初始化空闲任务计数器 */
         OSIdleTaskCtr = (OS_IDLE_CTR)0;
 
-    /* 创建空闲任务 */
+        /* 创建空闲任务 */
         OSTaskCreate( (OS_TCB     *)&OSIdleTaskTCB,
                     (OS_TASK_PTR )OS_IdleTask,
                     (void       *)0,
                     (OS_PRIO)(OS_CFG_PRIO_MAX - 1u),
                     (CPU_STK    *)OSCfg_IdleTaskStkBasePtr,
                     (CPU_STK_SIZE)OSCfg_IdleTaskStkSize,
-    (OS_TICK       )0,
+                    (OS_TICK       )0,
                     (OS_ERR     *)p_err );
     }
 
@@ -303,53 +304,53 @@ main()函数
         OS_ERR err;
 
 
-    /* CPU初始化：1、初始化时间戳 */
+        /* CPU初始化：1、初始化时间戳 */
         CPU_Init();
 
-    /* 关闭中断 */
+        /* 关闭中断 */
         CPU_IntDis();
 
-    /* 配置SysTick 10ms 中断一次 */
+        /* 配置SysTick 10ms 中断一次 */
         OS_CPU_SysTickInit (10);
 
-    /* 初始化相关的全局变量 */
+        /* 初始化相关的全局变量 */
         OSInit(&err);
 
-    /* 创建任务 */
+        /* 创建任务 */
         OSTaskCreate( (OS_TCB       *)&Task1TCB,
                     (OS_TASK_PTR   )Task1,
                     (void         *)0,
-    (OS_PRIO       )1,(1)
+                    (OS_PRIO       )1,(1)
                     (CPU_STK      *)&Task1Stk[0],
                     (CPU_STK_SIZE  )TASK1_STK_SIZE,
-    (OS_TICK       )0,(1)
+                    (OS_TICK       )0,(1)
                     (OS_ERR       *)&err );
 
         OSTaskCreate( (OS_TCB       *)&Task2TCB,
                     (OS_TASK_PTR   )Task2,
                     (void         *)0,
-    (OS_PRIO       )2,(2)
+                    (OS_PRIO       )2,(2)
                     (CPU_STK      *)&Task2Stk[0],
                     (CPU_STK_SIZE  )TASK2_STK_SIZE,
-    (OS_TICK       )1,(2)
+                    (OS_TICK       )1,(2)
                     (OS_ERR       *)&err );
 
         OSTaskCreate( (OS_TCB       *)&Task3TCB,
                     (OS_TASK_PTR   )Task3,
                     (void         *)0,
-    (OS_PRIO       )2,(2)
+                    (OS_PRIO       )2,(2)
                     (CPU_STK      *)&Task3Stk[0],
                     (CPU_STK_SIZE  )TASK3_STK_SIZE,
-    (OS_TICK       )1,(2)
+                    (OS_TICK       )1,(2)
                     (OS_ERR       *)&err );
 
-    /* 启动OS，将不再返回 */
+        /* 启动OS，将不再返回 */
         OSStart(&err);
     }
 
     void Task1( void *p_arg )
     {
-    for ( ;; ) {
+        for ( ;; ) {
             flag1 = 1;
             OSTimeDly(2);
             flag1 = 0;
@@ -359,24 +360,24 @@ main()函数
 
     void Task2( void *p_arg )
     {
-    for ( ;; ) {
+        for ( ;; ) {
             flag2 = 1;
-    //OSTimeDly(1);(3)
+            //OSTimeDly(1);(3)
             delay(0xff);
             flag2 = 0;
-    //OSTimeDly(1);
+            //OSTimeDly(1);
             delay(0xff);
         }
     }
 
     void Task3( void *p_arg )
     {
-    for ( ;; ) {
+        for ( ;; ) {
             flag3 = 1;
-    //OSTimeDly(1);(3)
+            //OSTimeDly(1);(3)
             delay(0xff);
-    flag3 = 0;
-    //OSTimeDly(1);
+            flag3 = 0;
+            //OSTimeDly(1);
             delay(0xff);
         }
     }

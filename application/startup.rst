@@ -19,36 +19,36 @@
 
     int main (void)
     {
-    /* 硬件初始化 */
+        /* 硬件初始化 */
         HardWare_Init();(1)
 
-    /* RTOS 系统初始化 */
+        /* RTOS 系统初始化 */
         RTOS_Init();(2)
 
-    /* 创建任务1，但任务1不会执行，因为调度器还没有开启 */(3)
+        /* 创建任务1，但任务1不会执行，因为调度器还没有开启 */(3)
         RTOS_TaskCreate(Task1);
-    /* 创建任务2，但任务2不会执行，因为调度器还没有开启 */
-    RTOS_TaskCreate(Task2);
+        /* 创建任务2，但任务2不会执行，因为调度器还没有开启 */
+        RTOS_TaskCreate(Task2);
 
-    /* ......继续创建各种任务 */
+        /* ......继续创建各种任务 */
 
-    /* 启动RTOS，开始调度 */
+        /* 启动RTOS，开始调度 */
         RTOS_Start();(4)
     }
 
     voidTask1( void *arg )(5)
     {
-    while (1)
+        while (1)
         {
-    /* 任务实体，必须有阻塞的情况出现 */
+            /* 任务实体，必须有阻塞的情况出现 */
         }
     }
 
     voidTask1( void *arg )(6)
     {
-    while (1)
+        while (1)
         {
-    /* 任务实体，必须有阻塞的情况出现 */
+            /* 任务实体，必须有阻塞的情况出现 */
         }
     }
 
@@ -78,47 +78,47 @@
 
     int main (void)
     {
-    /* 硬件初始化 */
+        /* 硬件初始化 */
         HardWare_Init();(1)
 
-    /* RTOS 系统初始化 */
+        /* RTOS 系统初始化 */
         RTOS_Init();(2)
 
-    /* 创建一个任务 */
+        /* 创建一个任务 */
         RTOS_TaskCreate(AppTaskCreate);(3)
 
-    /* 启动RTOS，开始调度 */
+        /* 启动RTOS，开始调度 */
         RTOS_Start();(4)
     }
 
     /* 起始任务，在里面创建任务 */
     voidAppTaskCreate( void *arg )(5)
     {
-    /* 创建任务1，然后执行 */
+        /* 创建任务1，然后执行 */
         RTOS_TaskCreate(Task1);(6)
 
-    /* 当任务1阻塞时，继续创建任务2，然后执行 */
+        /* 当任务1阻塞时，继续创建任务2，然后执行 */
         RTOS_TaskCreate(Task2);
 
-    /* ......继续创建各种任务 */
+        /* ......继续创建各种任务 */
 
-    /* 当任务创建完成，删除起始任务 */
+        /* 当任务创建完成，删除起始任务 */
         RTOS_TaskDelete(AppTaskCreate);(7)
     }
 
     void Task1( void *arg )(8)
     {
-    while (1)
+        while (1)
         {
-    /* 任务实体，必须有阻塞的情况出现 */
+            /* 任务实体，必须有阻塞的情况出现 */
         }
     }
 
     void Task2( void *arg )(9)
     {
-    while (1)
+        while (1)
         {
-    /* 任务实体，必须有阻塞的情况出现 */
+            /* 任务实体，必须有阻塞的情况出现 */
         }
     }
 
@@ -190,11 +190,12 @@ __main()函数的主要工作是初始化系统的堆和栈，最后调用C中�
         CPU_STK      *p_stk;
         CPU_STK_SIZE  size;
 
-    if (p_err == (OS_ERR *)0) {
+        if (p_err == (OS_ERR *)0)
+        {
             OS_SAFETY_CRITICAL_EXCEPTION();
-    return;
+            return;
         }
-    #endi
+
         OSInitHook();	/*初始化钩子函数相关的代码*/
 
         OSIntNestingCtr= (OS_NESTING_CTR)0; 	/*清除中断嵌套计数器*/
@@ -211,11 +212,14 @@ __main()函数的主要工作是初始化系统的堆和栈，最后调用C中�
         OSPrioSaved                     = (OS_PRIO)0;
 
 
-    if (OSCfg_ISRStkSize > (CPU_STK_SIZE)0) {
+        if (OSCfg_ISRStkSize > (CPU_STK_SIZE)0)
+        {
             p_stk = OSCfg_ISRStkBasePtr; 	/*清除异常栈以进行栈检查*/
-    if (p_stk != (CPU_STK *)0) {
+            if (p_stk != (CPU_STK *)0)
+            {
                 size  = OSCfg_ISRStkSize;
-    while (size > (CPU_STK_SIZE)0) {
+                while (size > (CPU_STK_SIZE)0)
+                {
                     size--;
                     *p_stk = (CPU_STK)0;
                     p_stk++;
@@ -228,18 +232,21 @@ __main()函数的主要工作是初始化系统的堆和栈，最后调用C中�
         OS_RdyListInit();	/*初始化就绪列表*/
 
         OS_TaskInit(p_err);   /*初始化任务管理器*/
-    if (*p_err != OS_ERR_NONE) {
-    return;
+        if (*p_err != OS_ERR_NONE)
+        {
+            return;
         }
 
         OS_IdleTaskInit(p_err);    /* 初始化空闲任务  */	(1)
-    if (*p_err != OS_ERR_NONE) {
-    return;
+        if (*p_err != OS_ERR_NONE)
+        {
+            return;
         }
 
         OS_TickTaskInit(p_err);   /* 初始化时钟节拍任务*/	(2)
-    if (*p_err != OS_ERR_NONE) {
-    return;
+        if (*p_err != OS_ERR_NONE)
+        {
+            return;
         }
 
         OSCfg_Init();
@@ -263,9 +270,10 @@ __main()函数的主要工作是初始化系统的堆和栈，最后调用C中�
     void  OS_IdleTaskInit (OS_ERR  *p_err)
     {
     #ifdef OS_SAFETY_CRITICAL
-    if (p_err == (OS_ERR *)0) {
+        if (p_err == (OS_ERR *)0)
+        {
             OS_SAFETY_CRITICAL_EXCEPTION();
-    return;
+            return;
         }
     #endif
 
@@ -282,7 +290,7 @@ __main()函数的主要工作是初始化系统的堆和栈，最后调用C中�
                     (OS_MSG_QTY  )0u,
                     (OS_TICK     )0u,
                     (void       *)0,
-    (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR |OS_OPT_TASK_NO_TLS),
+                    (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR |OS_OPT_TASK_NO_TLS),
                     (OS_ERR     *)p_err);		(2)
     }
 
@@ -311,14 +319,15 @@ __main()函数的主要工作是初始化系统的堆和栈，最后调用C中�
         /* Prevent compiler warning for not using 'p_arg'*/
         p_arg = p_arg;
 
-    while (DEF_ON) {
+         while (DEF_ON)
+         {
             CPU_CRITICAL_ENTER();
             OSIdleTaskCtr++;
     #if OS_CFG_STAT_TASK_EN > 0u
             OSStatTaskCtr++;
     #endif
             CPU_CRITICAL_EXIT();
-        /* Call user definable HOOK */
+            /* Call user definable HOOK */
             OSIdleTaskHook();
         }
     }
@@ -340,9 +349,10 @@ __main()函数的主要工作是初始化系统的堆和栈，最后调用C中�
     void  OS_TickTaskInit (OS_ERR  *p_err)
     {
     #ifdef OS_SAFETY_CRITICAL
-    if (p_err == (OS_ERR *)0) {
+        if (p_err == (OS_ERR *)0)
+        {
             OS_SAFETY_CRITICAL_EXCEPTION();
-    return;
+            return;
         }
     #endif
 
@@ -353,20 +363,23 @@ __main()函数的主要工作是初始化系统的堆和栈，最后调用C中�
 
         OS_TickListInit();/* Initialize the tick list data structures  */
 
-    /* ---------------- CREATE THE TICK TASK ---------------- */
-    if (OSCfg_TickTaskStkBasePtr == (CPU_STK *)0) {
+        /* ---------------- CREATE THE TICK TASK ---------------- */
+        if (OSCfg_TickTaskStkBasePtr == (CPU_STK *)0)
+        {
             *p_err = OS_ERR_TICK_STK_INVALID;
-    return;
+            return;
         }
 
-    if (OSCfg_TickTaskStkSize < OSCfg_StkSizeMin) {
+        if (OSCfg_TickTaskStkSize < OSCfg_StkSizeMin)
+        {
             *p_err = OS_ERR_TICK_STK_SIZE_INVALID;
-    return;
+            return;
         }
         /* Only one task at the 'Idle Task' priority              */
-    if (OSCfg_TickTaskPrio >= (OS_CFG_PRIO_MAX - 1u)) {
+        if (OSCfg_TickTaskPrio >= (OS_CFG_PRIO_MAX - 1u))
+        {
             *p_err = OS_ERR_TICK_PRIO_INVALID;
-    return;
+            return;
         }
 
         OSTaskCreate((OS_TCB     *)&OSTickTaskTCB,
@@ -380,7 +393,7 @@ __main()函数的主要工作是初始化系统的堆和栈，最后调用C中�
                     (OS_MSG_QTY  )0u,
                     (OS_TICK     )0u,
                     (void       *)0,
-    (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR | OS_OPT_TASK_NO_TLS),
+                    (OS_OPT)(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR | OS_OPT_TASK_NO_TLS),
                     (OS_ERR     *)p_err);
     }
 
@@ -551,24 +564,25 @@ OSStart()
     void  OSStart (OS_ERR  *p_err)
     {
     #ifdef OS_SAFETY_CRITICAL
-    if (p_err == (OS_ERR *)0) {
+        if (p_err == (OS_ERR *)0) {
             OS_SAFETY_CRITICAL_EXCEPTION();
-    return;
+            return;
         }
     #endif
 
-    if (OSRunning == OS_STATE_OS_STOPPED) {
-    OSPrioHighRdy   = OS_PrioGetHighest();/* Find the highest priority */
+        if (OSRunning == OS_STATE_OS_STOPPED) {
+            OSPrioHighRdy   = OS_PrioGetHighest();/* Find the highest priority */
             OSPrioCur       = OSPrioHighRdy;
             OSTCBHighRdyPtr = OSRdyList[OSPrioHighRdy].HeadPtr;
             OSTCBCurPtr     = OSTCBHighRdyPtr;
             OSRunning       = OS_STATE_OS_RUNNING;
-    OSStartHighRdy();/* Execute target specific code to start task  */
+            OSStartHighRdy();/* Execute target specific code to start task  */
             *p_err           = OS_ERR_FATAL_RETURN;
-    /* OSStart() is not supposed to return  */
-        } else {
+            /* OSStart() is not supposed to return  */
+        }
+        else
+        {
             *p_err           = OS_ERR_OS_RUNNING; /* OS is already running */
-
         }
     }
 
@@ -591,13 +605,8 @@ app.c
     int  main (void)
     {
         OS_ERR  err;
-
-
         OSInit(&err);        /* Init μC/OS-III.  */
-
-
         OSTaskCreate((OS_TCB     *)&AppTaskStartTCB,/*Create the start task*/
-
                     (CPU_CHAR   *)"App Task Start",
                     (OS_TASK_PTR ) AppTaskStart,			(1)
                     (void       *) 0,
@@ -608,10 +617,10 @@ app.c
                     (OS_MSG_QTY  ) 5u,
                     (OS_TICK     ) 0u,
                     (void       *) 0,
-    (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+                    (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                     (OS_ERR     *)&err);
         /*Start multitasking (i.e. give control to μC/OS-III)*/
-    OSStart(&err); 					(2)
+        OSStart(&err); 					(2)
 
     }
 
@@ -637,7 +646,7 @@ app.c
 
         CPU_Init();
 
-    cpu_clk_freq = BSP_CPU_ClkFreq();/*Determine SysTick reference freq*/
+        cpu_clk_freq = BSP_CPU_ClkFreq();/*Determine SysTick reference freq*/
         /* Determine nbr SysTick increments */
         cnts = cpu_clk_freq / (CPU_INT32U)OSCfg_TickRate_Hz;
 
@@ -648,8 +657,8 @@ app.c
 
 
     #if OS_CFG_STAT_TASK_EN > 0u
-    /* Compute CPU capacity with no task running*/
-    OSStatTaskCPUUsageInit(&err);
+        /* Compute CPU capacity with no task running*/
+        OSStatTaskCPUUsageInit(&err);
     #endif
 
         CPU_IntDisMeasMaxCurReset();
@@ -694,9 +703,8 @@ app.c
                     (OS_MSG_QTY  ) 5u,
                     (OS_TICK     ) 0u,
                     (void       *) 0,
-    (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+                    (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                     (OS_ERR     *)&err);
-
 
         OSTaskDel ( & AppTaskStartTCB, & err );
     }

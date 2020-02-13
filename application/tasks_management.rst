@@ -144,62 +144,62 @@
                         OS_ERR  *p_err) 		(2)//返回错误类型
     {
         CPU_SR_ALLOC();  //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
         CPU_CRITICAL_ENTER();                         //关中断
-    if (p_tcb == (OS_TCB *)0) {         (3)//如果 p_tcb 为空
+        if (p_tcb == (OS_TCB *)0) {         (3)//如果 p_tcb 为空
             p_tcb = OSTCBCurPtr;    //挂起自身
         }
 
-    if (p_tcb == OSTCBCurPtr) {         (4)//如果是挂起自身
-    if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0) {    //如果调度器被锁
+        if (p_tcb == OSTCBCurPtr) {         (4)//如果是挂起自身
+            if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0) {    //如果调度器被锁
                 CPU_CRITICAL_EXIT();                            //开中断
                 *p_err = OS_ERR_SCHED_LOCKED;          //错误类型为“调度器被锁”
-    return;                                         //返回，停止执行
+                return;                                         //返回，停止执行
             }
         }
 
         *p_err = OS_ERR_NONE;                             //错误类型为“无错误”
-    switch (p_tcb->TaskState) {      (5)//根据 p_tcb 的任务状态分类处理
-    case OS_TASK_STATE_RDY:       (6)//如果是就绪状态
+        switch (p_tcb->TaskState) {      (5)//根据 p_tcb 的任务状态分类处理
+            case OS_TASK_STATE_RDY:       (6)//如果是就绪状态
             OS_CRITICAL_ENTER_CPU_EXIT();                 //锁调度器，重开中断
             p_tcb->TaskState  =  OS_TASK_STATE_SUSPENDED; //任务状态改为“挂起状态”
             p_tcb->SuspendCtr = (OS_NESTING_CTR)1;           //挂起前套数为1
             OS_RdyListRemove(p_tcb);                  //将任务从就绪列表移除
             OS_CRITICAL_EXIT_NO_SCHED();              //开调度器，不进行调度
-    break;                                           //跳出
+            break;                                           //跳出
 
-    case OS_TASK_STATE_DLY:         (7)//如果是延时状态将改为“延时中被挂起”
+            case OS_TASK_STATE_DLY:         (7)//如果是延时状态将改为“延时中被挂起”
             p_tcb->TaskState  = OS_TASK_STATE_DLY_SUSPENDED;
             p_tcb->SuspendCtr = (OS_NESTING_CTR)1;           //挂起前套数为1
             CPU_CRITICAL_EXIT();                             //开中断
-    break;                                           //跳出
+            break;                                           //跳出
 
-    case OS_TASK_STATE_PEND: (8)//如果是无期限等待状态将改为“无期限等待中被挂起”
+            case OS_TASK_STATE_PEND: (8)//如果是无期限等待状态将改为“无期限等待中被挂起”
             p_tcb->TaskState  = OS_TASK_STATE_PEND_SUSPENDED;
             p_tcb->SuspendCtr = (OS_NESTING_CTR)1;           //挂起前套数为1
             CPU_CRITICAL_EXIT();                             //开中断
-    break;                                           //跳出
+            break;                                           //跳出
 
-    case OS_TASK_STATE_PEND_TIMEOUT:(9)//如果是有期限等待将改为“有期限等待中被挂起”
+            case OS_TASK_STATE_PEND_TIMEOUT:(9)//如果是有期限等待将改为“有期限等待中被挂起”
             p_tcb->TaskState  = OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED;
             p_tcb->SuspendCtr = (OS_NESTING_CTR)1;           //挂起前套数为1
             CPU_CRITICAL_EXIT();                             //开中断
-    break;                                           //跳出
+            break;                                           //跳出
 
-    case OS_TASK_STATE_SUSPENDED:     (10)		//如果状态中有挂起状态
-    case OS_TASK_STATE_DLY_SUSPENDED:
-    case OS_TASK_STATE_PEND_SUSPENDED:
-    case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
+            case OS_TASK_STATE_SUSPENDED:     (10)		//如果状态中有挂起状态
+            case OS_TASK_STATE_DLY_SUSPENDED:
+            case OS_TASK_STATE_PEND_SUSPENDED:
+            case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
             p_tcb->SuspendCtr++;                             //挂起嵌套数加1
             CPU_CRITICAL_EXIT();                             //开中断
-    break;                                           //跳出
+            break;                                           //跳出
 
-    default:                         (11)//如果任务状态超出预期
+            default:                         (11)//如果任务状态超出预期
             CPU_CRITICAL_EXIT();                             //开中断
             *p_err = OS_ERR_STATE_INVALID;          //错误类型为“状态非法”
-    return;                                          //返回，停止执行
+            return;                                          //返回，停止执行
         }
 
         OSSched();                     (12)//调度任务
@@ -269,14 +269,14 @@
     staticOS_TCB   AppTaskLed1TCB;/* LED任务句柄 */
     static void KEY_Task(void* parameter)
     {
-    OS_ERR      err;
-    while (1) {
-    if ( Key_Scan(KEY1_GPIO_PORT,KEY1_GPIO_PIN) == KEY_ON ) {
-    /* KEY1 被按下 */
+        OS_ERR      err;
+        while (1) {
+            if ( Key_Scan(KEY1_GPIO_PORT,KEY1_GPIO_PIN) == KEY_ON ) {
+                /* KEY1 被按下 */
                 printf("挂起LED任务！\n");
-    OSTaskSuspend (AppTaskLed1TCB, & err );   /* 挂起LED1任务 */
+                OSTaskSuspend (AppTaskLed1TCB, & err );   /* 挂起LED1任务 */
             }
-    OSTimeDly ( 20, OS_OPT_TIME_DLY, & err );   /* 延时20个tick */
+            OSTimeDly ( 20, OS_OPT_TIME_DLY, & err );   /* 延时20个tick */
         }
     }
 
@@ -298,38 +298,38 @@
             OS_ERR  *p_err)     (2)//返回错误类型
     {
         CPU_SR_ALLOC();  //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL//如果启用了安全检测
-    if (p_err == (OS_ERR *)0) {      (3)//如果 p_err 为空
+        if (p_err == (OS_ERR *)0) {      (3)//如果 p_err 为空
             OS_SAFETY_CRITICAL_EXCEPTION();   //执行安全检测异常函数
-    return;                           //返回，停止执行
+            return;                           //返回，停止执行
         }
     #endif
     //如果禁用了中断延迟发布和中断中非法调用检测
     #if (OS_CFG_ISR_POST_DEFERRED_EN   == 0u) && \
         (OS_CFG_CALLED_FROM_ISR_CHK_EN >  0u)		(4)
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0) { //如果在中断中调用该函数
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0) { //如果在中断中调用该函数
             *p_err = OS_ERR_TASK_RESUME_ISR;        //错误类型为“在中断中恢复任务”
-    return;                                //返回，停止执行
+            return;                                //返回，停止执行
         }
     #endif
 
 
         CPU_CRITICAL_ENTER();                     //关中断
     #if OS_CFG_ARG_CHK_EN > 0u//如果启用了参数检测
-    if ((p_tcb == (OS_TCB *)0) ||             //如果被恢复任务为空或是自身
+        if ((p_tcb == (OS_TCB *)0) ||             //如果被恢复任务为空或是自身
             (p_tcb == OSTCBCurPtr)) {	(5)
             CPU_CRITICAL_EXIT();                  //开中断
             *p_err  = OS_ERR_TASK_RESUME_SELF;     //错误类型为“恢复自身”
-    return;                               //返回，停止执行
+            return;                               //返回，停止执行
         }
     #endif
         CPU_CRITICAL_EXIT();                      //关中断
 
     #if OS_CFG_ISR_POST_DEFERRED_EN > 0u(6)//如果启用了中断延迟发布
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0) {  //如果该函数在中断中被调用
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0) {  //如果该函数在中断中被调用
             OS_IntQPost((OS_OBJ_TYPE)OS_OBJ_TYPE_TASK_RESUME,
                         (void      *)p_tcb,
                         (void      *)0,
@@ -338,10 +338,10 @@
                         (OS_OPT     )0,
                         (CPU_TS     )0,
                         (OS_ERR    *)p_err);//把恢复任务命令发布到中断消息队列
-    return;       //返回，停止执行
+            return;       //返回，停止执行
         }
     #endif
-    /* 如果禁用了中断延迟发布或不是在中断中调用该函数 */
+        /* 如果禁用了中断延迟发布或不是在中断中调用该函数 */
         OS_TaskResume(p_tcb, p_err);         //直接将任务 p_tcb 恢复(7)
     }
     #endif
@@ -378,57 +378,57 @@
                         OS_ERR  *p_err)      //返回错误类型
     {
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
         CPU_CRITICAL_ENTER();                 //关中断
         *p_err  = OS_ERR_NONE;                 //错误类型为“无错误”
-    switch (p_tcb->TaskState) {      (1)//根据 p_tcb 的任务状态分类处理
-    case OS_TASK_STATE_RDY:               //如果状态中没有挂起状态
-    case OS_TASK_STATE_DLY:
-    case OS_TASK_STATE_PEND:
-    case OS_TASK_STATE_PEND_TIMEOUT:
+        switch (p_tcb->TaskState) {      (1)//根据 p_tcb 的任务状态分类处理
+            case OS_TASK_STATE_RDY:               //如果状态中没有挂起状态
+            case OS_TASK_STATE_DLY:
+            case OS_TASK_STATE_PEND:
+            case OS_TASK_STATE_PEND_TIMEOUT:
             CPU_CRITICAL_EXIT();                              //开中断
             *p_err = OS_ERR_TASK_NOT_SUSPENDED;  (2)//错误类型为“任务未被挂起”
-    break;                                            //跳出
+            break;                                            //跳出
 
-    case OS_TASK_STATE_SUSPENDED:           (3)//如果是“挂起状态”
+            case OS_TASK_STATE_SUSPENDED:           (3)//如果是“挂起状态”
             OS_CRITICAL_ENTER_CPU_EXIT();                 //锁调度器，重开中断
             p_tcb->SuspendCtr--;              (4)//任务的挂起嵌套数减1
-    if (p_tcb->SuspendCtr == (OS_NESTING_CTR)0) {  //如果挂起前套数为0
+            if (p_tcb->SuspendCtr == (OS_NESTING_CTR)0) {  //如果挂起前套数为0
                 p_tcb->TaskState = OS_TASK_STATE_RDY;    //修改状态为“就绪状态”
                 OS_TaskRdy(p_tcb);                  //把 p_tcb 插入就绪列表
             }
             OS_CRITICAL_EXIT_NO_SCHED();              //开调度器，不调度任务
-    break;                                            //跳出
+            break;                                            //跳出
 
-    case OS_TASK_STATE_DLY_SUSPENDED:      (5)//如果是“延时中被挂起”
+            case OS_TASK_STATE_DLY_SUSPENDED:      (5)//如果是“延时中被挂起”
             p_tcb->SuspendCtr--;                       //任务的挂起嵌套数减1
-    if (p_tcb->SuspendCtr == (OS_NESTING_CTR)0) { //如果挂起前套数为0
+            if (p_tcb->SuspendCtr == (OS_NESTING_CTR)0) { //如果挂起前套数为0
                 p_tcb->TaskState = OS_TASK_STATE_DLY;    //修改状态为“延时状态”
             }
             CPU_CRITICAL_EXIT();                              //开中断
-    break;                                            //跳出
+            break;                                            //跳出
 
-    case OS_TASK_STATE_PEND_SUSPENDED:    (6)//如果是“无期限等待中被挂起”
+            case OS_TASK_STATE_PEND_SUSPENDED:    (6)//如果是“无期限等待中被挂起”
             p_tcb->SuspendCtr--;                      //任务的挂起嵌套数减1
-    if (p_tcb->SuspendCtr == (OS_NESTING_CTR)0) {  //如果挂起前套数为0
-    p_tcb->TaskState = OS_TASK_STATE_PEND; //修改状态为“无期限等待状态”
+            if (p_tcb->SuspendCtr == (OS_NESTING_CTR)0) {  //如果挂起前套数为0
+                p_tcb->TaskState = OS_TASK_STATE_PEND; //修改状态为“无期限等待状态”
             }
             CPU_CRITICAL_EXIT();                              //开中断
-    break;                                            //跳出
+            break;                                            //跳出
 
-    case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:(7)//如果是“有期限等待中被挂起”
+            case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:(7)//如果是“有期限等待中被挂起”
             p_tcb->SuspendCtr--;                //任务的挂起嵌套数减1
-    if (p_tcb->SuspendCtr == (OS_NESTING_CTR)0) { //如果挂起前套数为0
+            if (p_tcb->SuspendCtr == (OS_NESTING_CTR)0) { //如果挂起前套数为0
                 p_tcb->TaskState = OS_TASK_STATE_PEND_TIMEOUT;
             }
             CPU_CRITICAL_EXIT();                              //开中断
-    break;                                            //跳出
+            break;                                            //跳出
 
-    default:                        (8)	//如果 p_tcb 任务状态超出预期
+            default:                        (8)	//如果 p_tcb 任务状态超出预期
             CPU_CRITICAL_EXIT();                              //开中断
             *p_err = OS_ERR_STATE_INVALID;        //错误类型为“状态非法”
-    return;//跳出
+            return;//跳出
         }
 
         OSSched();                (9)//调度任务
@@ -478,13 +478,13 @@ OSTaskResume()函数用于恢复挂起的任务。任务在挂起时候调用过
 
     static void KEY_Task(void* parameter)
     {OS_ERR      err;
-    while (1) {
-    if ( Key_Scan(KEY2_GPIO_PORT,KEY2_GPIO_PIN) == KEY_ON ) {
-    /* KEY2 被按下 */
+        while (1) {
+            if ( Key_Scan(KEY2_GPIO_PORT,KEY2_GPIO_PIN) == KEY_ON ) {
+                /* KEY2 被按下 */
                 printf("恢复LED任务！\n");
-    OSTaskResume ( &AppTaskLed1TCB, & err );  /* 恢复LED任务！ */
+                OSTaskResume ( &AppTaskLed1TCB, & err );  /* 恢复LED任务！ */
             }
-    OSTimeDly ( 20, OS_OPT_TIME_DLY, & err );   /* 延时20个tick */
+            OSTimeDly ( 20, OS_OPT_TIME_DLY, & err );   /* 延时20个tick */
         }
     }
 
@@ -506,32 +506,32 @@ OSTaskDel()用于删除一个任务。当一个任务删除另外一个任务时
                     OS_ERR  *p_err)                 //返回错误类型
     {
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0) {                //如果 p_err 为空
+        if (p_err == (OS_ERR *)0) {                //如果 p_err 为空
             OS_SAFETY_CRITICAL_EXCEPTION();        //执行安全检测异常函数
-    return;                                //返回，停止执行
+            return;                                //返回，停止执行
         }
     #endif
 
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u(1)//如果启用了中断中非法调用检测
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0) { //如果该函数在中断中被调用
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0) { //如果该函数在中断中被调用
             *p_err = OS_ERR_TASK_DEL_ISR;           //错误类型为“在中断中删除任务”
-    return;                                //返回，停止执行
+            return;                                //返回，停止执行
         }
     #endif
 
-    if (p_tcb == &OSIdleTaskTCB) {      (2)//如果目标任务是空闲任务
+        if (p_tcb == &OSIdleTaskTCB) {      (2)//如果目标任务是空闲任务
             *p_err = OS_ERR_TASK_DEL_IDLE;          //错误类型为“删除空闲任务”
-    return;                                //返回，停止执行
+            return;                                //返回，停止执行
         }
 
     #if OS_CFG_ISR_POST_DEFERRED_EN > 0u(3)//如果启用了中断延迟发布
-    if (p_tcb == &OSIntQTaskTCB) {          //如果目标任务是中断延迟提交任务
+        if (p_tcb == &OSIntQTaskTCB) {          //如果目标任务是中断延迟提交任务
             *p_err = OS_ERR_TASK_DEL_INVALID;       //错误类型为“非法删除任务”
-    return;                                //返回，停止执行
+            return;                                //返回，停止执行
         }
     #endif
 
@@ -542,47 +542,47 @@ OSTaskDel()用于删除一个任务。当一个任务删除另外一个任务时
         }
 
         OS_CRITICAL_ENTER();                       //进入临界段
-    switch (p_tcb->TaskState) {      (5)//根据目标任务的任务状态分类处理
-    case OS_TASK_STATE_RDY:                //如果是就绪状态
-            OS_RdyListRemove(p_tcb);     (6)//将任务从就绪列表移除
-    break;                            //跳出
+        switch (p_tcb->TaskState) {      (5)//根据目标任务的任务状态分类处理
+        case OS_TASK_STATE_RDY:                //如果是就绪状态
+                OS_RdyListRemove(p_tcb);     (6)//将任务从就绪列表移除
+        break;                            //跳出
 
-    case OS_TASK_STATE_SUSPENDED:    (7)//如果是挂起状态
-    break;                            //直接跳出
+        case OS_TASK_STATE_SUSPENDED:    (7)//如果是挂起状态
+        break;                            //直接跳出
 
-    case OS_TASK_STATE_DLY:        (8)//如果包含延时状态
-    case OS_TASK_STATE_DLY_SUSPENDED:
-            OS_TickListRemove(p_tcb);         //将任务从节拍列表移除
-    break;                            //跳出
+        case OS_TASK_STATE_DLY:        (8)//如果包含延时状态
+        case OS_TASK_STATE_DLY_SUSPENDED:
+                OS_TickListRemove(p_tcb);         //将任务从节拍列表移除
+        break;                            //跳出
 
-    case OS_TASK_STATE_PEND:       (9)//如果包含等待状态
-    case OS_TASK_STATE_PEND_SUSPENDED:
-    case OS_TASK_STATE_PEND_TIMEOUT:
-    case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
-            OS_TickListRemove(p_tcb);    (10)//将任务从节拍列表移除
-    switch (p_tcb->PendOn) {   (11)//根据任务的等待对象分类处理
-    case OS_TASK_PEND_ON_NOTHING: //如果没在等待内核对象
-    case OS_TASK_PEND_ON_TASK_Q:  //如果等待的是任务消息队列
-    case OS_TASK_PEND_ON_TASK_SEM://如果等待的是任务信号量
-    break;                   //直接跳出
+        case OS_TASK_STATE_PEND:       (9)//如果包含等待状态
+        case OS_TASK_STATE_PEND_SUSPENDED:
+        case OS_TASK_STATE_PEND_TIMEOUT:
+        case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
+                OS_TickListRemove(p_tcb);    (10)//将任务从节拍列表移除
+        switch (p_tcb->PendOn) {   (11)//根据任务的等待对象分类处理
+        case OS_TASK_PEND_ON_NOTHING: //如果没在等待内核对象
+        case OS_TASK_PEND_ON_TASK_Q:  //如果等待的是任务消息队列
+        case OS_TASK_PEND_ON_TASK_SEM://如果等待的是任务信号量
+        break;                   //直接跳出
 
-    case OS_TASK_PEND_ON_FLAG:    //如果等待的是事件
-    case OS_TASK_PEND_ON_MULTI:   //如果等待多个内核对象
-    case OS_TASK_PEND_ON_MUTEX:   //如果等待的是互斥量
-    case OS_TASK_PEND_ON_Q:       //如果等待的是消息队列
-    case OS_TASK_PEND_ON_SEM:     //如果等待的是信号量
-                OS_PendListRemove(p_tcb);(12)//将任务从等待列表移除
-    break;                   //跳出
+        case OS_TASK_PEND_ON_FLAG:    //如果等待的是事件
+        case OS_TASK_PEND_ON_MULTI:   //如果等待多个内核对象
+        case OS_TASK_PEND_ON_MUTEX:   //如果等待的是互斥量
+        case OS_TASK_PEND_ON_Q:       //如果等待的是消息队列
+        case OS_TASK_PEND_ON_SEM:     //如果等待的是信号量
+                    OS_PendListRemove(p_tcb);(12)//将任务从等待列表移除
+        break;                   //跳出
 
-    default:                      //如果等待对象超出预期
-    break;                   //直接跳出
-            }
-    break;                            //跳出
+        default:                      //如果等待对象超出预期
+        break;                   //直接跳出
+                }
+        break;                            //跳出
 
-    default:                        (13)//如果目标任务状态超出预期
-            OS_CRITICAL_EXIT();                //退出临界段
-            *p_err = OS_ERR_STATE_INVALID;      //错误类型为“状态非法”
-    return;                            //返回，停止执行
+        default:                        (13)//如果目标任务状态超出预期
+                OS_CRITICAL_EXIT();                //退出临界段
+                *p_err = OS_ERR_STATE_INVALID;      //错误类型为“状态非法”
+        return;                            //返回，停止执行
         }
 
     #if OS_CFG_TASK_Q_EN > 0u(14)//如果启用了任务消息队列
@@ -592,8 +592,7 @@ OSTaskDel()用于删除一个任务。当一个任务删除另外一个任务时
         OSTaskDelHook(p_tcb);              (15)//调用用户自定义的钩子函数
 
     #if defined(OS_CFG_TLS_TBL_SIZE) && (OS_CFG_TLS_TBL_SIZE > 0u)
-        OS_TLS_TaskDel(p_tcb);                                  /* Call TLS
-    k                                          */
+        OS_TLS_TaskDel(p_tcb);                                  /* Call TLSk     */
     #endif
 
     #if OS_CFG_DBG_EN > 0u(16)//如果启用了调试代码和变量
@@ -683,12 +682,12 @@ OSTaskDel()用于删除一个任务。当一个任务删除另外一个任务时
     static void KEY_Task(void* parameter)
     {OS_ERR      err;
     while (1) {
-    if ( Key_Scan(KEY2_GPIO_PORT,KEY2_GPIO_PIN) == KEY_ON ) {
-    /* KEY2 被按下 */
+        if ( Key_Scan(KEY2_GPIO_PORT,KEY2_GPIO_PIN) == KEY_ON ) {
+        /* KEY2 被按下 */
                 printf("删除LED任务！\n");
-    OSTaskDel( &AppTaskLed1TCB, & err );  /* 删除LED任务！ */
+                OSTaskDel( &AppTaskLed1TCB, & err );  /* 删除LED任务！ */
             }
-    OSTimeDly ( 20, OS_OPT_TIME_DLY, & err );   /* 延时20个tick */
+            OSTimeDly ( 20, OS_OPT_TIME_DLY, & err );   /* 延时20个tick */
         }
     }
 
@@ -712,49 +711,49 @@ OSTimeDly()函数常用于停止当前任务进行的运行，延时一段时间
                     OS_ERR   *p_err)           (3)//返回错误类型
     {
         CPU_SR_ALLOC();
-    //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和定义一个局部变
-    //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
-    //，开中断时将该值还原。
+        //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和定义一个局部变
+        //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
+        //，开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL(4)//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0) {                        //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0) {                        //如果错误类型实参为空
             OS_SAFETY_CRITICAL_EXCEPTION();                //执行安全检测异常函数
-    return;                                        //返回，不执行延时操作
+            return;                                        //返回，不执行延时操作
         }
     #endif
                             (5)
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u//如果启用（默认启用）了中断中非法调用检测
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0u){//如果该延时函数是在中断中被调用
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0u){//如果该延时函数是在中断中被调用
             *p_err = OS_ERR_TIME_DLY_ISR;       //错误类型为“在中断函数中延时”
-    return;                             //返回，不执行延时操作
+            return;                             //返回，不执行延时操作
         }
     #endif
     /* 当调度器被锁时任务不能延时 */		(6)
-    if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0u) {  //如果调度器被锁
+        if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0u) {  //如果调度器被锁
             *p_err = OS_ERR_SCHED_LOCKED;             //错误类型为“调度器被锁”
-    return;                                        //返回，不执行延时操作
+            return;                                        //返回，不执行延时操作
         }
 
-    switch (opt) {             (7)//根据延时选项参数 opt 分类操作
-    case OS_OPT_TIME_DLY:               //如果选择相对时间（从现在起延时多长时间）
-    case OS_OPT_TIME_TIMEOUT:                      //如果选择超时（实际同上）
-    case OS_OPT_TIME_PERIODIC:                     //如果选择周期性延时
-    if (dly == (OS_TICK)0u) {    (8)//如果参数 dly 为0（0意味不延时）
-                *p_err = OS_ERR_TIME_ZERO_DLY;         //错误类型为“0延时”
-    return;                               //返回，不执行延时操作
-            }
-    break;
+        switch (opt) {             (7)//根据延时选项参数 opt 分类操作
+        case OS_OPT_TIME_DLY:               //如果选择相对时间（从现在起延时多长时间）
+        case OS_OPT_TIME_TIMEOUT:                      //如果选择超时（实际同上）
+        case OS_OPT_TIME_PERIODIC:                     //如果选择周期性延时
+        if (dly == (OS_TICK)0u) {    (8)//如果参数 dly 为0（0意味不延时）
+                    *p_err = OS_ERR_TIME_ZERO_DLY;         //错误类型为“0延时”
+        return;                               //返回，不执行延时操作
+                }
+        break;
 
-    case OS_OPT_TIME_MATCH:         (9)
-    //如果选择绝对时间（匹配系统开始运行（OSStart()）后的时钟节拍数）
-    break;
-
-
+        case OS_OPT_TIME_MATCH:         (9)
+        //如果选择绝对时间（匹配系统开始运行（OSStart()）后的时钟节拍数）
+        break;
 
 
-    default:                            (10)//如果选项超出范围
+
+
+        default:                            (10)//如果选项超出范围
             *p_err = OS_ERR_OPT_INVALID;               //错误类型为“选项非法”
-    return;                                   //返回，不执行延时操作
+        return;                                   //返回，不执行延时操作
         }
 
         OS_CRITICAL_ENTER();                             //进入临界段
@@ -763,9 +762,9 @@ OSTimeDly()函数常用于停止当前任务进行的运行，延时一段时间
                         dly,
                         opt,
                         p_err);		(12)
-    if (*p_err != OS_ERR_NONE) {          //如果当前任务插入节拍列表时出现错误
+        if (*p_err != OS_ERR_NONE) {          //如果当前任务插入节拍列表时出现错误
             OS_CRITICAL_EXIT_NO_SCHED();                  //退出临界段（无调度）
-    return;                                       //返回，不执行延时操作
+            return;                                       //返回，不执行延时操作
         }
         OS_RdyListRemove(OSTCBCurPtr);          (13)//从就绪列表移除当前任务
         OS_CRITICAL_EXIT_NO_SCHED();                       //退出临界段（无调度）
@@ -978,13 +977,13 @@ OSTimeDly()函数常用于停止当前任务进行的运行，延时一段时间
 
     void vTaskA( void * pvParameters )
     {
-    while (1) {
-    //  ...
-    //  这里为任务主体代码
-    //  ...
+        while (1) {
+        //  ...
+        //  这里为任务主体代码
+        //  ...
 
-    /* 调用相对延时函数,阻塞1000个tick */
-    OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err );
+        /* 调用相对延时函数,阻塞1000个tick */
+        OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err );
         }
     }
 
@@ -1022,91 +1021,91 @@ OSTimeDlyHMSM()函数源码具体见 代码清单:任务管理-12_ 。
 
 
     #ifdef OS_SAFETY_CRITICAL(8)//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0) {          //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0) {          //如果错误类型实参为空
             OS_SAFETY_CRITICAL_EXCEPTION();  //执行安全检测异常函数
-    return;                          //返回，不执行延时操作
+            return;                          //返回，不执行延时操作
         }
     #endif
 
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u    (9)
-    //如果启用（默认启用）了中断中非法调用检测
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0u){//如果该延时函数是在中断中被调用
+        //如果启用（默认启用）了中断中非法调用检测
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0u){//如果该延时函数是在中断中被调用
             *p_err = OS_ERR_TIME_DLY_ISR;     //错误类型为“在中断函数中延时”
-    return;                    //返回，不执行延时操作
+            return;                    //返回，不执行延时操作
         }
     #endif
-    /* 当调度器被锁时任务不能延时 */
-    if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0u) { (10)//如果调度器被锁
+        /* 当调度器被锁时任务不能延时 */
+        if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0u) { (10)//如果调度器被锁
             *p_err = OS_ERR_SCHED_LOCKED;         //错误类型为“调度器被锁”
-    return;                         //返回，不执行延时操作
+            return;                         //返回，不执行延时操作
         }
 
         opt_time = opt & OS_OPT_TIME_MASK; (11)//检测除选项中与延时时间性质有关的位
-    switch (opt_time) {                    //根据延时选项参数 opt 分类操作
-    caseOS_OPT_TIME_DLY:               //如果选择相对时间（从现在起延时多长时间）
-    case OS_OPT_TIME_TIMEOUT:                //如果选择超时（实际同上）
-    case OS_OPT_TIME_PERIODIC:                         //如果选择周期性延时
-    if (milli == (CPU_INT32U)0u) {                //如果毫秒数为0
-    if (seconds == (CPU_INT16U)0u) {          //如果秒数为0
-    if (minutes == (CPU_INT16U)0u) {      //如果分钟数为0
-    if (hours == (CPU_INT16U)0u) {    //如果小时数为0
-                            *p_err = OS_ERR_TIME_ZERO_DLY; //错误类型为“0延时”
-    return;             (12)//返回，不执行延时操作
+        switch (opt_time) {                    //根据延时选项参数 opt 分类操作
+        caseOS_OPT_TIME_DLY:               //如果选择相对时间（从现在起延时多长时间）
+        case OS_OPT_TIME_TIMEOUT:                //如果选择超时（实际同上）
+        case OS_OPT_TIME_PERIODIC:                         //如果选择周期性延时
+            if (milli == (CPU_INT32U)0u) {                //如果毫秒数为0
+                if (seconds == (CPU_INT16U)0u) {          //如果秒数为0
+                    if (minutes == (CPU_INT16U)0u) {      //如果分钟数为0
+                        if (hours == (CPU_INT16U)0u) {    //如果小时数为0
+                                *p_err = OS_ERR_TIME_ZERO_DLY; //错误类型为“0延时”
+                        return;             (12)//返回，不执行延时操作
                         }
                     }
                 }
             }
     break;
 
-    case OS_OPT_TIME_MATCH:     		(13)
-    //如果选择绝对时间（把系统开始运行（OSStart()时做为起点）
-    break;
+        case OS_OPT_TIME_MATCH:     		(13)
+        //如果选择绝对时间（把系统开始运行（OSStart()时做为起点）
+        break;
 
 
 
-    default:                               (14)//如果选项超出范围
-            *p_err = OS_ERR_OPT_INVALID;                   //错误类型为“选项非法”
-    return;                                       //返回，不执行延时操作
+        default:                               (14)//如果选项超出范围
+                *p_err = OS_ERR_OPT_INVALID;                   //错误类型为“选项非法”
+        return;                                       //返回，不执行延时操作
         }
 
     #if OS_CFG_ARG_CHK_EN > 0u              	(15)
     //如果启用（默认启用）了参数检测功能
         opt_invalid = DEF_BIT_IS_SET_ANY(opt, ~OS_OPT_TIME_OPTS_MASK);
-    //检测除选项位以后其他位是否被置位
-    if (opt_invalid == DEF_YES) {          	(16)
-    //如果除选项位以后其他位有被置位的
+        //检测除选项位以后其他位是否被置位
+        if (opt_invalid == DEF_YES) {          	(16)
+        //如果除选项位以后其他位有被置位的
             *p_err = OS_ERR_OPT_INVALID;             //错误类型为“选项非法”
-    return;                            //返回，不执行延时操作
+            return;                            //返回，不执行延时操作
         }
 
         opt_non_strict = DEF_BIT_IS_SET(opt, OS_OPT_TIME_HMSM_NON_STRICT);(17)
-    //检测有关时间参数取值范围的选项位
-    if (opt_non_strict != DEF_YES) {//如果选项选择了OS_OPT_TIME_HMSM_STRICT
-    if (milli   > (CPU_INT32U)999u) {  (18)	//如果毫秒数>999
-    *p_err = OS_ERR_TIME_INVALID_MILLISECONDS; //错误类型为“毫秒数不可用”
-    return;             //返回，不执行延时操作
+        //检测有关时间参数取值范围的选项位
+        if (opt_non_strict != DEF_YES) {//如果选项选择了OS_OPT_TIME_HMSM_STRICT
+            if (milli   > (CPU_INT32U)999u) {  (18)	//如果毫秒数>999
+                *p_err = OS_ERR_TIME_INVALID_MILLISECONDS; //错误类型为“毫秒数不可用”
+                return;             //返回，不执行延时操作
             }
-    if (seconds > (CPU_INT16U)59u) {    (19)//如果秒数>59
+            if (seconds > (CPU_INT16U)59u) {    (19)//如果秒数>59
                 *p_err = OS_ERR_TIME_INVALID_SECONDS;  //错误类型为“秒数不可用”
-    return;                          //返回，不执行延时操作
+                return;                          //返回，不执行延时操作
             }
-    if (minutes > (CPU_INT16U)59u) {  (20)//如果分钟数>59
+            if (minutes > (CPU_INT16U)59u) {  (20)//如果分钟数>59
                 *p_err = OS_ERR_TIME_INVALID_MINUTES; //错误类型为“分钟数不可用”
-    return;                            //返回，不执行延时操作
+                return;                            //返回，不执行延时操作
             }
-    if (hours   > (CPU_INT16U)99u) {    (21)//如果小时数>99
+            if (hours   > (CPU_INT16U)99u) {    (21)//如果小时数>99
                 *p_err = OS_ERR_TIME_INVALID_HOURS;   //错误类型为“小时数不可用”
-    return;                            //返回，不执行延时操作
+                return;                            //返回，不执行延时操作
             }
         } else {          //如果选项选择了 OS_OPT_TIME_HMSM_NON_STRICT
 
-    if (minutes > (CPU_INT16U)9999u) {   (22)//如果分钟数>9999
+            if (minutes > (CPU_INT16U)9999u) {   (22)//如果分钟数>9999
                 *p_err = OS_ERR_TIME_INVALID_MINUTES; //错误类型为“分钟数不可用”
-    return;                   		//返回，不执行延时操作
+                return;                   		//返回，不执行延时操作
             }
-    if (hours   > (CPU_INT16U)999u) {  (23)	//如果小时数>999
+            if (hours   > (CPU_INT16U)999u) {  (23)	//如果小时数>999
                 *p_err = OS_ERR_TIME_INVALID_HOURS; //错误类型为“小时数不可用”
-    return;                         //返回，不执行延时操作
+                return;                         //返回，不执行延时操作
             }
         }
     #endif
@@ -1115,20 +1114,20 @@ OSTimeDlyHMSM()函数源码具体见 代码清单:任务管理-12_ 。
     /*将延时时间转换成时钟节拍数*/
         tick_rate = OSCfg_TickRate_Hz;      (24)//获取时钟节拍的频率
         ticks     = ((OS_TICK)hours * (OS_TICK)3600u + (OS_TICK)minutes *
-    (OS_TICK)60u + (OS_TICK)seconds) * tick_rate
+                    (OS_TICK)60u + (OS_TICK)seconds) * tick_rate
                     + (tick_rate * ((OS_TICK)milli + (OS_TICK)500u /
                     tick_rate)) / (OS_TICK)1000u;(25)//将延时时间转换成时钟节拍数
 
-    if (ticks > (OS_TICK)0u) {             (26)//如果延时节拍数>0
+        if (ticks > (OS_TICK)0u) {             (26)//如果延时节拍数>0
             OS_CRITICAL_ENTER();                         //进入临界段
             OSTCBCurPtr->TaskState = OS_TASK_STATE_DLY;  //修改当前任务的任务状态为延时状态
-    OS_TickListInsert(OSTCBCurPtr,     //将当前任务插入节拍列表
+            OS_TickListInsert(OSTCBCurPtr,     //将当前任务插入节拍列表
                             ticks,
                             opt_time,
                             p_err);		(27)
-    if(*p_err != OS_ERR_NONE) {  //如果当前任务插入节拍列表时出现错误
+            if(*p_err != OS_ERR_NONE) {  //如果当前任务插入节拍列表时出现错误
                 OS_CRITICAL_EXIT_NO_SCHED();            //退出临界段（无调度）
-    return;                                 //返回，不执行延时操作
+                return;                                 //返回，不执行延时操作
             }
             OS_RdyListRemove(OSTCBCurPtr);     (28)//从就绪列表移除当前任务
             OS_CRITICAL_EXIT_NO_SCHED();                 //退出临界段（无调度）
@@ -1263,13 +1262,13 @@ OSTimeDlyHMSM()函数源码具体见 代码清单:任务管理-12_ 。
 
     void vTaskA( void * pvParameters )
     {
-    while (1) {
-    //  ...
-    //  这里为任务主体代码
-    //  ...
+        while (1) {
+        //  ...
+        //  这里为任务主体代码
+        //  ...
 
-    /* 调用延时函数,延时1s */
-    OSTimeDlyHMSM(0,0,1,0, OS_OPT_TIME_DLY, & err );
+        /* 调用延时函数,延时1s */
+        OSTimeDlyHMSM(0,0,1,0, OS_OPT_TIME_DLY, & err );
         }
     }
 

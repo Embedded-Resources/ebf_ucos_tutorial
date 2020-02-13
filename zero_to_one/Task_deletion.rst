@@ -27,14 +27,16 @@ OSTaskDel()函数
     {
         CPU_SR_ALLOC();
 
-    /* 不允许删除空闲任务 */(2)
-    if (p_tcb == &OSIdleTaskTCB) {
+        /* 不允许删除空闲任务 */(2)
+        if (p_tcb == &OSIdleTaskTCB)
+        {
             *p_err = OS_ERR_TASK_DEL_IDLE;
-    return;
+             return;
         }
 
-    /* 删除自己 */
-    if (p_tcb == (OS_TCB *)0) {(3)
+        /* 删除自己 */
+        if (p_tcb == (OS_TCB *)0) (3)
+        {
             CPU_CRITICAL_ENTER();
             p_tcb  = OSTCBCurPtr;
             CPU_CRITICAL_EXIT();
@@ -42,63 +44,64 @@ OSTaskDel()函数
 
         OS_CRITICAL_ENTER();
 
-    /* 根据任务的状态来决定删除的动作 */
-    switch (p_tcb->TaskState) {
-    case OS_TASK_STATE_RDY:(4)
+        /* 根据任务的状态来决定删除的动作 */
+        switch (p_tcb->TaskState)
+        {
+            case OS_TASK_STATE_RDY:(4)
             OS_RdyListRemove(p_tcb);
-    break;
+            break;
 
-    case OS_TASK_STATE_SUSPENDED:(5)
-    break;
+            case OS_TASK_STATE_SUSPENDED:(5)
+            break;
 
-    /* 任务只是在延时，并没有在任何等待列表*/
-    case OS_TASK_STATE_DLY:(6)
-    case OS_TASK_STATE_DLY_SUSPENDED:
-            OS_TickListRemove(p_tcb);
-    break;
+            /* 任务只是在延时，并没有在任何等待列表*/
+            case OS_TASK_STATE_DLY:(6)
+            case OS_TASK_STATE_DLY_SUSPENDED:
+                    OS_TickListRemove(p_tcb);
+            break;
 
-    case OS_TASK_STATE_PEND:(7)
-    case OS_TASK_STATE_PEND_SUSPENDED:
-    case OS_TASK_STATE_PEND_TIMEOUT:
-    case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
-            OS_TickListRemove(p_tcb);
+            case OS_TASK_STATE_PEND:(7)
+            case OS_TASK_STATE_PEND_SUSPENDED:
+            case OS_TASK_STATE_PEND_TIMEOUT:
+            case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
+                    OS_TickListRemove(p_tcb);
 
     #if 0/* 目前我们还没有实现等待列表，暂时先把这部分代码注释 */
-    /* 看看在等待什么 */
-    switch (p_tcb->PendOn) {
-    case OS_TASK_PEND_ON_NOTHING:
-    /* 任务信号量和队列没有等待队列，直接退出 */
-    case OS_TASK_PEND_ON_TASK_Q:
-    case OS_TASK_PEND_ON_TASK_SEM:
-    break;
+        /* 看看在等待什么 */
+        switch (p_tcb->PendOn) {
+            case OS_TASK_PEND_ON_NOTHING:
+            /* 任务信号量和队列没有等待队列，直接退出 */
+            case OS_TASK_PEND_ON_TASK_Q:
+            case OS_TASK_PEND_ON_TASK_SEM:
+            break;
 
-    /* 从等待列表移除 */
-    case OS_TASK_PEND_ON_FLAG:
-    case OS_TASK_PEND_ON_MULTI:
-    case OS_TASK_PEND_ON_MUTEX:
-    case OS_TASK_PEND_ON_Q:
-    case OS_TASK_PEND_ON_SEM:
-                OS_PendListRemove(p_tcb);
-    break;
+            /* 从等待列表移除 */
+            case OS_TASK_PEND_ON_FLAG:
+            case OS_TASK_PEND_ON_MULTI:
+            case OS_TASK_PEND_ON_MUTEX:
+            case OS_TASK_PEND_ON_Q:
+            case OS_TASK_PEND_ON_SEM:
+                        OS_PendListRemove(p_tcb);
+            break;
 
-    default:
-    break;
-            }
-    break;
-    #endif
-    default:
-            OS_CRITICAL_EXIT();
-            *p_err = OS_ERR_STATE_INVALID;
-    return;
+            default:
+            break;
+                    }
+            break;
+            #endif
+            default:
+                    OS_CRITICAL_EXIT();
+                    *p_err = OS_ERR_STATE_INVALID;
+            return;
         }
 
-    /* 初始化TCB为默认值 */
+        /* 初始化TCB为默认值 */
         OS_TaskInitTCB(p_tcb);(8)
-    /* 修改任务的状态为删除态，即处于休眠 */
+        /* 修改任务的状态为删除态，即处于休眠 */
         p_tcb->TaskState = (OS_STATE)OS_TASK_STATE_DEL;(9)
 
         OS_CRITICAL_EXIT_NO_SCHED();
-    /* 任务切换，寻找最高优先级的任务 */
+        /* 任务切换，寻找最高优先级的任务 */
         OSSched();(10)
 
         *p_err = OS_ERR_NONE;

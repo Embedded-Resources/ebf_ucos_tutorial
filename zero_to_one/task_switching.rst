@@ -343,14 +343,14 @@ OSTaskCreate来实现，该函数在os_task.c（os_task.c第一次使用需要�
     :linenos:
 
     CPU_STK *OSTaskStkInit (OS_TASK_PTR  p_task,(1)
-    void         *p_arg,(2)
+                            void         *p_arg,(2)
                             CPU_STK      *p_stk_base,(3)
                             CPU_STK_SIZE stk_size)(4)
     {
         CPU_STK  *p_stk;
 
         p_stk = &p_stk_base[stk_size];(5)
-    /* 异常发生时自动保存的寄存器 */(6)
+        /* 异常发生时自动保存的寄存器 */(6)
         *--p_stk = (CPU_STK)0x01000000u;    /* xPSR的bit24必须置1  */
         *--p_stk = (CPU_STK)p_task;         /* R15(PC)任务的入口地址*/
         *--p_stk = (CPU_STK)0x14141414u;    /* R14 (LR)            */
@@ -359,7 +359,7 @@ OSTaskCreate来实现，该函数在os_task.c（os_task.c第一次使用需要�
         *--p_stk = (CPU_STK)0x02020202u;    /* R2                  */
         *--p_stk = (CPU_STK)0x01010101u;    /* R1                  */
         *--p_stk = (CPU_STK)p_arg;          /* R0 : 任务形参*/
-    /* 异常发生时需手动保存的寄存器 */(7)
+        /* 异常发生时需手动保存的寄存器 */(7)
         *--p_stk = (CPU_STK)0x11111111u;    /* R11                 */
         *--p_stk = (CPU_STK)0x10101010u;    /* R10                 */
         *--p_stk = (CPU_STK)0x09090909u;    /* R9                  */
@@ -369,7 +369,7 @@ OSTaskCreate来实现，该函数在os_task.c（os_task.c第一次使用需要�
         *--p_stk = (CPU_STK)0x05050505u;    /* R5                  */
         *--p_stk = (CPU_STK)0x04040404u;    /* R4                  */
 
-    return (p_stk);(8)
+        return (p_stk);(8)
     }
 
 
@@ -552,7 +552,8 @@ os_core.c（os_core.c第一次使用需要自行在文件夹μC/OS-III\Source中
         OS_PRIO i;
         OS_RDY_LIST *p_rdy_list;
 
-    for ( i=0u; i<OS_CFG_PRIO_MAX; i++ ) {
+        for ( i=0u; i<OS_CFG_PRIO_MAX; i++ )
+        {
             p_rdy_list = &OSRdyList[i];
             p_rdy_list->HeadPtr = (OS_TCB *)0;
             p_rdy_list->TailPtr = (OS_TCB *)0;
@@ -596,16 +597,18 @@ OS_STATE_OS_STOPPED 这个表示系统运行状态的宏也在os.h中定义，�
 
     void OSStart (OS_ERR *p_err)
     {
-    if ( OSRunning == OS_STATE_OS_STOPPED ) {(1)
-    /* 手动配置任务1先运行 */
+        if ( OSRunning == OS_STATE_OS_STOPPED ) {(1)
+            /* 手动配置任务1先运行 */
             OSTCBHighRdyPtr = OSRdyList[0].HeadPtr;(2)
 
-    /* 启动任务切换，不会返回 */
+            /* 启动任务切换，不会返回 */
             OSStartHighRdy();(3)
 
-    /* 不会运行到这里，运行到这里表示发生了致命的错误 */
+            /* 不会运行到这里，运行到这里表示发生了致命的错误 */
             *p_err = OS_ERR_FATAL_RETURN;
-        } else {
+        }
+        else
+        {
             *p_err = OS_STATE_OS_RUNNING;
         }
     }
@@ -1110,34 +1113,32 @@ main()函数在文件app.c中编写，其中app.c文件中的所有代码具体�
     */
     int main(void)
     {
-    OS_ERR err;
+        OS_ERR err;
 
+        /* 初始化相关的全局变量 */
+        OSInit(&err);
 
-
-    /* 初始化相关的全局变量 */
-    OSInit(&err);
-
-    /* 创建任务 */
-    OSTaskCreate ((OS_TCB*)      &Task1TCB,
+        /* 创建任务 */
+        OSTaskCreate ((OS_TCB*)      &Task1TCB,
                     (OS_TASK_PTR ) Task1,
                     (void *)       0,
                     (CPU_STK*)     &Task1Stk[0],
                     (CPU_STK_SIZE) TASK1_STK_SIZE,
                     (OS_ERR *)     &err);
 
-    OSTaskCreate ((OS_TCB*)      &Task2TCB,
+        OSTaskCreate ((OS_TCB*)      &Task2TCB,
                     (OS_TASK_PTR ) Task2,
                     (void *)       0,
                     (CPU_STK*)     &Task2Stk[0],
                     (CPU_STK_SIZE) TASK2_STK_SIZE,
                     (OS_ERR *)     &err);
 
-    /* 将任务加入到就绪列表 */
-    OSRdyList[0].HeadPtr = &Task1TCB;
-    OSRdyList[1].HeadPtr = &Task2TCB;
+        /* 将任务加入到就绪列表 */
+        OSRdyList[0].HeadPtr = &Task1TCB;
+        OSRdyList[1].HeadPtr = &Task2TCB;
 
-    /* 启动OS，将不再返回 */
-    OSStart(&err);
+        /* 启动OS，将不再返回 */
+        OSStart(&err);
     }
 
     /*
@@ -1148,7 +1149,7 @@ main()函数在文件app.c中编写，其中app.c文件中的所有代码具体�
     /* 软件延时 */
     void delay (uint32_t count)
     {
-    for (; count!=0; count--);
+        for (; count!=0; count--);
     }
 
 
@@ -1156,13 +1157,13 @@ main()函数在文件app.c中编写，其中app.c文件中的所有代码具体�
     /* 任务1 */
     void Task1( void *p_arg )
     {
-    for ( ;; ) {
+        for ( ;; ) {
             flag1 = 1;
             delay( 100 );
             flag1 = 0;
             delay( 100 );
 
-    /* 任务切换，这里是手动切换 */
+            /* 任务切换，这里是手动切换 */
             OSSched();
         }
     }
@@ -1170,13 +1171,13 @@ main()函数在文件app.c中编写，其中app.c文件中的所有代码具体�
     /* 任务2 */
     void Task2( void *p_arg )
     {
-    for ( ;; ) {
+        for ( ;; ) {
             flag2 = 1;
             delay( 100 );
             flag2 = 0;
             delay( 100 );
 
-    /* 任务切换，这里是手动切换 */
+            /* 任务切换，这里是手动切换 */
             OSSched();
         }
     }
@@ -1193,9 +1194,12 @@ main()函数在文件app.c中编写，其中app.c文件中的所有代码具体�
     /* 任务切换，实际就是触发PendSV异常，然后在PendSV异常中进行上下文切换 */
     void OSSched (void)
     {
-    if ( OSTCBCurPtr == OSRdyList[0].HeadPtr ) {
+        if ( OSTCBCurPtr == OSRdyList[0].HeadPtr )
+        {
             OSTCBHighRdyPtr = OSRdyList[1].HeadPtr;
-        } else {
+        }
+        else
+        {
             OSTCBHighRdyPtr = OSRdyList[0].HeadPtr;
         }
 

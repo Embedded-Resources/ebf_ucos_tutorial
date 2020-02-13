@@ -58,28 +58,28 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
 
 
     #ifdef OS_SAFETY_CRITICAL(1)//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0) {         //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0) {         //如果错误类型实参为空
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return;                         //返回，停止执行
+            return;                         //返回，停止执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u(2)//如果启用了参数检测
-    if (OSCfg_MsgPoolBasePtr == (OS_MSG *)0) {//如果消息池不存在
+        if (OSCfg_MsgPoolBasePtr == (OS_MSG *)0) {//如果消息池不存在
             *p_err = OS_ERR_MSG_POOL_NULL_PTR;     //错误类型为“消息池指针为空”
-    return;                               //返回，停止执行
+            return;                               //返回，停止执行
         }
-    if (OSCfg_MsgPoolSize == (OS_MSG_QTY)0) { //如果消息池不能存放消息
+        if (OSCfg_MsgPoolSize == (OS_MSG_QTY)0) { //如果消息池不能存放消息
             *p_err = OS_ERR_MSG_POOL_EMPTY;        //错误类型为“消息池为空”
-    return;                               //返回，停止执行
+            return;                               //返回，停止执行
         }
     #endif
-    /* 将消息池里的消息逐条串成单向链表，方便管理 */
+        /* 将消息池里的消息逐条串成单向链表，方便管理 */
         p_msg1 = OSCfg_MsgPoolBasePtr;
         p_msg2 = OSCfg_MsgPoolBasePtr;
         p_msg2++;
         loops  = OSCfg_MsgPoolSize - 1u;
-    for (i = 0u; i < loops; i++) {    (3)//初始化每一条消息
+        for (i = 0u; i < loops; i++) {    (3)//初始化每一条消息
             p_msg1->NextPtr = p_msg2;
             p_msg1->MsgPtr  = (void      *)0;
             p_msg1->MsgSize = (OS_MSG_SIZE)0u;
@@ -91,7 +91,7 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
         p_msg1->MsgPtr  = (void      *)0;
         p_msg1->MsgSize = (OS_MSG_SIZE)0u;
         p_msg1->MsgTS   = (CPU_TS     )0u;
-    /* 初始化消息池数据 */
+        /* 初始化消息池数据 */
         OSMsgPool.NextPtr    =  OSCfg_MsgPoolBasePtr;(5)
         OSMsgPool.NbrFree    =  OSCfg_MsgPoolSize;
         OSMsgPool.NbrUsed    = (OS_MSG_QTY)0;
@@ -465,43 +465,43 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
         OS_TCB        *p_tcb;
         CPU_TS         ts;
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL(4)//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0) {         //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0) {         //如果错误类型实参为空
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return ((OS_OBJ_QTY)0);         //返回0（有错误），停止执行
+            return ((OS_OBJ_QTY)0);         //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u(5)//如果启用了中断中非法调用检测
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0) {  //如果该函数在中断中被调用
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0) {  //如果该函数在中断中被调用
             *p_err = OS_ERR_DEL_ISR;                 //错误类型为“在中断中中止等待”
-    return ((OS_OBJ_QTY)0);                 //返回0（有错误），停止执行
+            return ((OS_OBJ_QTY)0);                 //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u(6)//如果启用了参数检测
-    if (p_q == (OS_Q *)0) {               //如果 p_q 为空
+        if (p_q == (OS_Q *)0) {               //如果 p_q 为空
             *p_err =  OS_ERR_OBJ_PTR_NULL;     //错误类型为“对象为空”
-    return ((OS_OBJ_QTY)0u);          //返回0（有错误），停止执行
+            return ((OS_OBJ_QTY)0u);          //返回0（有错误），停止执行
         }
-    switch (opt) {              (7)//根据选项分类处理
-    case OS_OPT_DEL_NO_PEND:          //如果选项在预期内
-    case OS_OPT_DEL_ALWAYS:
-    break;                       //直接跳出
+        switch (opt) {              (7)//根据选项分类处理
+        case OS_OPT_DEL_NO_PEND:          //如果选项在预期内
+        case OS_OPT_DEL_ALWAYS:
+        break;                       //直接跳出
 
-    default:			(8)
-            *p_err =  OS_ERR_OPT_INVALID; //如果选项超出预期
-    return ((OS_OBJ_QTY)0u);     //返回0（有错误），停止执行
+        default:			(8)
+                *p_err =  OS_ERR_OPT_INVALID; //如果选项超出预期
+        return ((OS_OBJ_QTY)0u);     //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_OBJ_TYPE_CHK_EN > 0u(9)//如果启用了对象类型检测
-    if (p_q->Type != OS_OBJ_TYPE_Q) { //如果 p_q 不是消息队列类型
+        if (p_q->Type != OS_OBJ_TYPE_Q) { //如果 p_q 不是消息队列类型
             *p_err = OS_ERR_OBJ_TYPE;      //错误类型为“对象类型有误”
-    return ((OS_OBJ_QTY)0);       //返回0（有错误），停止执行
+            return ((OS_OBJ_QTY)0);       //返回0（有错误），停止执行
         }
     #endif
 
@@ -509,14 +509,14 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
         p_pend_list = &p_q->PendList;      (10)//获取消息队列的等待列表
         cnt         = p_pend_list->NbrEntries;  (11)//获取等待该队列的任务数
         nbr_tasks   = cnt;               (12)//按照任务数目逐个处理
-    switch (opt) {                   (13)//根据选项分类处理
-    case OS_OPT_DEL_NO_PEND:        (14)//如果只在没有任务等待的情况下删除队列
-    if (nbr_tasks == (OS_OBJ_QTY)0) {(15)//如果没有任务在等待该队列
+        switch (opt) {                   (13)//根据选项分类处理
+        case OS_OPT_DEL_NO_PEND:        (14)//如果只在没有任务等待的情况下删除队列
+        if (nbr_tasks == (OS_OBJ_QTY)0) {(15)//如果没有任务在等待该队列
     #if OS_CFG_DBG_EN > 0u//如果启用了调试代码和变量
                 OS_QDbgListRemove(p_q);          //将该队列从消息队列调试列表移除
     #endif
                 OSQQty--;                (16)//消息队列数目减1
-        OS_QClr(p_q);            (17)//清除该队列的内容
+                OS_QClr(p_q);            (17)//清除该队列的内容
                 CPU_CRITICAL_EXIT();                      //开中断
                 *p_err = OS_ERR_NONE;     (18)//错误类型为“无错误”
             } else {  (19)//如果有任务在等待该队列
@@ -534,7 +534,7 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
                 OS_PendObjDel((OS_PEND_OBJ *)((void *)p_q),
                             p_tcb,
                             ts);
-                cnt--;				(22)
+                            cnt--;				(22)
             }
     #if OS_CFG_DBG_EN > 0u//如果启用了调试代码和变量
             OS_QDbgListRemove(p_q);            //将该队列从消息队列调试列表移除
@@ -544,14 +544,14 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
             OS_CRITICAL_EXIT_NO_SCHED();                  //退出临界段（无调度）
             OSSched();                        (25)//调度任务
             *p_err = OS_ERR_NONE;              (26)//错误类型为“无错误”
-    break;                                        //跳出
+            break;                                        //跳出
 
-    default:(27)//如果选项超出预期
+            default:(27)//如果选项超出预期
             CPU_CRITICAL_EXIT();              //开中断
             *p_err = OS_ERR_OPT_INVALID;                   //错误类型为“选项非法”
-    break;                                        //跳出
+            break;                                        //跳出
         }
-    return (nbr_tasks);                 //返回删除队列前等待其的任务数
+        return (nbr_tasks);                 //返回删除队列前等待其的任务数
     }
     #endif
 
@@ -615,21 +615,21 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
 
     void  OS_PendObjDel (OS_PEND_OBJ  *p_obj,  (1)	//被删除对象的类型
                         OS_TCB       *p_tcb, (2)	//任务控制块指针
-            CPU_TS        ts)    (3)	//信号量被删除时的时间戳
+                        CPU_TS        ts)    (3)	//信号量被删除时的时间戳
     {
     switch (p_tcb->TaskState)             (4)//根据任务状态分类处理
         {
-    case OS_TASK_STATE_RDY:                             //如果任务是就绪状态
-    case OS_TASK_STATE_DLY:                             //如果任务是延时状态
-    case OS_TASK_STATE_SUSPENDED:                       //如果任务是挂起状态
-    case OS_TASK_STATE_DLY_SUSPENDED:            //如果任务是在延时中被挂起
-    break;                           (5)
-    //这些情况均与等待无关，直接跳出
+        case OS_TASK_STATE_RDY:                             //如果任务是就绪状态
+        case OS_TASK_STATE_DLY:                             //如果任务是延时状态
+        case OS_TASK_STATE_SUSPENDED:                       //如果任务是挂起状态
+        case OS_TASK_STATE_DLY_SUSPENDED:            //如果任务是在延时中被挂起
+        break;                           (5)
+        //这些情况均与等待无关，直接跳出
 
-    case OS_TASK_STATE_PEND:                    //如果任务是无期限等待状态
-    case OS_TASK_STATE_PEND_TIMEOUT:            //如果任务是有期限等待状态
-    if (p_tcb->PendOn == OS_TASK_PEND_ON_MULTI)
-    //如果任务在等待多个信号量或消息队列
+        case OS_TASK_STATE_PEND:                    //如果任务是无期限等待状态
+        case OS_TASK_STATE_PEND_TIMEOUT:            //如果任务是有期限等待状态
+            if (p_tcb->PendOn == OS_TASK_PEND_ON_MULTI)
+            //如果任务在等待多个信号量或消息队列
             {
                 OS_PendObjDel1(p_obj,              //强制解除任务对某一对象的等待
                             p_tcb,
@@ -640,18 +640,18 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
             p_tcb->MsgSize    = (OS_MSG_SIZE)0u;
     #endif
             p_tcb->TS         = ts;          (8)
-    //保存等待被中止时的时间戳到任务控制块
+            //保存等待被中止时的时间戳到任务控制块
             OS_PendListRemove(p_tcb);      (9)//将任务从所有等待列表中移除
             OS_TaskRdy(p_tcb);              (10)//让任务进准备运行
             p_tcb->TaskState  = OS_TASK_STATE_RDY;  (11)//修改任务状态为就绪状态
             p_tcb->PendStatus = OS_STATUS_PEND_DEL;(12)//标记任务的等待对象被删除
-    p_tcb->PendOn     = OS_TASK_PEND_ON_NOTHING;(13)//标记任务目前没有等待任何对象
-    break;                                       //跳出
+            p_tcb->PendOn     = OS_TASK_PEND_ON_NOTHING;(13)//标记任务目前没有等待任何对象
+            break;                                       //跳出
 
-    case OS_TASK_STATE_PEND_SUSPENDED:      //如果任务在无期限等待中被挂起
-    case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED: //如果任务在有期限等待中被挂起
-    if (p_tcb->PendOn == OS_TASK_PEND_ON_MULTI)
-    //如果任务在等待多个信号量或消息队列
+        case OS_TASK_STATE_PEND_SUSPENDED:      //如果任务在无期限等待中被挂起
+        case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED: //如果任务在有期限等待中被挂起
+            if (p_tcb->PendOn == OS_TASK_PEND_ON_MULTI)
+            //如果任务在等待多个信号量或消息队列
             {
                 OS_PendObjDel1(p_obj,          //强制解除任务对某一对象的等待
                             p_tcb,
@@ -662,16 +662,16 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
             p_tcb->MsgSize    = (OS_MSG_SIZE)0u;
     #endif
             p_tcb->TS         = ts;      (17)
-    //保存等待被中止时的时间戳到任务控制块
+            //保存等待被中止时的时间戳到任务控制块
             OS_TickListRemove(p_tcb);     (18)//让任务脱离节拍列表
             OS_PendListRemove(p_tcb);     (19)//将任务从所有等待列表中移除
             p_tcb->TaskState  = OS_TASK_STATE_SUSPENDED; (20)//修改任务状态为挂起状态
-    p_tcb->PendStatus = OS_STATUS_PEND_DEL;(21)//标记任务的等待对象被删除
+            p_tcb->PendStatus = OS_STATUS_PEND_DEL;(21)//标记任务的等待对象被删除
             p_tcb->PendOn     = OS_TASK_PEND_ON_NOTHING;  //标记任务目前没有等待任何对象
-    break;                                        //跳出
+            break;                                        //跳出
 
-    default:                               (22)//如果任务状态超出预期
-    break;                                        //不需处理，直接跳出
+        default:                               (22)//如果任务状态超出预期
+        break;                                        //不需处理，直接跳出
         }
     }
 
@@ -770,7 +770,7 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
 
     void  OSQPost (OS_Q         *p_q,     (1)	//消息队列指针
     void         *p_void,  (2)	//消息指针
-            OS_MSG_SIZE   msg_size,(3)	//消息大小（单位：字节）
+                OS_MSG_SIZE   msg_size,(3)	//消息大小（单位：字节）
                 OS_OPT        opt,     (4)	//选项
                 OS_ERR       *p_err)   (5)	//返回错误类型
     {
@@ -779,45 +779,45 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
 
 
     #ifdef OS_SAFETY_CRITICAL(6)//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0) {         //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0) {         //如果错误类型实参为空
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return;                         //返回，停止执行
+            return;                         //返回，停止执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u(7)//如果启用了参数检测
-    if (p_q == (OS_Q *)0) {            //如果 p_q 为空
+        if (p_q == (OS_Q *)0) {            //如果 p_q 为空
             *p_err = OS_ERR_OBJ_PTR_NULL;   //错误类型为“内核对象为空”
-    return;                        //返回，停止执行
+            return;                        //返回，停止执行
         }
-    switch (opt) {                   (8)//根据选项分类处理
-    case OS_OPT_POST_FIFO:             //如果选项在预期内
-    case OS_OPT_POST_LIFO:
-    case OS_OPT_POST_FIFO | OS_OPT_POST_ALL:
-    case OS_OPT_POST_LIFO | OS_OPT_POST_ALL:
-    case OS_OPT_POST_FIFO | OS_OPT_POST_NO_SCHED:
-    case OS_OPT_POST_LIFO | OS_OPT_POST_NO_SCHED:
-    case OS_OPT_POST_FIFO | OS_OPT_POST_ALL | OS_OPT_POST_NO_SCHED:
-    case OS_OPT_POST_LIFO | OS_OPT_POST_ALL | OS_OPT_POST_NO_SCHED:
-    break;                       //直接跳出
+        switch (opt) {                   (8)//根据选项分类处理
+        case OS_OPT_POST_FIFO:             //如果选项在预期内
+        case OS_OPT_POST_LIFO:
+        case OS_OPT_POST_FIFO | OS_OPT_POST_ALL:
+        case OS_OPT_POST_LIFO | OS_OPT_POST_ALL:
+        case OS_OPT_POST_FIFO | OS_OPT_POST_NO_SCHED:
+        case OS_OPT_POST_LIFO | OS_OPT_POST_NO_SCHED:
+        case OS_OPT_POST_FIFO | OS_OPT_POST_ALL | OS_OPT_POST_NO_SCHED:
+        case OS_OPT_POST_LIFO | OS_OPT_POST_ALL | OS_OPT_POST_NO_SCHED:
+        break;                       //直接跳出
 
-    default:                       (9)//如果选项超出预期
+        default:                       (9)//如果选项超出预期
             *p_err =  OS_ERR_OPT_INVALID; //错误类型为“选项非法”
-    return;                      //返回，停止执行
+        return;                      //返回，停止执行
         }
     #endif
 
     #if OS_CFG_OBJ_TYPE_CHK_EN > 0u(10)//如果启用了对象类型检测
-    if (p_q->Type != OS_OBJ_TYPE_Q) { //如果 p_q 不是消息队列类型
+        if (p_q->Type != OS_OBJ_TYPE_Q) { //如果 p_q 不是消息队列类型
             *p_err = OS_ERR_OBJ_TYPE;      //错误类型为“对象类型错误”
-    return;                       //返回，停止执行
+            return;                       //返回，停止执行
         }
     #endif
 
         ts = OS_TS_GET();                 //获取时间戳
 
     #if OS_CFG_ISR_POST_DEFERRED_EN > 0u(11)//如果启用了中断延迟发布
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0) {  //如果该函数在中断中被调用
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0) {  //如果该函数在中断中被调用
             OS_IntQPost((OS_OBJ_TYPE)OS_OBJ_TYPE_Q, //将该消息发布到中断消息队列
                         (void      *)p_q,
                         (void      *)p_void,
@@ -826,7 +826,7 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
                         (OS_OPT     )opt,
                         (CPU_TS     )ts,
                         (OS_ERR    *)p_err);
-    return;                                //返回（尚未发布），停止执行
+        return;                                //返回（尚未发布），停止执行
         }
     #endif
 
@@ -889,7 +889,7 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
     :linenos:
 
     void  OS_QPost (OS_Q         *p_q,      //消息队列指针
-    void         *p_void,   //消息指针
+                    void         *p_void,   //消息指针
                     OS_MSG_SIZE   msg_size, //消息大小（单位：字节）
                     OS_OPT        opt,      //选项
                     CPU_TS        ts,       //消息被发布时的时间戳
@@ -902,42 +902,42 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
         OS_PEND_DATA  *p_pend_data_next;
         OS_TCB        *p_tcb;
         CPU_SR_ALLOC();  //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
         OS_CRITICAL_ENTER();                              //进入临界段
         p_pend_list = &p_q->PendList;                	//取出该队列的等待列表
-    if (p_pend_list->NbrEntries == (OS_OBJ_QTY)0)    (1)//如果没有任务在等待该队列
+        if (p_pend_list->NbrEntries == (OS_OBJ_QTY)0)    (1)//如果没有任务在等待该队列
         {
-    if ((opt & OS_OPT_POST_LIFO) == (OS_OPT)0)   //把消息发布到队列的末端
+            if ((opt & OS_OPT_POST_LIFO) == (OS_OPT)0)   //把消息发布到队列的末端
             {
                 post_type = OS_OPT_POST_FIFO;	(2)
             }
-    else//把消息发布到队列的前端
+            else//把消息发布到队列的前端
             {
                 post_type = OS_OPT_POST_LIFO;	(3)
             }
 
-    OS_MsgQPut(&p_q->MsgQ,                    //把消息放入消息队列
+            OS_MsgQPut(&p_q->MsgQ,                    //把消息放入消息队列
                     p_void,
                     msg_size,
                     post_type,
                     ts,
                     p_err);			(4)
             OS_CRITICAL_EXIT();                          //退出临界段
-    return;                                      //返回，执行完毕
+        return;                                      //返回，执行完毕
         }
-    /* 如果有任务在等待该队列 */
-    if ((opt & OS_OPT_POST_ALL) != (OS_OPT)0)    (5)//如果要把消息发布给所有等待任务
+        /* 如果有任务在等待该队列 */
+        if ((opt & OS_OPT_POST_ALL) != (OS_OPT)0)    (5)//如果要把消息发布给所有等待任务
         {
             cnt = p_pend_list->NbrEntries;              //获取等待任务数目
         }
-    else//如果要把消息发布给一个等待任务
+        else//如果要把消息发布给一个等待任务
         {
             cnt = (OS_OBJ_QTY)1;          (6)//要处理的任务数目为1
         }
         p_pend_data = p_pend_list->HeadPtr; (7)//获取等待列表的头部（任务）
-    while (cnt > 0u)                     (8)//根据要发布的任务数目逐个发布
+        while (cnt > 0u)                     (8)//根据要发布的任务数目逐个发布
         {
             p_tcb            = p_pend_data->TCBPtr;		(9)
             p_pend_data_next = p_pend_data->NextPtr;
@@ -950,7 +950,7 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
             cnt--;				(11)
         }
         OS_CRITICAL_EXIT_NO_SCHED();       	//退出临界段（无调度）
-    if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0)  //如果没选择“发布完不调度任务”
+        if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0)  //如果没选择“发布完不调度任务”
         {
             OSSched();                        (12)//任务调度
         }
@@ -977,7 +977,7 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
     :linenos:
 
     void  OS_MsgQPut (OS_MSG_Q     *p_msg_q,   //消息队列指针
-    void         *p_void,    //消息指针
+                    void         *p_void,    //消息指针
                     OS_MSG_SIZE   msg_size,  //消息大小（单位：字节）
                     OS_OPT        opt,       //选项
                     CPU_TS        ts,        //消息被发布时的时间戳
@@ -989,58 +989,58 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
 
 
     #ifdef OS_SAFETY_CRITICAL//如果启用了安全检测
-    if (p_err == (OS_ERR *)0)            //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0)            //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION();  //执行安全检测异常函数
-    return;                          //返回，停止执行
+            return;                          //返回，停止执行
         }
     #endif
 
-    if (p_msg_q->NbrEntries >= p_msg_q->NbrEntriesSize)   //如果消息队列已没有可用空间
+        if (p_msg_q->NbrEntries >= p_msg_q->NbrEntriesSize)   //如果消息队列已没有可用空间
         {
             *p_err = OS_ERR_Q_MAX;                      //错误类型为“队列已满”
-    return;                                     //返回，停止执行
+            return;                                     //返回，停止执行
         }
 
-    if (OSMsgPool.NbrFree == (OS_MSG_QTY)0)    //如果消息池没有可用消息
+        if (OSMsgPool.NbrFree == (OS_MSG_QTY)0)    //如果消息池没有可用消息
         {
             *p_err = OS_ERR_MSG_POOL_EMPTY;         //错误类型为“消息池没有消息”
-    return;                                //返回，停止执行
+            return;                                //返回，停止执行
         }
-    /* 从消息池获取一个消息（暂存于 p_msg ）*/
+        /* 从消息池获取一个消息（暂存于 p_msg ）*/
         p_msg             = OSMsgPool.NextPtr; (1)//将消息控制块从消息池移除
         OSMsgPool.NextPtr = p_msg->NextPtr;     (2)//指向下一个消息（取走首个消息）
         OSMsgPool.NbrFree--;                   (3)//消息池可用消息数减1
         OSMsgPool.NbrUsed++;                    (4)//消息池被用消息数加1
-    if (OSMsgPool.NbrUsedMax < OSMsgPool.NbrUsed)  (5)//更新消息被用最大数目的历史记录
+        if (OSMsgPool.NbrUsedMax < OSMsgPool.NbrUsed)  (5)//更新消息被用最大数目的历史记录
         {
             OSMsgPool.NbrUsedMax = OSMsgPool.NbrUsed;
         }
-    /* 将获取的消息插入消息队列 */
-    if (p_msg_q->NbrEntries == (OS_MSG_QTY)0)  (6)//如果消息队列目前没有消息
+        /* 将获取的消息插入消息队列 */
+        if (p_msg_q->NbrEntries == (OS_MSG_QTY)0)  (6)//如果消息队列目前没有消息
         {
             p_msg_q->InPtr         = p_msg;           //将其入队指针指向该消息
             p_msg_q->OutPtr        = p_msg;          //出队指针也指向该消息
             p_msg_q->NbrEntries    = (OS_MSG_QTY)1;  //队列的消息数为1
             p_msg->NextPtr         = (OS_MSG *)0;    //该消息的下一个消息为空
         }
-    else(7)//如果消息队列目前已有消息
+        else(7)//如果消息队列目前已有消息
         {
-    if ((opt & OS_OPT_POST_LIFO) == OS_OPT_POST_FIFO)   //如果用FIFO方式插入队列，
+        if ((opt & OS_OPT_POST_LIFO) == OS_OPT_POST_FIFO)   //如果用FIFO方式插入队列，
             {
                 p_msg_in           = p_msg_q->InPtr;//将消息插入入队端，入队
                 p_msg_in->NextPtr  = p_msg;                     //指针指向该消息。
                 p_msg_q->InPtr     = p_msg;
                 p_msg->NextPtr     = (OS_MSG *)0;
             }
-    else(8)//如果用LIFO方式插入队列，
+        else(8)//如果用LIFO方式插入队列，
             {
                 p_msg->NextPtr     = p_msg_q->OutPtr;  //将消息插入出队端，出队
                 p_msg_q->OutPtr    = p_msg;            //指针指向该消息。
             }
             p_msg_q->NbrEntries++;               (9)//消息队列的消息数目加1
         }
-    if (p_msg_q->NbrEntriesMax < p_msg_q->NbrEntries)  (10)//更新改消息队列的最大消息
+        if (p_msg_q->NbrEntriesMax < p_msg_q->NbrEntries)  (10)//更新改消息队列的最大消息
         {
             p_msg_q->NbrEntriesMax = p_msg_q->NbrEntries;       //数目的历史记录。
         }
@@ -1114,23 +1114,23 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
 
     void  OS_Post (OS_PEND_OBJ  *p_obj,     (1)	//内核对象类型指针
                 OS_TCB       *p_tcb,     (2)	//任务控制块
-    void         *p_void,    (3)	//消息
+                void         *p_void,    (3)	//消息
                 OS_MSG_SIZE   msg_size,  (4)	//消息大小
                 CPU_TS        ts)        (5)	//时间戳
     {
-    switch (p_tcb->TaskState)           (6)//根据任务状态分类处理
+        switch (p_tcb->TaskState)           (6)//根据任务状态分类处理
         {
-    case OS_TASK_STATE_RDY:                   //如果任务处于就绪状态
-    case OS_TASK_STATE_DLY:                   //如果任务处于延时状态
-    case OS_TASK_STATE_SUSPENDED:             //如果任务处于挂起状态
-    case OS_TASK_STATE_DLY_SUSPENDED:
-    //如果任务处于延时中被挂起状态
-    break;                           (7)//不用处理，直接跳出
+        case OS_TASK_STATE_RDY:                   //如果任务处于就绪状态
+        case OS_TASK_STATE_DLY:                   //如果任务处于延时状态
+        case OS_TASK_STATE_SUSPENDED:             //如果任务处于挂起状态
+        case OS_TASK_STATE_DLY_SUSPENDED:
+        //如果任务处于延时中被挂起状态
+        break;                           (7)//不用处理，直接跳出
 
-    case OS_TASK_STATE_PEND:             //如果任务处于无期限等待状态
-    case OS_TASK_STATE_PEND_TIMEOUT:         //如果任务处于有期限等待状态
-    if (p_tcb->PendOn == OS_TASK_PEND_ON_MULTI) (8)
-    //如果任务在等待多个信号量或消息队列
+        case OS_TASK_STATE_PEND:             //如果任务处于无期限等待状态
+        case OS_TASK_STATE_PEND_TIMEOUT:         //如果任务处于有期限等待状态
+            if (p_tcb->PendOn == OS_TASK_PEND_ON_MULTI) (8)
+            //如果任务在等待多个信号量或消息队列
             {
                 OS_Post1(p_obj,                   //标记哪个内核对象被发布
                         p_tcb,
@@ -1138,8 +1138,8 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
                         msg_size,
                         ts);			(9)
             }
-    else(10)
-    //如果任务不是在等待多个信号量或消息队列
+            else(10)
+            //如果任务不是在等待多个信号量或消息队列
             {
     #if (OS_MSG_EN > 0u)
     //如果启用了任务队列或消息队列
@@ -1148,7 +1148,7 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
     #endif
                 p_tcb->TS      = ts;           (12)//保存时间戳到等待任务
             }
-    if (p_obj != (OS_PEND_OBJ *)0)        //如果内核对象不为空
+            if (p_obj != (OS_PEND_OBJ *)0)        //如果内核对象不为空
             {
                 OS_PendListRemove(p_tcb);     (13)//从等待列表移除该等待任务
     #if OS_CFG_DBG_EN > 0u//如果启用了调试代码和变量
@@ -1162,12 +1162,12 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
             p_tcb->PendOn     = OS_TASK_PEND_ON_NOTHING; (17)//标记不再等待
     break;
 
-    case OS_TASK_STATE_PEND_SUSPENDED:
-    //如果任务在无期限等待中被挂起
-    case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
-    //如果任务在有期限等待中被挂起
-    if (p_tcb->PendOn == OS_TASK_PEND_ON_MULTI)     (18)
-    //如果任务在等待多个信号量或消息队列
+        case OS_TASK_STATE_PEND_SUSPENDED:
+        //如果任务在无期限等待中被挂起
+        case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
+        //如果任务在有期限等待中被挂起
+        if (p_tcb->PendOn == OS_TASK_PEND_ON_MULTI)     (18)
+        //如果任务在等待多个信号量或消息队列
             {
                 OS_Post1(p_obj,                    //标记哪个内核对象被发布
                         p_tcb,
@@ -1175,8 +1175,8 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
                         msg_size,
                         ts);			(19)
             }
-    else(20)
-    //如果任务不在等待多个信号量或消息队列
+            else(20)
+            //如果任务不在等待多个信号量或消息队列
             {
     #if (OS_MSG_EN > 0u)//如果启用了调试代码和变量
                 p_tcb->MsgPtr  = p_void;       (21)//保存消息到等待任务
@@ -1185,21 +1185,21 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
                 p_tcb->TS      = ts;                //保存时间戳到等待任务
             }
             OS_TickListRemove(p_tcb);       (22)//从节拍列表移除该等待任务
-    if (p_obj != (OS_PEND_OBJ *)0)          //如果内核对象为空
+            if (p_obj != (OS_PEND_OBJ *)0)          //如果内核对象为空
             {
                 OS_PendListRemove(p_tcb);     (23)//从等待列表移除该等待任务
-        #if OS_CFG_DBG_EN > 0u//如果启用了调试代码和变量
+    #if OS_CFG_DBG_EN > 0u//如果启用了调试代码和变量
                 OS_PendDbgNameRemove(p_obj,        //移除内核对象的调试名
                                     p_tcb);
-        #endif
+    #endif
             }
             p_tcb->TaskState  = OS_TASK_STATE_SUSPENDED;  (24)//任务状态改为被挂起状态
             p_tcb->PendStatus = OS_STATUS_PEND_OK;   (25)//清除等待状态
             p_tcb->PendOn     = OS_TASK_PEND_ON_NOTHING; (26)//标记不再等待
-    break;
+            break;
 
-    default:                               (27)//如果任务状态超出预期
-    break;                                           //直接跳出
+        default:                               (27)//如果任务状态超出预期
+        break;                                           //直接跳出
         }
     }
 
@@ -1279,10 +1279,10 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
     /* 发送消息到消息队列 queue */
     OSQPost ((OS_Q        *)&queue,                             //消息变量指针
             (void        *)"Binghuo μC/OS-III",
-    //要发送的数据的指针，将内存块首地址通过队列“发送出去”
+            //要发送的数据的指针，将内存块首地址通过队列“发送出去”
             (OS_MSG_SIZE  )sizeof ( "Binghuo μC/OS-III" ),     //数据字节大小
             (OS_OPT       )OS_OPT_POST_FIFO | OS_OPT_POST_ALL,
-    //先进先出和发布给全部任务的形式
+            //先进先出和发布给全部任务的形式
             (OS_ERR      *)&err);                              //返回错误类型
 
 
@@ -1307,59 +1307,59 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
                     OS_ERR       *p_err)     (6)	//返回错误类型
     {
         OS_PEND_DATA  pend_data;
-    void         *p_void;
+        void         *p_void;
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL(7)//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return ((void *)0);             //返回0（有错误），停止执行
+            return ((void *)0);             //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u(8)//如果启用了中断中非法调用检测
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0)   //如果该函数在中断中被调用
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0)   //如果该函数在中断中被调用
         {
             *p_err = OS_ERR_PEND_ISR;               //错误类型为“在中断中中止等待”
-    return ((void *)0);                    //返回0（有错误），停止执行
+            return ((void *)0);                    //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u(9)//如果启用了参数检测
-    if (p_q == (OS_Q *)0)                 //如果 p_q 为空
+        if (p_q == (OS_Q *)0)                 //如果 p_q 为空
         {
             *p_err = OS_ERR_OBJ_PTR_NULL;      //错误类型为“对象为空”
-    return ((void *)0);               //返回0（有错误），停止执行
+            return ((void *)0);               //返回0（有错误），停止执行
         }
-    if (p_msg_size == (OS_MSG_SIZE *)0)   //如果 p_msg_size 为空
+        if (p_msg_size == (OS_MSG_SIZE *)0)   //如果 p_msg_size 为空
         {
             *p_err = OS_ERR_PTR_INVALID;       //错误类型为“指针不可用”
-    return ((void *)0);               //返回0（有错误），停止执行
+        return ((void *)0);               //返回0（有错误），停止执行
         }
-    switch (opt)                    (10)//根据选项分类处理
+        switch (opt)                    (10)//根据选项分类处理
         {
-    case OS_OPT_PEND_BLOCKING:        //如果选项在预期内
-    case OS_OPT_PEND_NON_BLOCKING:
-    break;                       //直接跳出
+        case OS_OPT_PEND_BLOCKING:        //如果选项在预期内
+        case OS_OPT_PEND_NON_BLOCKING:
+        break;                       //直接跳出
 
-    default:                     (11)//如果选项超出预期
+        default:                     (11)//如果选项超出预期
             *p_err = OS_ERR_OPT_INVALID;  //返回错误类型为“选项非法”
-    return ((void *)0);          //返回0（有错误），停止执行
+        return ((void *)0);          //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_OBJ_TYPE_CHK_EN > 0u(12)//如果启用了对象类型检测
-    if (p_q->Type != OS_OBJ_TYPE_Q)    //如果 p_q 不是消息队列类型
+        if (p_q->Type != OS_OBJ_TYPE_Q)    //如果 p_q 不是消息队列类型
         {
             *p_err = OS_ERR_OBJ_TYPE;       //错误类型为“对象类型有误”
-    return ((void *)0);            //返回0（有错误），停止执行
+            return ((void *)0);            //返回0（有错误），停止执行
         }
     #endif
 
-    if (p_ts != (CPU_TS *)0)    (13)	//如果 p_ts 非空
+        if (p_ts != (CPU_TS *)0)    (13)	//如果 p_ts 非空
         {
             *p_ts  = (CPU_TS  )0;    	//初始化（清零）p_ts，待用于返回时间戳
         }
@@ -1369,89 +1369,89 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
                             p_msg_size,
                             p_ts,
                             p_err);
-    if (*p_err == OS_ERR_NONE)            (15)//如果获取消息成功
+        if (*p_err == OS_ERR_NONE)            (15)//如果获取消息成功
         {
             CPU_CRITICAL_EXIT();                              //开中断
-    return (p_void);                                  //返回消息内容
+            return (p_void);                                  //返回消息内容
         }
-    /* 如果获取消息不成功 */		 (16)
-    if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0) //如果选择了不阻塞任务
+        /* 如果获取消息不成功 */		 (16)
+        if ((opt & OS_OPT_PEND_NON_BLOCKING) != (OS_OPT)0) //如果选择了不阻塞任务
         {
             CPU_CRITICAL_EXIT();                              //开中断
             *p_err = OS_ERR_PEND_WOULD_BLOCK;           //错误类型为“等待渴求阻塞”
-    return ((void *)0);                       //返回0（有错误），停止执行
+            return ((void *)0);                       //返回0（有错误），停止执行
         }
-    else(17)//如果选择了阻塞任务
+        else(17)//如果选择了阻塞任务
         {
-    if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0)(18)//如果调度器被锁
+        if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0)(18)//如果调度器被锁
             {
                 CPU_CRITICAL_EXIT();                  //开中断
                 *p_err = OS_ERR_SCHED_LOCKED;         //错误类型为“调度器被锁”
-    return ((void *)0);                   //返回0（有错误），停止执行
+                return ((void *)0);                   //返回0（有错误），停止执行
             }
         }
-    /* 如果调度器未被锁 */
+        /* 如果调度器未被锁 */
         OS_CRITICAL_ENTER_CPU_EXIT();          (19)//锁调度器，重开中断
         OS_Pend(&pend_data,
-    //阻塞当前任务，等待消息队列，
+        //阻塞当前任务，等待消息队列，
                 (OS_PEND_OBJ *)((void *)p_q),         //将当前任务脱离就绪列表，并
                 OS_TASK_PEND_ON_Q,                   //插入节拍列表和等待列表。
                 timeout);			(20)
         OS_CRITICAL_EXIT_NO_SCHED();          //开调度器，但不进行调度
 
         OSSched();                            (21)
-    //找到并调度最高优先级就绪任务
-    /* 当前任务（获得消息队列的消息）得以继续运行 */
+        //找到并调度最高优先级就绪任务
+        /* 当前任务（获得消息队列的消息）得以继续运行 */
         CPU_CRITICAL_ENTER();                 (22)//关中断
-    switch (OSTCBCurPtr->PendStatus)      (23)
-    //根据当前运行任务的等待状态分类处理
+        switch (OSTCBCurPtr->PendStatus)      (23)
+        //根据当前运行任务的等待状态分类处理
         {
-    case OS_STATUS_PEND_OK:                 (24)//如果等待状态正常
+        case OS_STATUS_PEND_OK:                 (24)//如果等待状态正常
             p_void     = OSTCBCurPtr->MsgPtr;    (25)
-    //从（发布时放于）任务控制块提取消息
+            //从（发布时放于）任务控制块提取消息
             *p_msg_size = OSTCBCurPtr->MsgSize;  //提取消息大小
-    if (p_ts  != (CPU_TS *)0)                    //如果 p_ts 非空
+            if (p_ts  != (CPU_TS *)0)                    //如果 p_ts 非空
             {
                 *p_ts   =  OSTCBCurPtr->TS;         //获取任务等到消息时的时间戳
             }
             *p_err      = OS_ERR_NONE;                    //错误类型为“无错误”
-    break;                                       //跳出
+            break;                                       //跳出
 
-    case OS_STATUS_PEND_ABORT:             (26)//如果等待被中止
+        case OS_STATUS_PEND_ABORT:             (26)//如果等待被中止
             p_void     = (void      *)0;                 //返回消息内容为空
             *p_msg_size = (OS_MSG_SIZE)0;                 //返回消息大小为0
-    if (p_ts  != (CPU_TS *)0)                    //如果 p_ts 非空
+            if (p_ts  != (CPU_TS *)0)                    //如果 p_ts 非空
             {
                 *p_ts   =  OSTCBCurPtr->TS;        //获取等待被中止时的时间戳
             }
             *p_err      = OS_ERR_PEND_ABORT;      //错误类型为“等待被中止”
-    break;                                       //跳出
+            break;                                       //跳出
 
-    case OS_STATUS_PEND_TIMEOUT:           (27)//如果等待超时
+        case OS_STATUS_PEND_TIMEOUT:           (27)//如果等待超时
             p_void     = (void      *)0;                 //返回消息内容为空
             *p_msg_size = (OS_MSG_SIZE)0;                 //返回消息大小为0
-    if (p_ts  != (CPU_TS *)0)                    //如果 p_ts 非空
+            if (p_ts  != (CPU_TS *)0)                    //如果 p_ts 非空
             {
                 *p_ts   = (CPU_TS  )0;                    //清零 p_ts
             }
             *p_err      = OS_ERR_TIMEOUT;                 //错误类型为“等待超时”
-    break;                                       //跳出
+        break;                                       //跳出
 
-    case OS_STATUS_PEND_DEL:             (28)//如果等待的内核对象被删除
+        case OS_STATUS_PEND_DEL:             (28)//如果等待的内核对象被删除
             p_void     = (void      *)0;                 //返回消息内容为空
             *p_msg_size = (OS_MSG_SIZE)0;                 //返回消息大小为0
-    if (p_ts  != (CPU_TS *)0)                    //如果 p_ts 非空
+            if (p_ts  != (CPU_TS *)0)                    //如果 p_ts 非空
             {
                 *p_ts   =  OSTCBCurPtr->TS;          //获取对象被删时的时间戳
             }
             *p_err      = OS_ERR_OBJ_DEL;           //错误类型为“等待对象被删”
-    break;                                       //跳出
+        break;                                       //跳出
 
-    default:                               (29)//如果等待状态超出预期
+        default:                               (29)//如果等待状态超出预期
             p_void     = (void      *)0;                 //返回消息内容为空
             *p_msg_size = (OS_MSG_SIZE)0;                 //返回消息大小为0
             *p_err      = OS_ERR_STATUS_INVALID;          //错误类型为“状态非法”
-    break;                                       //跳出
+            break;                                       //跳出
         }
         CPU_CRITICAL_EXIT();                                  //开中断
     return(p_void);                      (30)//返回消息内容
@@ -1503,56 +1503,56 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
                     OS_ERR       *p_err)       //返回错误类型
     {
         OS_MSG  *p_msg;
-    void    *p_void;
+        void    *p_void;
 
 
 
     #ifdef OS_SAFETY_CRITICAL//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return ((void *)0);             //返回空消息，停止执行
+            return ((void *)0);             //返回空消息，停止执行
         }
     #endif
 
-    if (p_msg_q->NbrEntries == (OS_MSG_QTY)0) (1)//如果消息队列没有消息
+        if (p_msg_q->NbrEntries == (OS_MSG_QTY)0) (1)//如果消息队列没有消息
         {
             *p_msg_size = (OS_MSG_SIZE)0;             //返回消息长度为0
-    if (p_ts != (CPU_TS *)0)                 //如果 p_ts 非空
+            if (p_ts != (CPU_TS *)0)                 //如果 p_ts 非空
             {
                 *p_ts  = (CPU_TS  )0;                 //清零 p_ts
             }
             *p_err = OS_ERR_Q_EMPTY;                  //错误类型为“队列没消息”
-    return ((void *)0);                      //返回空消息，停止执行
+            return ((void *)0);                      //返回空消息，停止执行
         }
-    /* 如果消息队列有消息 */
+        /* 如果消息队列有消息 */
         p_msg           = p_msg_q->OutPtr;    (2)//从队列的出口端提取消息
         p_void          = p_msg->MsgPtr;     (3)//提取消息内容
         *p_msg_size      = p_msg->MsgSize;   (4)//提取消息长度
-    if (p_ts != (CPU_TS *)0)             (5)//如果 p_ts 非空
+        if (p_ts != (CPU_TS *)0)             (5)//如果 p_ts 非空
         {
             *p_ts  = p_msg->MsgTS;                   //获取消息被发布时的时间戳
         }
 
         p_msg_q->OutPtr = p_msg->NextPtr;    (6)//修改队列的出队指针
 
-    if (p_msg_q->OutPtr == (OS_MSG *)0)  (7)//如果队列没有消息了
+        if (p_msg_q->OutPtr == (OS_MSG *)0)  (7)//如果队列没有消息了
         {
             p_msg_q->InPtr      = (OS_MSG   *)0;  //清零出队指针
             p_msg_q->NbrEntries = (OS_MSG_QTY)0; //清零消息数
         }
-    else(8)//如果队列还有消息
+        else(8)//如果队列还有消息
         {
             p_msg_q->NbrEntries--;                  //队列的消息数减1
         }
-    /* 从消息队列提取完消息信息后，将消息释放回消息池供继续使用 */
+        /* 从消息队列提取完消息信息后，将消息释放回消息池供继续使用 */
         p_msg->NextPtr    = OSMsgPool.NextPtr;   (9)//消息插回消息池
         OSMsgPool.NextPtr = p_msg;
         OSMsgPool.NbrFree++;                    (10)//消息池的可用消息数加1
         OSMsgPool.NbrUsed--;                    (11)//消息池的已用消息数减1
 
         *p_err             = OS_ERR_NONE;            //错误类型为“无错误”
-    return (p_void);                        (12)//返回消息内容
+        return (p_void);                        (12)//返回消息内容
     }
 
 
@@ -1851,7 +1851,7 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
         //初始化内存管理组件（堆内存池和内存池表）
 
     #if OS_CFG_STAT_TASK_EN > 0u
-    //如果启用（默认启用）了统计任务
+        //如果启用（默认启用）了统计任务
         OSStatTaskCPUUsageInit(&err);
         //计算没有应用任务（只有空闲任务）运行时 CPU的（最大）
 

@@ -91,8 +91,9 @@ OS_PrioInit()函数用于初始化优先级表，在OSInit()函数中被调用�
     {
         CPU_DATA i;
 
-    /* 默认全部初始化为0 */
-    for ( i=0u; i<OS_PRIO_TBL_SIZE; i++ ) {
+        /* 默认全部初始化为0 */
+        for ( i=0u; i<OS_PRIO_TBL_SIZE; i++ )
+        {
             OSPrioTbl[i] = (CPU_DATA)0;
         }
     }
@@ -125,17 +126,17 @@ OS_PrioInsert()函数用于置位优先级表中相应的位，会被OSTaskCreat
         OS_PRIO   ix;
 
 
-    /* 求模操作，获取优先级表数组的下标索引 */
+        /* 求模操作，获取优先级表数组的下标索引 */
         ix             = prio / DEF_INT_CPU_NBR_BITS;(1)
 
-    /* 求余操作，将优先级限制在DEF_INT_CPU_NBR_BITS之内 */
+        /* 求余操作，将优先级限制在DEF_INT_CPU_NBR_BITS之内 */
         bit_nbr        = (CPU_DATA)prio & (DEF_INT_CPU_NBR_BITS - 1u);(2)
 
-    /* 获取优先级在优先级表中对应的位的位置 */(3)
+        /* 获取优先级在优先级表中对应的位的位置 */(3)
         bit            = 1u;
         bit          <<= (DEF_INT_CPU_NBR_BITS - 1u) - bit_nbr;
 
-    /* 将优先级在优先级表中对应的位置1 */
+        /* 将优先级在优先级表中对应的位置1 */
         OSPrioTbl[ix] |= bit;(4)
     }
 
@@ -184,17 +185,17 @@ OS_PrioRemove()函数用于清除优先级表中相应的位，与OS_PrioInsert(
         OS_PRIO   ix;
 
 
-    /* 求模操作，获取优先级表数组的下标索引 */
+        /* 求模操作，获取优先级表数组的下标索引 */
         ix             = prio / DEF_INT_CPU_NBR_BITS;
 
-    /* 求余操作，将优先级限制在DEF_INT_CPU_NBR_BITS之内 */
+        /* 求余操作，将优先级限制在DEF_INT_CPU_NBR_BITS之内 */
         bit_nbr        = (CPU_DATA)prio & (DEF_INT_CPU_NBR_BITS - 1u);
 
-    /* 获取优先级在优先级表中对应的位的位置 */
+        /* 获取优先级在优先级表中对应的位的位置 */
         bit            = 1u;
         bit          <<= (DEF_INT_CPU_NBR_BITS - 1u) - bit_nbr;
 
-    /* 将优先级在优先级表中对应的位清零 */
+        /* 将优先级在优先级表中对应的位清零 */
         OSPrioTbl[ix] &= ~bit;
     }
 
@@ -217,18 +218,19 @@ OS_PrioGetHighest()函数用于从优先级表中查找最高的优先级，具�
 
 
         prio  = (OS_PRIO)0;
-    /* 获取优先级表首地址 */
+        /* 获取优先级表首地址 */
         p_tbl = &OSPrioTbl[0];(1)
 
-    /* 找到数值不为0的数组成员 */(2)
-    while (*p_tbl == (CPU_DATA)0) {
+        /* 找到数值不为0的数组成员 */(2)
+        while (*p_tbl == (CPU_DATA)0)
+        {
             prio += DEF_INT_CPU_NBR_BITS;
             p_tbl++;
         }
 
-    /* 找到优先级表中置位的最高的优先级 */
+        /* 找到优先级表中置位的最高的优先级 */
         prio += (OS_PRIO)CPU_CntLeadZeros(*p_tbl);(3)
-    return (prio);
+        return (prio);
     }
 
 
@@ -287,7 +289,7 @@ Cortex-M系列处理器自带CLZ指令，所以CPU_CntLeadZeros()函数默认由
     ;*******************************************************************
     CPU_CntLeadZeros
             CLZ     R0, R0                          ; Count leading zeros
-    BX      LR
+            BX      LR
 
 
 
@@ -303,7 +305,7 @@ Cortex-M系列处理器自带CLZ指令，所以CPU_CntLeadZeros()函数默认由
     CPU_CntTrailZeros
             RBIT    R0, R0                          ; Reverse bits
             CLZ     R0, R0                          ; Count trailing zeros
-    BX      LR
+            BX      LR
 
     /*
     *******************************************************************
@@ -330,47 +332,47 @@ Cortex-M系列处理器自带CLZ指令，所以CPU_CntLeadZeros()函数默认由
         CPU_DATA    nbr_lead_zeros;
         CPU_INT08U  ix;
 
-    /* 检查高16位 */
-    if (val > 0x0000FFFFu) {(1)
-    /* 检查 bits [31:24] : */
-    if (val > 0x00FFFFFFu) {(2)
+        /* 检查高16位 */
+        if (val > 0x0000FFFFu) {(1)
+        /* 检查 bits [31:24] : */
+        if (val > 0x00FFFFFFu) {(2)
 
-    /* 获取bits [31:24]的值，并转换成8位 */
+        /* 获取bits [31:24]的值，并转换成8位 */
                 ix             = (CPU_INT08U)(val >> 24u);(3)
-    /* 查表找到优先级 */
+        /* 查表找到优先级 */
                 nbr_lead_zeros=(CPU_DATA)(CPU_CntLeadZerosTbl[ix]+0u);(4)
 
             }
-    /* 检查 bits [23:16] : */
-    else {
-    /* 获取bits [23:16]的值，并转换成8位 */
+            /* 检查 bits [23:16] : */
+            else {
+                /* 获取bits [23:16]的值，并转换成8位 */
                 ix             = (CPU_INT08U)(val >> 16u);
-    /* 查表找到优先级 */
+                /* 查表找到优先级 */
                 nbr_lead_zeros = (CPU_DATA  )(CPU_CntLeadZerosTbl[ix] +  8u);
             }
 
         }
     /* 检查低16位 */
     else {
-    /* 检查 bits [15:08] : */
-    if (val > 0x000000FFu) {
-    /* 获取bits [15:08]的值，并转换成8位 */
+        /* 检查 bits [15:08] : */
+        if (val > 0x000000FFu) {
+                /* 获取bits [15:08]的值，并转换成8位 */
                 ix             = (CPU_INT08U)(val >>  8u);
-    /* 查表找到优先级 */
+                /* 查表找到优先级 */
                 nbr_lead_zeros = (CPU_DATA  )(CPU_CntLeadZerosTbl[ix] + 16u);
 
             }
-    /* 检查 bits [07:00] : */
-    else {
-    /* 获取bits [15:08]的值，并转换成8位 */
+            /* 检查 bits [07:00] : */
+            else {
+                /* 获取bits [15:08]的值，并转换成8位 */
                 ix             = (CPU_INT08U)(val >>  0u);
-    /* 查表找到优先级 */
+                /* 查表找到优先级 */
                 nbr_lead_zeros = (CPU_DATA  )(CPU_CntLeadZerosTbl[ix] + 24u);
             }
         }
 
-    /* 返回优先级 */
-    return (nbr_lead_zeros);
+        /* 返回优先级 */
+        return (nbr_lead_zeros);
     }
     #endif
 
@@ -415,7 +417,7 @@ Cortex-M系列处理器自带CLZ指令，所以CPU_CntLeadZeros()函数默认由
     #endif
 
 
-代码清单:就绪列表-8中，对一个32位的变量算前导0个数的时候都是分离成8位的变量来计算，然后将这个8位的变量作为数组
+代码清单:就绪列表-8_ 中，对一个32位的变量算前导0个数的时候都是分离成8位的变量来计算，然后将这个8位的变量作为数组
 CPU_CntLeadZerosTbl[]的索引，索引下对应的值就是这个8位变量的前导0个数。一个8位的变量的取值范围为0~0XFF，
 这些值作为数组CPU_CntLeadZerosTbl[]的索引，每一个值的前导0个数都预先算出来作为该数组索引下的值。
 通过查CPU_CntLeadZerosTbl[]这个表就可以很快的知道一个8位变量的前导0个数，根本不用计算，
@@ -504,15 +506,15 @@ OS_RdyListRemove         将TCB从就绪列表中移除
         CPU_STK         *StkPtr;
         CPU_STK_SIZE    StkSize;
 
-    /* 任务延时周期个数 */
+        /* 任务延时周期个数 */
         OS_TICK         TaskDelayTicks;
 
-    /* 任务优先级 */
+        /* 任务优先级 */
         OS_PRIO         Prio;
 
-    /* 就绪列表双向链表的下一个指针 */
+        /* 就绪列表双向链表的下一个指针 */
         OS_TCB          *NextPtr;
-    /* 就绪列表双向链表的前一个指针 */
+        /* 就绪列表双向链表的前一个指针 */
         OS_TCB          *PrevPtr;
     };
 
@@ -537,8 +539,8 @@ OS_RdyListInit()用于将就绪列表OSRdyList[]初始化为空，初始化完�
         OS_PRIO i;
         OS_RDY_LIST *p_rdy_list;
 
-    /* 循环初始化，所有成员都初始化为0 */
-    for ( i=0u; i<OS_CFG_PRIO_MAX; i++ ) {
+        /* 循环初始化，所有成员都初始化为0 */
+        for ( i=0u; i<OS_CFG_PRIO_MAX; i++ ) {
             p_rdy_list = &OSRdyList[i];
             p_rdy_list->NbrEntries = (OS_OBJ_QTY)0;
             p_rdy_list->HeadPtr = (OS_TCB *)0;
@@ -570,19 +572,19 @@ OS_RdyListInsertHead()用于在链表头部插入一个TCB节点，插入的时�
         OS_RDY_LIST  *p_rdy_list;
         OS_TCB       *p_tcb2;
 
-    /* 获取链表根部 */
+        /* 获取链表根部 */
         p_rdy_list = &OSRdyList[p_tcb->Prio];
 
-    /* CASE 0: 链表是空链表 */
-    if (p_rdy_list->NbrEntries == (OS_OBJ_QTY)0) {
+        /* CASE 0: 链表是空链表 */
+        if (p_rdy_list->NbrEntries == (OS_OBJ_QTY)0) {
             p_rdy_list->NbrEntries =  (OS_OBJ_QTY)1;
             p_tcb->NextPtr         =  (OS_TCB   *)0;
             p_tcb->PrevPtr         =  (OS_TCB   *)0;
             p_rdy_list->HeadPtr    =  p_tcb;
             p_rdy_list->TailPtr    =  p_tcb;
         }
-    /* CASE 1: 链表已有节点 */
-    else {
+        /* CASE 1: 链表已有节点 */
+        else {
             p_rdy_list->NbrEntries++;
             p_tcb->NextPtr         = p_rdy_list->HeadPtr;
             p_tcb->PrevPtr         = (OS_TCB    *)0;
@@ -617,19 +619,19 @@ OS_RdyListInsertTail()用于在链表尾部插入一个TCB节点，插入的时�
         OS_TCB       *p_tcb2;
 
 
-    /* 获取链表根部 */
+        /* 获取链表根部 */
         p_rdy_list = &OSRdyList[p_tcb->Prio];
 
-    /* CASE 0: 链表是空链表 */
-    if (p_rdy_list->NbrEntries == (OS_OBJ_QTY)0) {
+        /* CASE 0: 链表是空链表 */
+        if (p_rdy_list->NbrEntries == (OS_OBJ_QTY)0) {
             p_rdy_list->NbrEntries  = (OS_OBJ_QTY)1;
             p_tcb->NextPtr          = (OS_TCB   *)0;
             p_tcb->PrevPtr          = (OS_TCB   *)0;
             p_rdy_list->HeadPtr     = p_tcb;
             p_rdy_list->TailPtr     = p_tcb;
         }
-    /* CASE 1: 链表已有节点 */
-    else {
+        /* CASE 1: 链表已有节点 */
+        else {
             p_rdy_list->NbrEntries++;
             p_tcb->NextPtr          = (OS_TCB   *)0;
             p_tcb2                  = p_rdy_list->TailPtr;
@@ -655,14 +657,17 @@ OS_RdyListInsert()用于将任务的TCB插入就绪列表，插入的时候分�
     /* 在就绪链表中插入一个TCB */
     void  OS_RdyListInsert (OS_TCB  *p_tcb)
     {
-    /* 将优先级插入优先级表 */
+        /* 将优先级插入优先级表 */
         OS_PrioInsert(p_tcb->Prio);
 
-    if (p_tcb->Prio == OSPrioCur) {
-    /* 如果是当前优先级则插入链表尾部 */
+        if (p_tcb->Prio == OSPrioCur)
+        {
+            /* 如果是当前优先级则插入链表尾部 */
             OS_RdyListInsertTail(p_tcb);
-        } else {
-    /* 否则插入链表头部 */
+        }
+        else
+        {
+            /* 否则插入链表头部 */
             OS_RdyListInsertHead(p_tcb);
         }
     }
@@ -693,12 +698,12 @@ OS_RdyListMoveHeadToTail()函数用于将节点从链表头部移动到尾部，
         OS_TCB  *p_tcb2;
         OS_TCB  *p_tcb3;
 
-    switch (p_rdy_list->NbrEntries) {
-    case 0:
-    case 1:
-    break;
+        switch (p_rdy_list->NbrEntries) {
+        case 0:
+        case 1:
+        break;
 
-    case 2:
+        case 2:
             p_tcb1              = p_rdy_list->HeadPtr;
             p_tcb2              = p_rdy_list->TailPtr;
             p_tcb1->PrevPtr     = p_tcb2;
@@ -707,9 +712,9 @@ OS_RdyListMoveHeadToTail()函数用于将节点从链表头部移动到尾部，
             p_tcb2->NextPtr     = p_tcb1;
             p_rdy_list->HeadPtr = p_tcb2;
             p_rdy_list->TailPtr = p_tcb1;
-    break;
+        break;
 
-    default:
+        default:
             p_tcb1              = p_rdy_list->HeadPtr;
             p_tcb2              = p_rdy_list->TailPtr;
             p_tcb3              = p_tcb1->NextPtr;
@@ -719,7 +724,7 @@ OS_RdyListMoveHeadToTail()函数用于将节点从链表头部移动到尾部，
             p_tcb2->NextPtr     = p_tcb1;
             p_rdy_list->HeadPtr = p_tcb3;
             p_rdy_list->TailPtr = p_tcb1;
-    break;
+        break;
         }
     }
 
@@ -748,48 +753,53 @@ OS_RdyListRemove()函数用于从链表中移除一个节点，移除的时候�
         OS_TCB       *p_tcb1;
         OS_TCB       *p_tcb2;
 
-
-
         p_rdy_list = &OSRdyList[p_tcb->Prio];
 
-    /* 保存要删除的TCB节点的前一个和后一个节点 */
+        /* 保存要删除的TCB节点的前一个和后一个节点 */
         p_tcb1     = p_tcb->PrevPtr;
         p_tcb2     = p_tcb->NextPtr;
 
-    /* 要移除的TCB节点是链表中的第一个节点 */
-    if (p_tcb1 == (OS_TCB *)0) {
-    /* 且该链表中只有一个节点 */
-    if (p_tcb2 == (OS_TCB *)0) {
-    /* 根节点全部初始化为0 */
+        /* 要移除的TCB节点是链表中的第一个节点 */
+        if (p_tcb1 == (OS_TCB *)0)
+        {
+            /* 且该链表中只有一个节点 */
+            if (p_tcb2 == (OS_TCB *)0)
+            {
+                /* 根节点全部初始化为0 */
                 p_rdy_list->NbrEntries = (OS_OBJ_QTY)0;
                 p_rdy_list->HeadPtr    = (OS_TCB   *)0;
                 p_rdy_list->TailPtr    = (OS_TCB   *)0;
 
-    /* 清除在优先级表中相应的位 */
+                /* 清除在优先级表中相应的位 */
                 OS_PrioRemove(p_tcb->Prio);
             }
-    /* 该链表中不止一个节点 */
-    else {
-    /* 节点减1 */
+            /* 该链表中不止一个节点 */
+            else
+            {
+                /* 节点减1 */
                 p_rdy_list->NbrEntries--;
                 p_tcb2->PrevPtr        = (OS_TCB   *)0;
                 p_rdy_list->HeadPtr    = p_tcb2;
             }
         }
-    /* 要移除的TCB节点不是链表中的第一个节点 */
-    else {
+        /* 要移除的TCB节点不是链表中的第一个节点 */
+        else
+        {
             p_rdy_list->NbrEntries--;
             p_tcb1->NextPtr = p_tcb2;
 
-    /* 如果要删除的节点的下一个节点是0，即要删除的节点是最后一个节点 */
-    if (p_tcb2 == (OS_TCB *)0) {
+            /* 如果要删除的节点的下一个节点是0，即要删除的节点是最后一个节点 */
+            if (p_tcb2 == (OS_TCB *)0)
+            {
                 p_rdy_list->TailPtr = p_tcb1;
-            } else {
+            }
+            else
+            {
                 p_tcb2->PrevPtr     = p_tcb1;
             }
         }
 
-    /* 复位从就绪列表中删除的TCB的PrevPtr和NextPtr这两个指针 */
+        /* 复位从就绪列表中删除的TCB的PrevPtr和NextPtr这两个指针 */
         p_tcb->PrevPtr = (OS_TCB *)0;
         p_tcb->NextPtr = (OS_TCB *)0;
     }

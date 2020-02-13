@@ -151,7 +151,7 @@
 
     void  OSMemCreate (OS_MEM       *p_mem,    	(1)	//内存池控制块
                     CPU_CHAR     *p_name,   	(2)	//命名内存池
-    void         *p_addr,   	(3)	//内存池首地址
+                    void         *p_addr,   	(3)	//内存池首地址
                     OS_MEM_QTY    n_blks,   	(4)	//内存块数目
                     OS_MEM_SIZE   blk_size, 	(5)	//内存块大小（单位：字节）
                     OS_ERR       *p_err)    	(6)	//返回错误类型
@@ -162,77 +162,77 @@
         OS_MEM_QTY     i;
         OS_MEM_QTY     loops;
         CPU_INT08U    *p_blk;
-    void         **p_link;               //二级指针，存放指针的指针
+        void         **p_link;               //二级指针，存放指针的指针
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL//如果启用了安全检测
-    if (p_err == (OS_ERR *)0)            //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0)            //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION();  //执行安全检测异常函数
-    return;                          //返回，停止执行
+            return;                          //返回，停止执行
         }
     #endif
 
     #ifdef OS_SAFETY_CRITICAL_IEC61508//如果启用了安全关键
-    if (OSSafetyCriticalStartFlag == DEF_TRUE)
+        if (OSSafetyCriticalStartFlag == DEF_TRUE)
         {
             *p_err = OS_ERR_ILLEGAL_CREATE_RUN_TIME;//错误类型为“非法创建内核对象”
-    return;                                  //返回，停止执行
+            return;                                  //返回，停止执行
         }
     #endif
 
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u//如果启用了中断中非法调用检测
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0)   //如果该函数是在中断中被调用
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0)   //如果该函数是在中断中被调用
         {
             *p_err = OS_ERR_MEM_CREATE_ISR;         //错误类型为“在中断中创建对象”
-    return;                                //返回，停止执行
+            return;                                //返回，停止执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u//如果启用了参数检测
-    if (p_addr == (void *)0)                (7)//如果 p_addr 为空
+        if (p_addr == (void *)0)                (7)//如果 p_addr 为空
         {
             *p_err   = OS_ERR_MEM_INVALID_P_ADDR;    //错误类型为“内存池地址非法”
-    return;                                        //返回，停止执行
+            return;                                        //返回，停止执行
         }
-    if (n_blks < (OS_MEM_QTY)2)             (8)//如果内存池的内存块数目少于2
+        if (n_blks < (OS_MEM_QTY)2)             (8)//如果内存池的内存块数目少于2
         {
             *p_err = OS_ERR_MEM_INVALID_BLKS;         //错误类型为“内存块数目非法”
-    return;                                        //返回，停止执行
+            return;                                        //返回，停止执行
         }
-    if (blk_size <sizeof(void *))          (9)//如果内存块空间小于指针的
+        if (blk_size <sizeof(void *))          (9)//如果内存块空间小于指针的
         {
             *p_err = OS_ERR_MEM_INVALID_SIZE;          //错误类型为“内存空间非法”
-    return;                                        //返回，停止执行
+            return;                                        //返回，停止执行
         }
         align_msk = sizeof(void *) - 1u;        (10)//开始检查内存地址是否对齐
-    if (align_msk > 0u)
+        if (align_msk > 0u)
         {
-    if (((CPU_ADDR)p_addr & align_msk) != 0u)  //如果首地址没对齐
+            if (((CPU_ADDR)p_addr & align_msk) != 0u)  //如果首地址没对齐
             {
                 *p_err = OS_ERR_MEM_INVALID_P_ADDR;   //错误类型为“内存池地址非法”
-    return;                                    //返回，停止执行
+                return;                                    //返回，停止执行
             }
-    if ((blk_size & align_msk) != 0u)   (11)//如果内存块地址没对齐
+            if ((blk_size & align_msk) != 0u)   (11)//如果内存块地址没对齐
             {
                 *p_err = OS_ERR_MEM_INVALID_SIZE;     //错误类型为“内存块大小非法”
-    return;                                    //返回，停止执行
+                return;                                    //返回，停止执行
             }
         }
     #endif
-    /* 将空闲内存块串联成一个单向链表 */
+        /* 将空闲内存块串联成一个单向链表 */
         p_link = (void **)p_addr;              (12)//内存池首地址转为二级指针
         p_blk  = (CPU_INT08U *)p_addr;         (13)//首个内存块地址
         loops  = n_blks - 1u;
-    for (i = 0u; i < loops; i++)           (14)//将内存块逐个串成单向链表
+        for (i = 0u; i < loops; i++)           (14)//将内存块逐个串成单向链表
         {
             p_blk +=  blk_size;                            //下一内存块地址
             *p_link = (void  *)p_blk;
-    //在当前内存块保存下一个内存块地址
+            //在当前内存块保存下一个内存块地址
             p_link = (void **)(void *)p_blk;
-    //下一个内存块的地址转为二级指针
+            //下一个内存块的地址转为二级指针
         }
         *p_link             = (void *)0;       (15)//最后一个内存块指向空
 
@@ -364,40 +364,40 @@
     void  *OSMemGet (OS_MEM  *p_mem, 	(1)	//内存管理对象
                     OS_ERR  *p_err) 	(2)	//返回错误类型
     {
-    void    *p_blk;
+        void    *p_blk;
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL//如果启用了安全检测
-    if (p_err == (OS_ERR *)0)            //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0)            //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION();  //执行安全检测异常函数
-    return ((void *)0);              //返回0（有错误），停止执行
+            return ((void *)0);              //返回0（有错误），停止执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u//如果启用了参数检测
-    if (p_mem == (OS_MEM *)0)              //如果 p_mem 为空
+        if (p_mem == (OS_MEM *)0)              //如果 p_mem 为空
         {
             *p_err  = OS_ERR_MEM_INVALID_P_MEM; //错误类型为“内存池非法”
-    return ((void *)0);                //返回0（有错误），停止执行
+            return ((void *)0);                //返回0（有错误），停止执行
         }
     #endif
 
         CPU_CRITICAL_ENTER();                    //关中断
-    if (p_mem->NbrFree == (OS_MEM_QTY)0) (3)//如果没有空闲的内存块
+        if (p_mem->NbrFree == (OS_MEM_QTY)0) (3)//如果没有空闲的内存块
         {
             CPU_CRITICAL_EXIT();                 //开中断
             *p_err = OS_ERR_MEM_NO_FREE_BLKS;     //错误类型为“没有空闲内存块”
-    return ((void *)0);                  //返回0（有错误），停止执行
+            return ((void *)0);                  //返回0（有错误），停止执行
         }
         p_blk  = p_mem->FreeListPtr; 	(4)	//如果还有空闲内存块，就获取它
         p_mem->FreeListPtr = *(void **)p_blk;(5)//调整空闲内存块指针
         p_mem->NbrFree--;                   (6)//空闲内存块数目减1
         CPU_CRITICAL_EXIT();                     //开中断
         *p_err = OS_ERR_NONE;                     //错误类型为“无错误”
-    return (p_blk);                      (7)//返回获取到的内存块
+        return (p_blk);                      (7)//返回获取到的内存块
     }
 
 
@@ -458,36 +458,36 @@ OSMemGet()函数的使用实例具体见 代码清单:内存管理-5_ 。
                     OS_ERR  *p_err)   	(3)	//返回错误类型
     {
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL//如果启用了安全检测
-    if (p_err == (OS_ERR *)0)            //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0)            //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION();  //执行安全检测异常函数
-    return;                          //返回，停止执行
+            return;                          //返回，停止执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u//如果启用了参数检测
-    if (p_mem == (OS_MEM *)0)               //如果 p_mem 为空
+        if (p_mem == (OS_MEM *)0)               //如果 p_mem 为空
         {
             *p_err  = OS_ERR_MEM_INVALID_P_MEM;  //错误类型为“内存池非法”
-    return;                             //返回，停止执行
+            return;                             //返回，停止执行
         }
-    if (p_blk == (void *)0)                 //如果内存块为空
+        if (p_blk == (void *)0)                 //如果内存块为空
         {
             *p_err  = OS_ERR_MEM_INVALID_P_BLK;  //错误类型为"内存块非法"
-    return;                             //返回，停止执行
+            return;                             //返回，停止执行
         }
     #endif
 
         CPU_CRITICAL_ENTER();                   //关中断
-    if (p_mem->NbrFree >= p_mem->NbrMax)  (4)//如果内存池已满
+        if (p_mem->NbrFree >= p_mem->NbrMax)  (4)//如果内存池已满
         {
             CPU_CRITICAL_EXIT();                 //开中断
             *p_err = OS_ERR_MEM_FULL;             //错误类型为“内存池已满”
-    return;                              //返回，停止执行
+            return;                              //返回，停止执行
         }
         *(void **)p_blk = p_mem->FreeListPtr; (5)//把内存块插入空闲内存块链表
         p_mem->FreeListPtr = p_blk;           (6)//内存块退回到链表的最前端

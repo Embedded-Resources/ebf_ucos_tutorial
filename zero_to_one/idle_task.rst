@@ -22,7 +22,7 @@
 空闲任务栈在os_cfg_app.c（os_cfg_app.c第一次使用需要自行在文件夹μC/OS-III\Source中新建并添加到工程的
 μC/OS-III Source组）文件中定义，具体见 代码清单:空闲任务-1_。
 
-.. code-block::
+.. code-block:: c
     :caption: 代码清单:空闲任务-1os_cfg_app.c文件代码
     :name: 代码清单:空闲任务-1
     :linenos:
@@ -33,8 +33,6 @@
 
     CPU_STK    OSCfg_IdleTaskStk[OS_CFG_IDLE_TASK_STK_SIZE];(1)
 
-
-
     /*
     *******************************************************************
     *                              常量
@@ -42,11 +40,11 @@
     */
 
     /* 空闲任务栈起始地址 */
-    CPU_STK      * const  OSCfg_IdleTaskStkBasePtr   = \(2)
-            (CPU_STK    *)&OSCfg_IdleTaskStk[0];
+    CPU_STK      * const  OSCfg_IdleTaskStkBasePtr   = (CPU_STK    *)&OSCfg_IdleTaskStk[0];(2)
+
     /* 空闲任务栈大小 */
-    CPU_STK_SIZE   const  OSCfg_IdleTaskStkSize      = \
-            (CPU_STK_SIZE)OS_CFG_IDLE_TASK_STK_SIZE;
+    CPU_STK_SIZE   const  OSCfg_IdleTaskStkSize      = (CPU_STK_SIZE)OS_CFG_IDLE_TASK_STK_SIZE;
+
 
 
 -   代码清单:空闲任务-1_ （1）：空闲任务的栈是一个定义好的数组，大小由OS_CFG_IDLE_TASK_STK_SIZE这个宏控制。
@@ -159,30 +157,30 @@
 
     void OSInit (OS_ERR *p_err)
     {
-    /* 配置OS初始状态为停止态 */
+        /* 配置OS初始状态为停止态 */
         OSRunning =  OS_STATE_OS_STOPPED;
 
-    /* 初始化两个全局TCB，这两个TCB用于任务切换 */
+        /* 初始化两个全局TCB，这两个TCB用于任务切换 */
         OSTCBCurPtr = (OS_TCB *)0;
         OSTCBHighRdyPtr = (OS_TCB *)0;
 
-    /* 初始化就绪列表 */
+        /* 初始化就绪列表 */
         OS_RdyListInit();
 
-    /* 初始化空闲任务 */
-    OS_IdleTaskInit(p_err);(1)
-    if (*p_err != OS_ERR_NONE) {
-    return;
+        /* 初始化空闲任务 */
+        OS_IdleTaskInit(p_err);(1)
+        if (*p_err != OS_ERR_NONE) {
+        return;
         }
     }
 
     /* 空闲任务初始化 */
     void  OS_IdleTaskInit(OS_ERR  *p_err)
     {
-    /* 初始化空闲任务计数器 */
+        /* 初始化空闲任务计数器 */
         OSIdleTaskCtr = (OS_IDLE_CTR)0;(2)
 
-    /* 创建空闲任务 */
+        /* 创建空闲任务 */
         OSTaskCreate( (OS_TCB     *)&OSIdleTaskTCB,(3)
                     (OS_TASK_PTR )OS_IdleTask,
                     (void       *)0,
@@ -214,10 +212,10 @@
     /* 阻塞延时 */
     void  OSTimeDly(OS_TICK dly)
     {
-    /* 设置延时时间 */
+        /* 设置延时时间 */
         OSTCBCurPtr->TaskDelayTicks = dly;(1)
 
-    /* 进行任务调度 */
+        /* 进行任务调度 */
         OSSched();(2)
     }
 
@@ -236,8 +234,8 @@
         CPU_STK         *StkPtr;
         CPU_STK_SIZE    StkSize;
 
-    /* 任务延时周期个数 */
-    OS_TICK         TaskDelayTicks;
+        /* 任务延时周期个数 */
+        OS_TICK         TaskDelayTicks;
     };
 
 
@@ -246,16 +244,19 @@
 
 .. code-block:: c
     :caption: 代码清单:空闲任务-11任务调度
-    :emphasize-lines: 3-9
+    :emphasize-lines: 3-12
     :name: 代码清单:空闲任务-11
     :linenos:
 
     void OSSched(void)
     {
     #if 0/* 非常简单的任务调度：两个任务轮流执行 */
-    if ( OSTCBCurPtr == OSRdyList[0].HeadPtr ) {
+        if ( OSTCBCurPtr == OSRdyList[0].HeadPtr )
+        {
             OSTCBHighRdyPtr = OSRdyList[1].HeadPtr;
-        } else {
+        }
+        else
+        {
             OSTCBHighRdyPtr = OSRdyList[0].HeadPtr;
         }
     #endif
@@ -263,42 +264,63 @@
     /* 如果当前任务是空闲任务，那么就去尝试执行任务1或者任务2，
     看看他们的延时时间是否结束，如果任务的延时时间均没有到期，
     那就返回继续执行空闲任务 */
-    if ( OSTCBCurPtr == &OSIdleTaskTCB ) {(1)
-    if (OSRdyList[0].HeadPtr->TaskDelayTicks == 0) {
+        if ( OSTCBCurPtr == &OSIdleTaskTCB ) (1)
+        {
+            if (OSRdyList[0].HeadPtr->TaskDelayTicks == 0)
+            {
                 OSTCBHighRdyPtr = OSRdyList[0].HeadPtr;
-            } else if (OSRdyList[1].HeadPtr->TaskDelayTicks == 0) {
-                OSTCBHighRdyPtr = OSRdyList[1].HeadPtr;
-            } else {
-    /* 任务延时均没有到期则返回，继续执行空闲任务 */
-    return;
             }
-        } else {(2)
+            else if (OSRdyList[1].HeadPtr->TaskDelayTicks == 0)
+            {
+                OSTCBHighRdyPtr = OSRdyList[1].HeadPtr;
+            }
+            else
+            {
+                /* 任务延时均没有到期则返回，继续执行空闲任务 */
+                return;
+            }
+        }
+        else (2)
+        {
     /*如果是task1或者task2的话，检查下另外一个任务,
     如果另外的任务不在延时中，就切换到该任务
     否则，判断下当前任务是否应该进入延时状态，
     如果是的话，就切换到空闲任务。否则就不进行任何切换 */
-    if (OSTCBCurPtr == OSRdyList[0].HeadPtr) {
-    if (OSRdyList[1].HeadPtr->TaskDelayTicks == 0) {
+            if (OSTCBCurPtr == OSRdyList[0].HeadPtr)
+            {
+                if (OSRdyList[1].HeadPtr->TaskDelayTicks == 0)
+                {
                     OSTCBHighRdyPtr = OSRdyList[1].HeadPtr;
-                } else if (OSTCBCurPtr->TaskDelayTicks != 0) {
-                    OSTCBHighRdyPtr = &OSIdleTaskTCB;
-                } else {
-    /* 返回，不进行切换，因为两个任务都处于延时中 */
-    return;
                 }
-            } else if (OSTCBCurPtr == OSRdyList[1].HeadPtr) {
-    if (OSRdyList[0].HeadPtr->TaskDelayTicks == 0) {
-                    OSTCBHighRdyPtr = OSRdyList[0].HeadPtr;
-                } else if (OSTCBCurPtr->TaskDelayTicks != 0) {
+                else if (OSTCBCurPtr->TaskDelayTicks != 0)
+                {
                     OSTCBHighRdyPtr = &OSIdleTaskTCB;
-                } else {
-    /* 返回，不进行切换，因为两个任务都处于延时中 */
-    return;
+                }
+                else
+                {
+                /* 返回，不进行切换，因为两个任务都处于延时中 */
+                return;
+                }
+            }
+            else if (OSTCBCurPtr == OSRdyList[1].HeadPtr)
+            {
+                if (OSRdyList[0].HeadPtr->TaskDelayTicks == 0)
+                {
+                    OSTCBHighRdyPtr = OSRdyList[0].HeadPtr;
+                }
+                else if (OSTCBCurPtr->TaskDelayTicks != 0)
+                {
+                    OSTCBHighRdyPtr = &OSIdleTaskTCB;
+                }
+                else
+                {
+                    /* 返回，不进行切换，因为两个任务都处于延时中 */
+                    return;
                 }
             }
         }
 
-    /* 任务切换 */
+        /* 任务切换 */
         OS_TASK_SW();(3)
     }
 
@@ -327,16 +349,16 @@ main()函数和任务代码变动不大，具体见 代码清单:空闲任务-12
     {
         OS_ERR err;
 
-    /* 关闭中断 */
+        /* 关闭中断 */
         CPU_IntDis();
 
-    /* 配置SysTick 10ms 中断一次 */
+        /* 配置SysTick 10ms 中断一次 */
         OS_CPU_SysTickInit (10);
 
-    /* 初始化相关的全局变量 */
+        /* 初始化相关的全局变量 */
         OSInit(&err);(1)
 
-    /* 创建任务 */
+        /* 创建任务 */
         OSTaskCreate ((OS_TCB*)      &Task1TCB,
                     (OS_TASK_PTR ) Task1,
                     (void *)       0,
@@ -351,43 +373,43 @@ main()函数和任务代码变动不大，具体见 代码清单:空闲任务-12
                     (CPU_STK_SIZE) TASK2_STK_SIZE,
                     (OS_ERR *)     &err);
 
-    /* 将任务加入到就绪列表 */
+        /* 将任务加入到就绪列表 */
         OSRdyList[0].HeadPtr = &Task1TCB;
         OSRdyList[1].HeadPtr = &Task2TCB;
 
-    /* 启动OS，将不再返回 */
+        /* 启动OS，将不再返回 */
         OSStart(&err);
     }
 
     /* 任务1 */
     void Task1( void *p_arg )
     {
-    for ( ;; ) {
+        for ( ;; ) {
             flag1 = 1;
-    //delay( 100 );
+            //delay( 100 );
             OSTimeDly(2);(2)
             flag1 = 0;
-    //delay( 100 );
+            //delay( 100 );
             OSTimeDly(2);
 
-    /* 任务切换，这里是手动切换 */
-    //OSSched();
+            /* 任务切换，这里是手动切换 */
+            //OSSched();
         }
     }
 
     /* 任务2 */
     void Task2( void *p_arg )
     {
-    for ( ;; ) {
+        for ( ;; ) {
             flag2 = 1;
-    //delay( 100 );
+            //delay( 100 );
             OSTimeDly(2);(3)
             flag2 = 0;
-    //delay( 100 );
+            //delay( 100 );
             OSTimeDly(2);
 
-    /* 任务切换，这里是手动切换 */
-    //OSSched();
+            /* 任务切换，这里是手动切换 */
+            //OSSched();
         }
     }
 

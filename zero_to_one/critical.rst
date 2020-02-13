@@ -80,7 +80,7 @@ Cortex-M内核快速关中断指令
     :linenos:
 
     CPU_SR_Save
-    MRSR0, PRIMASK       	(1)
+            MRSR0, PRIMASK       	(1)
             CPSID   I			(2)
             BX      LR			(3)
 
@@ -107,7 +107,7 @@ Cortex-M内核快速关中断指令
     :linenos:
 
     CPU_SR_Restore
-    MSR     PRIMASK, R0			(1)
+            MSR     PRIMASK, R0			(1)
             BX      LR				(2)
 
 
@@ -148,12 +148,12 @@ Cortex-M内核快速关中断指令
 
     /* 临界段代码保护 */
     {
-    /* 临界段开始 */
+        /* 临界段开始 */
         CPU_SR_Save();     /* 关中断,PRIMASK = 1 */(4)
         {
-    /* 执行临界段代码，不可中断 */(5)
+            /* 执行临界段代码，不可中断 */(5)
         }
-    /* 临界段结束 */
+        /* 临界段结束 */
         CPU_SR_Restore();      /* 开中断,PRIMASK = 0 */(6)
     }
 
@@ -198,18 +198,18 @@ Cortex-M内核快速关中断指令
 
     /* 临界段代码 */
     {
-    /* 临界段1开始 */
-    CPU_SR_Save();           /* 关中断,PRIMASK = 1 */
+        /* 临界段1开始 */
+        CPU_SR_Save();           /* 关中断,PRIMASK = 1 */
         {
-    /* 临界段2 */
-    CPU_SR_Save();       /* 关中断,PRIMASK = 1 */
+            /* 临界段2 */
+            CPU_SR_Save();       /* 关中断,PRIMASK = 1 */
             {
 
             }
-    CPU_SR_Restore();        /* 开中断,PRIMASK = 0 */(注意)
+            CPU_SR_Restore();        /* 开中断,PRIMASK = 0 */(注意)
         }
-    /* 临界段1结束 */
-    CPU_SR_Restore();            /* 开中断,PRIMASK = 0 */
+        /* 临界段1结束 */
+        CPU_SR_Restore();            /* 开中断,PRIMASK = 0 */
     }
 
 
@@ -248,17 +248,17 @@ Cortex-M内核快速关中断指令
 
     /* 临界段代码 */
     {
-    /* 临界段1开始 */
+        /* 临界段1开始 */
         cpu_sr1 = CPU_SR_Save();    /* 关中断,cpu_sr1=0,PRIMASK=1 */(3)
         {
-    /* 临界段2 */
+            /* 临界段2 */
             cpu_sr2 = CPU_SR_Save();/*关中断,cpu_sr2=1,PRIMASK=1 */(4)
             {
 
             }
             CPU_SR_Restore(cpu_sr2); /*开中断,cpu_sr2=1,PRIMASK=1 */(5)
         }
-    /* 临界段1结束 */
+        /* 临界段1结束 */
         CPU_SR_Restore(cpu_sr1);    /* 开中断,cpu_sr1=0,PRIMASK=0 */(6)
     }
 
@@ -312,13 +312,13 @@ Cortex-M内核快速关中断指令
 
     /* 临界段代码 */
     {
-    /* 临界段开始 */
-    cpu_sr1 = CPU_SR_Save();/* 关中断,cpu_sr1=0,PRIMASK=1 */
-    {
+        /* 临界段开始 */
+        cpu_sr1 = CPU_SR_Save();/* 关中断,cpu_sr1=0,PRIMASK=1 */
+        {
 
-    }
-    /* 临界段结束 */
-    CPU_SR_Restore(cpu_sr1);    /* 开中断,cpu_sr1=0,PRIMASK=0 */(注意点)
+        }
+        /* 临界段结束 */
+        CPU_SR_Restore(cpu_sr1);    /* 开中断,cpu_sr1=0,PRIMASK=0 */(注意点)
     }
 
 
@@ -363,7 +363,7 @@ Cortex-M内核快速关中断指令
 
         time_meas_tot_cnts = 0u;
         CPU_INT_DIS();                        /* 关中断 */
-    for (i = 0u; i < CPU_CFG_INT_DIS_MEAS_OVRHD_NBR; i++)
+        for (i = 0u; i < CPU_CFG_INT_DIS_MEAS_OVRHD_NBR; i++)
         {
             CPU_IntDisMeasMaxCur_cnts = 0u;
             CPU_IntDisMeasStart();        /* 执行多个连续的开始/停止时间测量  */
@@ -372,8 +372,8 @@ Cortex-M内核快速关中断指令
         }
 
         CPU_IntDisMeasOvrhd_cnts  = (time_meas_tot_cnts + (CPU_CFG_INT_DIS_MEAS_OVRHD_NBR / 2u))/CPU_CFG_INT_DIS_MEAS_OVRHD_NBR;
-    /*得到平均值，就是每一次测量额外消耗的时间  */
-    CPU_IntDisMeasMaxCur_cnts =  0u;
+        /*得到平均值，就是每一次测量额外消耗的时间  */
+        CPU_IntDisMeasMaxCur_cnts =  0u;
         CPU_IntDisMeasMax_cnts    =  0u;
         CPU_INT_EN();
     }
@@ -404,7 +404,7 @@ CPU_IntDisMeasStart()，开中断的时候调用停止测量关中断最大时�
     void  CPU_IntDisMeasStart (void)
     {
         CPU_IntDisMeasCtr++;
-    if (CPU_IntDisNestCtr == 0u)                   /* 嵌套层数为0   */
+        if (CPU_IntDisNestCtr == 0u)                   /* 嵌套层数为0   */
         {
             CPU_IntDisMeasStart_cnts = CPU_TS_TmrRd();  /* 保存时间戳  */
         }
@@ -417,21 +417,19 @@ CPU_IntDisMeasStart()，开中断的时候调用停止测量关中断最大时�
     void  CPU_IntDisMeasStop (void)
     {
         CPU_TS_TMR  time_ints_disd_cnts;
-
-
         CPU_IntDisNestCtr--;
-    if (CPU_IntDisNestCtr == 0u)                /* 嵌套层数为0*/
+        if (CPU_IntDisNestCtr == 0u)                /* 嵌套层数为0*/
         {
             CPU_IntDisMeasStop_cnts = CPU_TS_TmrRd();    /* 保存时间戳  */
 
             time_ints_disd_cnts = CPU_IntDisMeasStop_cnts -
-        CPU_IntDisMeasStart_cnts;/* 得到关中断时间  */
-    /* 更新最大关中断时间  */
-    if (CPU_IntDisMeasMaxCur_cnts < time_ints_disd_cnts)
+            CPU_IntDisMeasStart_cnts;/* 得到关中断时间  */
+            /* 更新最大关中断时间  */
+            if (CPU_IntDisMeasMaxCur_cnts < time_ints_disd_cnts)
             {
                 CPU_IntDisMeasMaxCur_cnts = time_ints_disd_cnts;
             }
-    if (CPU_IntDisMeasMax_cnts    < time_ints_disd_cnts)
+            if (CPU_IntDisMeasMax_cnts    < time_ints_disd_cnts)
             {
                 CPU_IntDisMeasMax_cnts    = time_ints_disd_cnts;
             }
@@ -469,16 +467,16 @@ CPU_IntDisMeasMaxCur_cnts 变量清 0，在这段程序结束的时候调用函�
         CPU_TS_TMR  time_tot_cnts;
         CPU_TS_TMR  time_max_cnts;
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
         CPU_INT_DIS();                                       //关中断
         time_tot_cnts = CPU_IntDisMeasMaxCur_cnts;
-    //获取未处理的程序段最大关中断时间
+        //获取未处理的程序段最大关中断时间
         CPU_INT_EN();                                        //开中断
         time_max_cnts = CPU_IntDisMeasMaxCalc(time_tot_cnts);
-    //获取减去测量时间后的最大关中断时间
+        //获取减去测量时间后的最大关中断时间
 
-    return (time_max_cnts);                    //返回程序段的最大关中断时间
+        return (time_max_cnts);                    //返回程序段的最大关中断时间
     }
     #endif
 
@@ -489,16 +487,16 @@ CPU_IntDisMeasMaxCur_cnts 变量清 0，在这段程序结束的时候调用函�
         CPU_TS_TMR  time_tot_cnts;
         CPU_TS_TMR  time_max_cnts;
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
         CPU_INT_DIS();                                        //关中断
         time_tot_cnts = CPU_IntDisMeasMax_cnts;
-    //获取尚未处理的最大关中断时间
+        //获取尚未处理的最大关中断时间
         CPU_INT_EN();                                         //开中断
         time_max_cnts = CPU_IntDisMeasMaxCalc(time_tot_cnts);
-    //获取减去测量时间后的最大关中断时间
+        //获取减去测量时间后的最大关中断时间
 
-    return (time_max_cnts);                      //返回目前最大关中断时间
+        return (time_max_cnts);                      //返回目前最大关中断时间
     }
     #endif
 
@@ -508,14 +506,14 @@ CPU_IntDisMeasMaxCur_cnts 变量清 0，在这段程序结束的时候调用函�
     {
         CPU_TS_TMR  time_max_cnts;
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
         time_max_cnts=CPU_IntDisMeasMaxCurGet();//获取复位前的程序段最大关中断时间
         CPU_INT_DIS();                             //关中断
         CPU_IntDisMeasMaxCur_cnts = 0u;            //清零程序段的最大关中断时间
         CPU_INT_EN();                              //开中断
 
-    return (time_max_cnts);                //返回复位前的程序段最大关中断时间
+        return (time_max_cnts);                //返回复位前的程序段最大关中断时间
     }
     #endif
 
