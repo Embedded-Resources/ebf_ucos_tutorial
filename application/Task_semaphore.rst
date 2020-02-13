@@ -759,52 +759,53 @@ OSTaskSemPend()源码具体见 代码清单:任务信号量-4_ 。
     :linenos:
 
     #include <includes.h>
-    static  OS_TCB   AppTaskStartTCB;      //任务控制块
 
+    static  OS_TCB   AppTaskStartTCB;      //任务控制块
     static  OS_TCB   AppTaskPostTCB;
     static  OS_TCB   AppTaskPendTCB;
     static  CPU_STK  AppTaskStartStk[APP_TASK_START_STK_SIZE];       //任务栈
     static  CPU_STK  AppTaskPostStk [ APP_TASK_POST_STK_SIZE ];
     static  CPU_STK  AppTaskPendStk [ APP_TASK_PEND_STK_SIZE ];
-    static  void  AppTaskStart  (void *p_arg);               //任务函数声明
+    static  void  AppTaskStart  ( void *p_arg);               //任务函数声明
     static  void  AppTaskPost   ( void * p_arg );
     static  void  AppTaskPend   ( void * p_arg );
 
     int  main (void)
     {
         OS_ERR  err;
-        OSInit(&err);                                  //初始化μC/OS-III
+        OSInit(&err);
+        //初始化μC/OS-III
 
-    /* 创建起始任务 */
+        /* 创建起始任务 */
         OSTaskCreate((OS_TCB     *)&AppTaskStartTCB,
-    //任务控制块地址
+                    //任务控制块地址
                     (CPU_CHAR   *)"App Task Start",
-    //任务名称
+                    //任务名称
                     (OS_TASK_PTR ) AppTaskStart,
-    //任务函数
+                    //任务函数
                     (void       *) 0,
-    //传递给任务函数（形参p_arg）的实参
+                    //传递给任务函数（形参p_arg）的实参
                     (OS_PRIO     ) APP_TASK_START_PRIO,
-    //任务的优先级
+                    //任务的优先级
                     (CPU_STK    *)&AppTaskStartStk[0],
-    //任务栈的基地址
+                    //任务栈的基地址
                     (CPU_STK_SIZE) APP_TASK_START_STK_SIZE / 10,
-    //任务栈空间剩下1/10时限制其增长
+                    //任务栈空间剩下1/10时限制其增长
                     (CPU_STK_SIZE) APP_TASK_START_STK_SIZE,
-    //任务栈空间（单位：sizeof(CPU_STK)）
+                    //任务栈空间（单位：sizeof(CPU_STK)）
                     (OS_MSG_QTY  ) 5u,
-    //任务可接收的最大消息数
+                    //任务可接收的最大消息数
                     (OS_TICK     ) 0u,
-    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
+                    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
                     (void       *) 0,
-    //任务扩展（0表不扩展）
+                    //任务扩展（0表不扩展）
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
-    //任务选项
+                    //任务选项
                     (OS_ERR     *)&err);
-    //返回错误类型
+                    //返回错误类型
 
         OSStart(&err);
-    //启动多任务管理（交由μC/OS-III控制）
+        //启动多任务管理（交由μC/OS-III控制）
 
     }
 
@@ -816,128 +817,128 @@ OSTaskSemPend()源码具体见 代码清单:任务信号量-4_ 。
 
         (void)p_arg;
 
-        BSP_Init();                                    //板级初始化
-        CPU_Init();      //初始化 CPU组件（时间戳、关中断时间测量和主机名）
+        BSP_Init();
+        //板级初始化
+        CPU_Init();
+        //初始化 CPU组件（时间戳、关中断时间测量和主机名）
 
         cpu_clk_freq = BSP_CPU_ClkFreq();
         //获取 CPU内核时钟频率（SysTick 工作时钟）
         cnts = cpu_clk_freq / (CPU_INT32U)OSCfg_TickRate_Hz;
-    //根据用户设定的时钟节拍频率计算 SysTick定时器的计数值
+        //根据用户设定的时钟节拍频率计算 SysTick定时器的计数值
         //调用 SysTick初始化函数，设置定时器计数值和启动定时器
         OS_CPU_SysTickInit(cnts);
 
         Mem_Init();
-    //初始化内存管理组件（堆内存池和内存池表）
+        //初始化内存管理组件（堆内存池和内存池表）
 
     #if OS_CFG_STAT_TASK_EN > 0u
     //如果启用（默认启用）了统计任务
         OSStatTaskCPUUsageInit(&err);
     #endif
-    //复位（清零）当前最大关中断时间
+        //复位（清零）当前最大关中断时间
         CPU_IntDisMeasMaxCurReset();
 
-    /* 创建 AppTaskPost 任务 */
+        /* 创建 AppTaskPost 任务 */
         OSTaskCreate((OS_TCB     *)&AppTaskPostTCB,
-    //任务控制块地址
+                    //任务控制块地址
                     (CPU_CHAR   *)"App Task Post",
-    //任务名称
+                    //任务名称
                     (OS_TASK_PTR ) AppTaskPost,
-    //任务函数
+                    //任务函数
                     (void       *) 0,
-    //传递给任务函数（形参p_arg）的实参
+                    //传递给任务函数（形参p_arg）的实参
                     (OS_PRIO     ) APP_TASK_POST_PRIO,
-    //任务的优先级
+                    //任务的优先级
                     (CPU_STK    *)&AppTaskPostStk[0],
-    //任务栈的基地址
+                    //任务栈的基地址
                     (CPU_STK_SIZE) APP_TASK_POST_STK_SIZE / 10,
-    //任务栈空间剩下1/10时限制其增长
+                    //任务栈空间剩下1/10时限制其增长
                     (CPU_STK_SIZE) APP_TASK_POST_STK_SIZE,
-    //任务栈空间（单位：sizeof(CPU_STK)）
+                    //任务栈空间（单位：sizeof(CPU_STK)）
                     (OS_MSG_QTY  ) 5u,
-    //任务可接收的最大消息数
+                    //任务可接收的最大消息数
                     (OS_TICK     ) 0u,
-    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
+                    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
                     (void       *) 0,
-    //任务扩展（0表不扩展）
+                    //任务扩展（0表不扩展）
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
-    //任务选项
+                    //任务选项
                     (OS_ERR     *)&err);
-    //返回错误类型
+                    //返回错误类型
 
-    /* 创建 AppTaskPend 任务 */
+        /* 创建 AppTaskPend 任务 */
         OSTaskCreate((OS_TCB     *)&AppTaskPendTCB,
-    //任务控制块地址
+                    //任务控制块地址
                     (CPU_CHAR   *)"App Task Pend",
-    //任务名称
+                    //任务名称
                     (OS_TASK_PTR ) AppTaskPend,
-    //任务函数
+                    //任务函数
                     (void       *) 0,
-    //传递给任务函数（形参p_arg）的实参
+                    //传递给任务函数（形参p_arg）的实参
                     (OS_PRIO     ) APP_TASK_PEND_PRIO,
-    //任务的优先级
+                    //任务的优先级
                     (CPU_STK    *)&AppTaskPendStk[0],
-    //任务栈的基地址
+                    //任务栈的基地址
                     (CPU_STK_SIZE) APP_TASK_PEND_STK_SIZE / 10,
-    //任务栈空间剩下1/10时限制其增长
+                    //任务栈空间剩下1/10时限制其增长
                     (CPU_STK_SIZE) APP_TASK_PEND_STK_SIZE,
-    //任务栈空间（单位：sizeof(CPU_STK)）
+                    //任务栈空间（单位：sizeof(CPU_STK)）
                     (OS_MSG_QTY  ) 5u,
-    //任务可接收的最大消息数
+                    //任务可接收的最大消息数
                     (OS_TICK     ) 0u,
-    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
+                    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
                     (void       *) 0,
-    //任务扩展（0表不扩展）
+                    //任务扩展（0表不扩展）
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
-    //任务选项
+                    //任务选项
                     (OS_ERR     *)&err);
-    //返回错误类型
+                    //返回错误类型
 
         OSTaskDel ( & AppTaskStartTCB, & err );
-    //删除起始任务本身，该任务不再运行
+        //删除起始任务本身，该任务不再运行
 
     }
 
     static  void  AppTaskPost ( void * p_arg )
     {
         OS_ERR      err;
-
         OS_SEM_CTR  ctr;
 
-    uint8_t ucKey2Press = 0;     //记忆按键KEY2状态
+        uint8_t ucKey2Press = 0;     //记忆按键KEY2状态
 
         CPU_SR_ALLOC();
 
         (void)p_arg;
 
 
-    while (DEF_TRUE)
-    //任务体
+        while (DEF_TRUE)
+        //任务体
         {
-    if ( Key_Scan ( macKEY2_GPIO_PORT, macKEY2_GPIO_PIN, 1, & ucKey2Press ) )
-    //如果KEY2被按下
+            if ( Key_Scan ( macKEY2_GPIO_PORT, macKEY2_GPIO_PIN, 1, & ucKey2Press ) )
+            //如果KEY2被按下
             {
-
-    /* 发布任务信号量 */
+                /* 发布任务信号量 */
                 ctr = OSTaskSemPost((OS_TCB  *)&AppTaskPendTCB,
-    //目标任务
+                                    //目标任务
                                     (OS_OPT   )OS_OPT_POST_NONE,
-    //没选项要求
+                                    //没选项要求
                                     (OS_ERR  *)&err);
-    //返回错误类型
+                                    //返回错误类型
 
                 macLED2_TOGGLE();
                 OS_CRITICAL_ENTER();
-    //进入临界段，避免串口打印被打断
+                //进入临界段，避免串口打印被打断
 
                 printf( "KEY2被按下，释放1个停车位，当前车位为 %d 个\n",ctr);
 
 
-                OS_CRITICAL_EXIT();                               //退出临界段
+                OS_CRITICAL_EXIT();    //退出临界段
 
             }
 
             OSTimeDlyHMSM ( 0, 0, 0, 20, OS_OPT_TIME_DLY, & err );
-    //每20ms扫描一次
+            //每20ms扫描一次
 
         }
 
@@ -952,32 +953,29 @@ OSTaskSemPend()源码具体见 代码清单:任务信号量-4_ 。
 
         OS_SEM_CTR    ctr;//当前任务信号量计数
 
-    uint8_t ucKey1Press = 0;     //记忆按键KEY1状态
+        uint8_t ucKey1Press = 0;     //记忆按键KEY1状态
 
         (void)p_arg;
 
-    while (DEF_TRUE)                                    //任务体
+        while (DEF_TRUE)           //任务体
         {
-
-    if ( Key_Scan ( macKEY1_GPIO_PORT, macKEY1_GPIO_PIN, 1, & ucKey1Press ) )
-    //如果KEY2被按下
+            if ( Key_Scan ( macKEY1_GPIO_PORT, macKEY1_GPIO_PIN, 1, & ucKey1Press ) )
+            //如果KEY2被按下
             {
                 ctr = OSTaskSemPend ((OS_TICK   )0,               //不等待
                                     (OS_OPT    )OS_OPT_PEND_NON_BLOCKING,
-                                    (CPU_TS   *)0,
-    //获取信号量被发布的时间戳
-            (OS_ERR   *)&err);      //返回错误类型
+                                    (CPU_TS   *)0,//获取信号量被发布的时间戳
+                                    (OS_ERR   *)&err);      //返回错误类型
 
                 macLED1_TOGGLE ();
-    //切换LED1的亮灭状态
+                //切换LED1的亮灭状态
 
                 OS_CRITICAL_ENTER();
-    //进入临界段，避免串口打印被打断
+                //进入临界段，避免串口打印被打断
 
-    if (OS_ERR_NONE == err)
-                    printf( "KEY1被按下，申请车位成功，当前剩余车位为 %d
-    个\n", ctr);
-    else
+                if (OS_ERR_NONE == err)
+                    printf( "KEY1被按下，申请车位成功，当前剩余车位为 %d个\n", ctr);
+                else
                     printf("申请车位失败，请按KEY2释放车位\n");
 
                 OS_CRITICAL_EXIT();                               //退出临界段

@@ -129,8 +129,6 @@
 
         CPU_CHAR            *NamePtr;            	(2)
 
-
-
         OS_PEND_LIST         PendList;          	(3)
 
     #if OS_CFG_DBG_EN > 0u
@@ -164,7 +162,7 @@
 ~~~~~~~~~~~~~~~~~~
 
 事件创建函数OSFlagCreate()
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 事件创建函数，顾名思义，就是创建一个事件，与其他内核对象一样，都是需要先创建才能使用的资源，μC/OS给我们提供了一个创建事件的函数OSFlagCreate()，
 当创建一个事件时，系统会对我们定义的事件控制块进行基本的初始化，所以，在使用创建函数之前，我们需要先定义一个事件控制块（句柄），
@@ -188,7 +186,7 @@
     if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return;                         //返回，停止执行
+            return;                         //返回，停止执行
         }
     #endif
 
@@ -196,7 +194,7 @@
     if (OSSafetyCriticalStartFlag == DEF_TRUE)   //如果OSSafetyCriticalStart()后创建
         {
             *p_err = OS_ERR_ILLEGAL_CREATE_RUN_TIME;  //错误类型为“非法创建内核对象”
-    return;                                  //返回，停止执行
+            return;                                  //返回，停止执行
         }
     #endif
 
@@ -204,7 +202,7 @@
     if (OSIntNestingCtr > (OS_NESTING_CTR)0)   //如果该函数是在中断中被调用
         {
             *p_err = OS_ERR_CREATE_ISR;             //错误类型为“在中断中创建对象”
-    return;                                //返回，停止执行
+            return;                                //返回，停止执行
         }
     #endif
 
@@ -212,7 +210,7 @@
     if (p_grp == (OS_FLAG_GRP *)0)   //如果 p_grp 为空
         {
             *p_err = OS_ERR_OBJ_PTR_NULL; //错误类型为“创建对象为空”
-    return;                      //返回，停止执行
+            return;                      //返回，停止执行
         }
     #endif
 
@@ -220,7 +218,7 @@
         p_grp->Type    = OS_OBJ_TYPE_FLAG; //标记创建对象数据结构为事件
         p_grp->NamePtr = p_name;      (10)//标记事件的名称
         p_grp->Flags   = flags;        (11)//设置标志初始值
-    p_grp->TS      = (CPU_TS)0;    (12)//清零事件的时间戳
+        p_grp->TS      = (CPU_TS)0;    (12)//清零事件的时间戳
         OS_PendListInit(&p_grp->PendList);(13)//初始化该事件的等待列表
 
     #if OS_CFG_DBG_EN > 0u//如果启用了调试代码和变量
@@ -294,7 +292,7 @@
 
 
 事件删除函数OSFlagDel()
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 在很多场合，某些事件只用一次的，就好比在事件应用场景说的危险机器的启动，假如各项指标都达到了，并且机器启动成功了，
 那这个事件之后可能就没用了，那就可以进行销毁了。想要删除事件怎么办？μC/OS给我们提供了一个删除事件的函数——OSFlagDel()，
@@ -505,7 +503,7 @@
 
 
 事件设置函数OSFlagPost()
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 OSFlagPost()用于设置事件组中指定的位，当位被置位之后，并且满足任务的等待事件，那么等待在事件该标志位上的任务将会被恢复。使用该函数接口时，
 通过参数指定的事件标志来设置事件的标志位，然后遍历等待在事件对象上的事件等待列表，判断是否有任务的事件激活要求与当前事件对象标志值匹配，
@@ -615,108 +613,107 @@ OSFlagPost()函数源码具体见 代码清单:事件-6_ 。
         OS_PEND_LIST   *p_pend_list;
         OS_TCB         *p_tcb;
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
         CPU_CRITICAL_ENTER();                                //关中断
-    switch (opt)                         (6)//根据选项分类处理
+        switch (opt)                         (6)//根据选项分类处理
         {
-    case OS_OPT_POST_FLAG_SET:          (7)//如果要求将选定位置1
-    case OS_OPT_POST_FLAG_SET | OS_OPT_POST_NO_SCHED:
-            p_grp->Flags |=  flags;                     //将选定位置1
-    break;                                      //跳出
+            case OS_OPT_POST_FLAG_SET:          (7)//如果要求将选定位置1
+            case OS_OPT_POST_FLAG_SET | OS_OPT_POST_NO_SCHED:
+                p_grp->Flags |=  flags;                     //将选定位置1
+                break;                                      //跳出
 
-    case OS_OPT_POST_FLAG_CLR:           (8)//如果要求将选定位请0
-    case OS_OPT_POST_FLAG_CLR | OS_OPT_POST_NO_SCHED:
-            p_grp->Flags &= ~flags;                     //将选定位请0
-    break;                                      //跳出
+            case OS_OPT_POST_FLAG_CLR:           (8)//如果要求将选定位请0
+            case OS_OPT_POST_FLAG_CLR | OS_OPT_POST_NO_SCHED:
+                    p_grp->Flags &= ~flags;                     //将选定位请0
+                    break;                                      //跳出
 
-    default:                           (9)//如果选项超出预期
-            CPU_CRITICAL_EXIT();                        //开中断
-            *p_err = OS_ERR_OPT_INVALID;                 //错误类型为“选项非法”
-    return ((OS_FLAGS)0);                       //返回0，停止执行
+            default:                           (9)//如果选项超出预期
+                    CPU_CRITICAL_EXIT();                        //开中断
+                    *p_err = OS_ERR_OPT_INVALID;                 //错误类型为“选项非法”
+            return ((OS_FLAGS)0);                       //返回0，停止执行
         }
         p_grp->TS   = ts;                 (10)//将时间戳存入事件
         p_pend_list = &p_grp->PendList;    (11)//获取事件的等待列表
-    if (p_pend_list->NbrEntries == 0u) (12)//如果没有任务在等待事件
+        if (p_pend_list->NbrEntries == 0u) (12)//如果没有任务在等待事件
         {
             CPU_CRITICAL_EXIT();                             //开中断
             *p_err = OS_ERR_NONE;                        //错误类型为“无错误”
-    return (p_grp->Flags);                           //返回事件的标志值
+            return (p_grp->Flags);                           //返回事件的标志值
         }
-    /* 如果有任务在等待事件 */
+        /* 如果有任务在等待事件 */
         OS_CRITICAL_ENTER_CPU_EXIT();       (13)//进入临界段，重开中断
         p_pend_data = p_pend_list->HeadPtr; (14)//获取等待列表头个等待任务
         p_tcb       = p_pend_data->TCBPtr;
-    while (p_tcb != (OS_TCB *)0)        (15)
-    //从头至尾遍历等待列表的所有任务
+        while (p_tcb != (OS_TCB *)0)        (15)
+        //从头至尾遍历等待列表的所有任务
         {
             p_pend_data_next = p_pend_data->NextPtr;
-        mode = p_tcb->FlagsOpt & OS_OPT_PEND_FLAG_MASK; //获取任务的标志选项
-    switch (mode)                (16)//根据任务的标志选项分类处理
+            mode = p_tcb->FlagsOpt & OS_OPT_PEND_FLAG_MASK; //获取任务的标志选项
+            switch (mode)                (16)//根据任务的标志选项分类处理
             {
-    case OS_OPT_PEND_FLAG_SET_ALL:  (17)//如果要求任务等待的标志位都得置1
+            OS_OPT_PEND_FLAG_SET_ALL:  (17)//如果要求任务等待的标志位都得置1
                 flags_rdy = (OS_FLAGS)(p_grp->Flags & p_tcb->FlagsPend);
-    if (flags_rdy == p_tcb->FlagsPend) //如果任务等待的标志位都置1了
+                if (flags_rdy == p_tcb->FlagsPend) //如果任务等待的标志位都置1了
                 {
                     OS_FlagTaskRdy(p_tcb,            //让该任务准备运行
                                 flags_rdy,
                                 ts);		(18)
                 }
-    break;                               //跳出
+                 break;                               //跳出
 
-    case OS_OPT_PEND_FLAG_SET_ANY:     (19)
-    //如果要求任务等待的标志位有1位置1即可
+            case OS_OPT_PEND_FLAG_SET_ANY:     (19)
+            //如果要求任务等待的标志位有1位置1即可
                 flags_rdy = (OS_FLAGS)(p_grp->Flags & p_tcb->FlagsPend);(20)
-    if (flags_rdy != (OS_FLAGS)0)     //如果任务等待的标志位有置1的
+                if (flags_rdy != (OS_FLAGS)0)     //如果任务等待的标志位有置1的
                 {
                     OS_FlagTaskRdy(p_tcb,            //让该任务准备运行
                                 flags_rdy,
                                 ts);		(21)
                 }
-    break;                              //跳出
+                break;                              //跳出
 
     #if OS_CFG_FLAG_MODE_CLR_EN > 0u(22)//如果启用了标志位清零触发模式
-    case OS_OPT_PEND_FLAG_CLR_ALL: (23)//如果要求任务等待的标志位都得请0
+            case OS_OPT_PEND_FLAG_CLR_ALL: (23)//如果要求任务等待的标志位都得请0
                 flags_rdy = (OS_FLAGS)(~p_grp->Flags & p_tcb->FlagsPend);
-    if (flags_rdy == p_tcb->FlagsPend)  //如果任务等待的标志位都请0了
+                if (flags_rdy == p_tcb->FlagsPend)  //如果任务等待的标志位都请0了
                 {
                     OS_FlagTaskRdy(p_tcb,           //让该任务准备运行
                                 flags_rdy,
                                 ts);	(24)
                 }
-    break;            //跳出
+                break;            //跳出
 
-    case OS_OPT_PEND_FLAG_CLR_ANY:     (25)
-    //如果要求任务等待的标志位有1位请0即可
+            case OS_OPT_PEND_FLAG_CLR_ANY:     (25)
+            //如果要求任务等待的标志位有1位请0即可
                 flags_rdy = (OS_FLAGS)(~p_grp->Flags & p_tcb->FlagsPend);
-    if (flags_rdy != (OS_FLAGS)0)      //如果任务等待的标志位有请0的
+                if (flags_rdy != (OS_FLAGS)0)      //如果任务等待的标志位有请0的
                 {
                     OS_FlagTaskRdy(p_tcb,          //让该任务准备运行
                                 flags_rdy,
                                 ts);	(26)
                 }
-    break;                            //跳出
+                break;                            //跳出
     #endif
-    default:                      (27)//如果标志选项超出预期
+            default:                      (27)//如果标志选项超出预期
                 OS_CRITICAL_EXIT();               //退出临界段
                 *p_err = OS_ERR_FLAG_PEND_OPT;     //错误类型为“标志选项非法”
-    return ((OS_FLAGS)0);             //返回0，停止运行
+                return ((OS_FLAGS)0);             //返回0，停止运行
             }
             p_pend_data = p_pend_data_next;   (28)//准备处理下一个等待任务
-    if (p_pend_data != (OS_PEND_DATA *)0)      //如果该任务存在
+            if (p_pend_data != (OS_PEND_DATA *)0)      //如果该任务存在
             {
                 p_tcb = p_pend_data->TCBPtr;   (29)//获取该任务的任务控制块
             }
-    else//如果该任务不存在
+            else//如果该任务不存在
             {
                 p_tcb = (OS_TCB *)0;     (30)//清空 p_tcb，退出 while 循环
             }
         }
         OS_CRITICAL_EXIT_NO_SCHED();                  //退出临界段（无调度）
 
-    if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0)    //如果 opt
-    没选择“发布时不调度任务”
+        if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0)    //如果 opt没选择“发布时不调度任务”
         {
             OSSched();                 (31)//任务调度
         }
@@ -725,7 +722,7 @@ OSFlagPost()函数源码具体见 代码清单:事件-6_ 。
         flags_cur = p_grp->Flags;    //获取事件的标志值
         CPU_CRITICAL_EXIT();         //开中断
         *p_err     = OS_ERR_NONE;     //错误类型为“无错误”
-    return (flags_cur);       (32)//返回事件的当前标志值
+        return (flags_cur);       (32)//返回事件的当前标志值
 
     }
 
@@ -876,7 +873,7 @@ OSFlagPost()的运用很简单，举个例子，比如我们要记录一个事�
 
 
 事件等待函数OSFlagPend()
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 既然标记了事件的发生，那么我们怎么知道他到底有没有发生，这也是需要一个函数来获取事件是否已经发生，μC/OS提供了一个等待指定事件的函数——OSFlagPend()，
 通过这个函数，任务可以知道事件标志组中的哪些位，有什么事件发生了，然后通过“逻辑与”、“逻辑或”等操作对感兴趣的事件进行获取，并且这个函数实现了等待超时机制，
@@ -1437,76 +1434,59 @@ OSFlagPend()函数源码具体见 代码清单:事件-9_ 。
 
     #include <includes.h>
 
-
     OS_FLAG_GRP flag_grp;                   //声明事件标志组
 
     #define KEY1_EVENT  (0x01 << 0)//设置事件掩码的位0
     #define KEY2_EVENT  (0x01 << 1)//设置事件掩码的位1
 
-
-
     static  OS_TCB   AppTaskStartTCB;      //任务控制块
-
     static  OS_TCB   AppTaskPostTCB;
     static  OS_TCB   AppTaskPendTCB;
 
-
-
     static  CPU_STK  AppTaskStartStk[APP_TASK_START_STK_SIZE];       //任务栈
-
     static  CPU_STK  AppTaskPostStk [ APP_TASK_POST_STK_SIZE ];
     static  CPU_STK  AppTaskPendStk [ APP_TASK_PEND_STK_SIZE ];
 
-
-
     static  void  AppTaskStart  (void *p_arg);               //任务函数声明
-
     static  void  AppTaskPost   ( void * p_arg );
     static  void  AppTaskPend   ( void * p_arg );
-
-
 
     int  main (void)
     {
         OS_ERR  err;
-
-
         OSInit(&err);                       //初始化 μC/OS-III
 
-
-    /* 创建起始任务 */
+        /* 创建起始任务 */
         OSTaskCreate((OS_TCB     *)&AppTaskStartTCB,
-    //任务控制块地址
+                    //任务控制块地址
                     (CPU_CHAR   *)"App Task Start",
-    //任务名称
+                    //任务名称
                     (OS_TASK_PTR ) AppTaskStart,
-    //任务函数
+                    //任务函数
                     (void       *) 0,
-    //传递给任务函数（形参p_arg）的实参
+                    //传递给任务函数（形参p_arg）的实参
                     (OS_PRIO     ) APP_TASK_START_PRIO,
-    //任务的优先级
+                    //任务的优先级
                     (CPU_STK    *)&AppTaskStartStk[0],
-    //任务栈的基地址
+                    //任务栈的基地址
                     (CPU_STK_SIZE) APP_TASK_START_STK_SIZE / 10,
-    //任务栈空间剩下1/10时限制其增长
+                    //任务栈空间剩下1/10时限制其增长
                     (CPU_STK_SIZE) APP_TASK_START_STK_SIZE,
-    //任务栈空间（单位：sizeof(CPU_STK)）
+                    //任务栈空间（单位：sizeof(CPU_STK)）
                     (OS_MSG_QTY  ) 5u,
-    //任务可接收的最大消息数
+                    //任务可接收的最大消息数
                     (OS_TICK     ) 0u,
-    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
+                    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
                     (void       *) 0,
-    //任务扩展（0表不扩展）
+                    //任务扩展（0表不扩展）
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
-    //任务选项
+                    //任务选项
                     (OS_ERR     *)&err);
-    //返回错误类型
+                    //返回错误类型
 
         OSStart(&err);
-    //启动多任务管理（交由μC/OS-III控制）
-
+        //启动多任务管理（交由μC/OS-III控制）
     }
-
 
     static  void  AppTaskStart (void *p_arg)
     {
@@ -1514,137 +1494,127 @@ OSFlagPend()函数源码具体见 代码清单:事件-9_ 。
         CPU_INT32U  cnts;
         OS_ERR      err;
 
-
         (void)p_arg;
 
-        BSP_Init();                                           //板级初始化
-        CPU_Init();                                        //初始化 CPU
-    组件（时间戳、关中断时间测量和主机名）
+        BSP_Init();
+        //板级初始化
+        CPU_Init();
+        //初始化 CPU组件（时间戳、关中断时间测量和主机名）
 
-        cpu_clk_freq = BSP_CPU_ClkFreq();                           //获取 CPU
-    内核时钟频率（SysTick 工作时钟）
+        cpu_clk_freq = BSP_CPU_ClkFreq();
+        //获取 CPU内核时钟频率（SysTick 工作时钟）
         cnts = cpu_clk_freq / (CPU_INT32U)OSCfg_TickRate_Hz;
-    //根据用户设定的时钟节拍频率计算 SysTick
-    定时器的计数值
-        OS_CPU_SysTickInit(cnts);          //调用 SysTick
-            //初始化函数，设置定时器计数值和启动定时器
+        //根据用户设定的时钟节拍频率计算 SysTick定时器的计数值
+        OS_CPU_SysTickInit(cnts);
+        //调用 SysTick初始化函数，设置定时器计数值和启动定时器
 
         Mem_Init();
-    //初始化内存管理组件（堆内存池和内存池表）
+        //初始化内存管理组件（堆内存池和内存池表）
 
     #if OS_CFG_STAT_TASK_EN > 0u
     //如果启用（默认启用）了统计任务
         OSStatTaskCPUUsageInit(&err);
-
-
     #endif
 
 
         CPU_IntDisMeasMaxCurReset();
-    //复位（清零）当前最大关中断时间
+        //复位（清零）当前最大关中断时间
 
 
-    /* 创建事件标志组 flag_grp */
+        /* 创建事件标志组 flag_grp */
         OSFlagCreate ((OS_FLAG_GRP  *)&flag_grp,        //指向事件标志组的指针
                     (CPU_CHAR     *)"FLAG For Test",  //事件标志组的名字
                     (OS_FLAGS      )0,                //事件标志组的初始值
                     (OS_ERR       *)&err);            //返回错误类型
 
 
-    /* 创建 AppTaskPost 任务 */
+        /* 创建 AppTaskPost 任务 */
         OSTaskCreate((OS_TCB     *)&AppTaskPostTCB,
-    //任务控制块地址
+                    //任务控制块地址
                     (CPU_CHAR   *)"App Task Post",
-    //任务名称
+                    //任务名称
                     (OS_TASK_PTR ) AppTaskPost,
-    //任务函数
+                    //任务函数
                     (void       *) 0,
-    //传递给任务函数（形参p_arg）的实参
+                    //传递给任务函数（形参p_arg）的实参
                     (OS_PRIO     ) APP_TASK_POST_PRIO,
-    //任务的优先级
+                    //任务的优先级
                     (CPU_STK    *)&AppTaskPostStk[0],
-    //任务栈的基地址
+                    //任务栈的基地址
                     (CPU_STK_SIZE) APP_TASK_POST_STK_SIZE / 10,
-    //任务栈空间剩下1/10时限制其增长
+                    //任务栈空间剩下1/10时限制其增长
                     (CPU_STK_SIZE) APP_TASK_POST_STK_SIZE,
-    //任务栈空间（单位：sizeof(CPU_STK)）
+                    //任务栈空间（单位：sizeof(CPU_STK)）
                     (OS_MSG_QTY  ) 5u,
-    //任务可接收的最大消息数
+                    //任务可接收的最大消息数
                     (OS_TICK     ) 0u,
-    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
+                    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
                     (void       *) 0,
-    //任务扩展（0表不扩展）
+                    //任务扩展（0表不扩展）
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
-    //任务选项
+                    //任务选项
                     (OS_ERR     *)&err);
-    //返回错误类型
+                    //返回错误类型
 
-    /* 创建 AppTaskPend 任务 */
+        /* 创建 AppTaskPend 任务 */
         OSTaskCreate((OS_TCB     *)&AppTaskPendTCB,
-    //任务控制块地址
+                    //任务控制块地址
                     (CPU_CHAR   *)"App Task Pend",
-    //任务名称
+                    //任务名称
                     (OS_TASK_PTR ) AppTaskPend,
-    //任务函数
+                    //任务函数
                     (void       *) 0,
-    //传递给任务函数（形参p_arg）的实参
+                    //传递给任务函数（形参p_arg）的实参
                     (OS_PRIO     ) APP_TASK_PEND_PRIO,
-    //任务的优先级
+                    //任务的优先级
                     (CPU_STK    *)&AppTaskPendStk[0],
-    //任务栈的基地址
+                    //任务栈的基地址
                     (CPU_STK_SIZE) APP_TASK_PEND_STK_SIZE / 10,
-    //任务栈空间剩下1/10时限制其增长
+                    //任务栈空间剩下1/10时限制其增长
                     (CPU_STK_SIZE) APP_TASK_PEND_STK_SIZE,
-    //任务栈空间（单位：sizeof(CPU_STK)）
+                    //任务栈空间（单位：sizeof(CPU_STK)）
                     (OS_MSG_QTY  ) 5u,
-    //任务可接收的最大消息数
+                    //任务可接收的最大消息数
                     (OS_TICK     ) 0u,
-    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
+                    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
                     (void       *) 0,
-    //任务扩展（0表不扩展）
+                    //任务扩展（0表不扩展）
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
-    //任务选项
+                    //任务选项
                     (OS_ERR     *)&err);
-    //返回错误类型
+                    //返回错误类型
 
         OSTaskDel ( & AppTaskStartTCB, & err );
-    //删除起始任务本身，该任务不再运行
-
-
+        //删除起始任务本身，该任务不再运行
     }
-
-
 
     static  void  AppTaskPost ( void * p_arg )
     {
         OS_ERR      err;
-
-
         (void)p_arg;
 
-
-    while (DEF_TRUE)                                    //任务体
+        while (DEF_TRUE)                                    //任务体
         {
-    if ( Key_ReadStatus ( macKEY1_GPIO_PORT, macKEY1_GPIO_PIN, 1 ) == 1 )
-    //如果KEY1被按下
+            if ( Key_ReadStatus ( macKEY1_GPIO_PORT, macKEY1_GPIO_PIN, 1 ) == 1 )
+            //如果KEY1被按下
             {
-    //点亮LED1
+                //点亮LED1
                 printf("KEY1被按下\n");
                 OSFlagPost ((OS_FLAG_GRP  *)&flag_grp,
-    //将标志组的BIT0置1
+                            //将标志组的BIT0置1
                             (OS_FLAGS      )KEY1_EVENT,
                             (OS_OPT        )OS_OPT_POST_FLAG_SET,
                             (OS_ERR       *)&err);
 
             }
 
-    if ( Key_ReadStatus ( macKEY2_GPIO_PORT, macKEY2_GPIO_PIN, 1 ) == 1 )
-    //如果KEY2被按下
+            if ( Key_ReadStatus ( macKEY2_GPIO_PORT, macKEY2_GPIO_PIN, 1 ) == 1 )
+            //如果KEY2被按下
             {
-    //点亮LED2
+                //点亮LED2
                 printf("KEY2被按下\n");
                 OSFlagPost ((OS_FLAG_GRP  *)&flag_grp,
-    //将标志组的BIT1置1
+                            //将标志组的BIT1置1
                             (OS_FLAGS      )KEY2_EVENT,
                             (OS_OPT        )OS_OPT_POST_FLAG_SET,
                             (OS_ERR       *)&err);
@@ -1665,29 +1635,24 @@ OSFlagPend()函数源码具体见 代码清单:事件-9_ 。
         OS_FLAGS      flags_rdy;
 
         (void)p_arg;
-
-
-    while (DEF_TRUE)                                         //任务体
+        while (DEF_TRUE)                                         //任务体
         {
-    //等待标志组的的BIT0和BIT1均被置1
+            //等待标志组的的BIT0和BIT1均被置1
             flags_rdy =   OSFlagPend ((OS_FLAG_GRP *)&flag_grp,
-                                    (OS_FLAGS     )( KEY1_EVENT | KEY2_EVENT ),
-                                (OS_TICK      )0,
-            (OS_OPT)OS_OPT_PEND_FLAG_SET_ALL |
-    OS_OPT_PEND_BLOCKING |
-    OS_OPT_PEND_FLAG_CONSUME,
-                                (CPU_TS      *)0,
-                                (OS_ERR      *)&err);
-    if ((flags_rdy & (KEY1_EVENT|KEY2_EVENT)) == (KEY1_EVENT|KEY2_EVENT))
+                        (OS_FLAGS     )( KEY1_EVENT | KEY2_EVENT ),
+                        (OS_TICK      )0,
+                        (OS_OPT)OS_OPT_PEND_FLAG_SET_ALL |
+                        OS_OPT_PEND_BLOCKING |
+                        OS_OPT_PEND_FLAG_CONSUME,
+                        (CPU_TS      *)0,
+                        (OS_ERR      *)&err);
+            if ((flags_rdy & (KEY1_EVENT|KEY2_EVENT)) == (KEY1_EVENT|KEY2_EVENT))
             {
-    /* 如果接收完成并且正确 */
+                /* 如果接收完成并且正确 */
                 printf ( "KEY1与KEY2都按下\n");
                 macLED1_TOGGLE();       //LED1  翻转
             }
-
-
         }
-
     }
 
 

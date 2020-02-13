@@ -534,7 +534,7 @@ CPU_INT08U Mem_Heap[LIB_MEM_CFG_HEAP_SIZE]，
     :name: 代码清单:启动-11
     :linenos:
 
-    Mem_Init(); /\* Initialize Memory Management Module \*/
+    Mem_Init(); /* Initialize Memory Management Module */
 
 
 OSStart()

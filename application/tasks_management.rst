@@ -844,91 +844,110 @@ OSTimeDly()函数常用于停止当前任务进行的运行，延时一段时间
         OS_TCB            *p_tcb1;
         OS_TICK_SPOKE_IX   spoke;
 
-
-
-    if (opt == OS_OPT_TIME_MATCH) {      //如果 time 是个绝对时间
+        if (opt == OS_OPT_TIME_MATCH)
+        {      //如果 time 是个绝对时间
             tick_delta = time - OSTickCtr - 1u;  //计算离到期还有多长时间
-    if (tick_delta > OS_TICK_TH_RDY) {    //如果延时时间超过了门限
+            if (tick_delta > OS_TICK_TH_RDY)
+            {    //如果延时时间超过了门限
                 p_tcb->TickCtrMatch = (OS_TICK        )0u;  //将任务的时钟节拍的匹配变量置0
                 p_tcb->TickRemain   = (OS_TICK        )0u; //将任务的延时还需时钟节拍数置0
                 p_tcb->TickSpokePtr = (OS_TICK_SPOKE *)0; //该任务不插入节拍列表
                 *p_err      =  OS_ERR_TIME_ZERO_DLY; //错误类型相当于“0延时”
-    return;                         //返回，不将任务插入节拍列表
+                return;                         //返回，不将任务插入节拍列表
             }
             p_tcb->TickCtrMatch = time; //任务等待的匹配点为 OSTickCtr = time
             p_tcb->TickRemain   = tick_delta + 1u; //计算任务离到期还有多长时间
-
-        } else if (time > (OS_TICK)0u) {          //如果 time > 0
-    if (opt == OS_OPT_TIME_PERIODIC) {    //如果 time 是周期性时间
+        }
+        else if (time > (OS_TICK)0u)
+        {          //如果 time > 0
+            if (opt == OS_OPT_TIME_PERIODIC)
+            {    //如果 time 是周期性时间
                 tick_next  = p_tcb->TickCtrPrev + time;
-    //计算任务接下来要匹配的时钟节拍总计数
-    tick_delta = tick_next - OSTickCtr - 1u;  //计算任务离匹配还有个多长时间
-    if (tick_delta < time) {//如果 p_tcb->TickCtrPrev<OSTickCtr+1
-    p_tcb->TickCtrMatch = tick_next; //将 p_tcb->TickCtrPrev + time
-    设为时钟节拍匹配点
-                } else {          //如果 p_tcb->TickCtrPrev >= OSTickCtr + 1
-    p_tcb->TickCtrMatch = OSTickCtr + time; //将 OSTickCtr + time 设为时钟节拍匹配点
-            }
-    p_tcb->TickRemain   = p_tcb->TickCtrMatch - OSTickCtr; //计算任务离到期还有多长时间
+                //计算任务接下来要匹配的时钟节拍总计数
+                tick_delta = tick_next - OSTickCtr - 1u;  //计算任务离匹配还有个多长时间
+                if (tick_delta < time)
+                {        //如果 p_tcb->TickCtrPrev<OSTickCtr+1
+                    p_tcb->TickCtrMatch = tick_next; //将 p_tcb->TickCtrPrev + time设为时钟节拍匹配点
+                }
+                else
+                {         //如果 p_tcb->TickCtrPrev >= OSTickCtr + 1
+                     p_tcb->TickCtrMatch = OSTickCtr + time; //将 OSTickCtr + time 设为时钟节拍匹配点
+                }
+                p_tcb->TickRemain   = p_tcb->TickCtrMatch - OSTickCtr; //计算任务离到期还有多长时间
                 p_tcb->TickCtrPrev  = p_tcb->TickCtrMatch; //保存当前匹配值为下一周期延时用
 
-            } else {                            //如果 time 是相对时间
-    p_tcb->TickCtrMatch = OSTickCtr + time; //任务等待的匹配点为 OSTickCtr + time
+            }
+            else
+            {                            //如果 time 是相对时间
+                p_tcb->TickCtrMatch = OSTickCtr + time; //任务等待的匹配点为 OSTickCtr + time
                 p_tcb->TickRemain   = time; //计算任务离到期的时间就是 time
             }
 
-        } else {                           //如果 time = 0
+        }
+        else
+        {                           //如果 time = 0
             p_tcb->TickCtrMatch = (OS_TICK        )0u; //将任务的时钟节拍的匹配变量置0
             p_tcb->TickRemain   = (OS_TICK        )0u; //将任务的延时还需时钟节拍数置0
             p_tcb->TickSpokePtr = (OS_TICK_SPOKE *)0; //该任务不插入节拍列表
             *p_err               =  OS_ERR_TIME_ZERO_DLY; //错误类型为“0延时”
-    return;                           //返回，不将任务插入节拍列表
+            return;                           //返回，不将任务插入节拍列表
         }
 
 
         spoke   = (OS_TICK_SPOKE_IX)(p_tcb->TickCtrMatch % OSCfg_TickWheelSize);
-    //使用哈希算法（取余）来决定任务存于数组
+        //使用哈希算法（取余）来决定任务存于数组
         p_spoke = &OSCfg_TickWheel[spoke];
-    //OSCfg_TickWheel的哪个元素（组织一个节拍列表），
-    //与更新节拍列表相对应，可方便查找到期任务。
-    if (p_spoke->NbrEntries == (OS_OBJ_QTY)0u) {     //如果当前节拍列表为空
+        //OSCfg_TickWheel的哪个元素（组织一个节拍列表），
+        //与更新节拍列表相对应，可方便查找到期任务。
+        if (p_spoke->NbrEntries == (OS_OBJ_QTY)0u)
+        {     //如果当前节拍列表为空
             p_tcb->TickNextPtr   = (OS_TCB   *)0;
-    //任务中指向节拍列表中下一个任务的指针置空
+            //任务中指向节拍列表中下一个任务的指针置空
             p_tcb->TickPrevPtr   = (OS_TCB   *)0;
-    //任务中指向节拍列表中前一个任务的指针置空
+            //任务中指向节拍列表中前一个任务的指针置空
             p_spoke->FirstPtr    =  p_tcb;
-    //当前任务被列为该节拍列表的第一个任务
+            //当前任务被列为该节拍列表的第一个任务
             p_spoke->NbrEntries  = (OS_OBJ_QTY)1u;   //节拍列表中的元素数目为1
-        } else {                                     //如果当前节拍列表非空
+        }
+        else
+        {                                     //如果当前节拍列表非空
             p_tcb1     = p_spoke->FirstPtr;          //获取列表中的第一个任务
-    while (p_tcb1 != (OS_TCB *)0) {          //如果该任务存在
+            while (p_tcb1 != (OS_TCB *)0)
+            {          //如果该任务存在
                 p_tcb1->TickRemain = p_tcb1->TickCtrMatch   //计算该任务的剩余等待时间
                                     - OSTickCtr;
-    if (p_tcb->TickRemain > p_tcb1->TickRemain) {
-    //如果当前任务的剩余等待时间大于该任务的
-    if (p_tcb1->TickNextPtr != (OS_TCB *)0) {//如果该任务不是列表的最后一个元素
+                if (p_tcb->TickRemain > p_tcb1->TickRemain)
+                {
+                    //如果当前任务的剩余等待时间大于该任务的
+                    if (p_tcb1->TickNextPtr != (OS_TCB *)0)
+                    {//如果该任务不是列表的最后一个元素
                         p_tcb1               =  p_tcb1->TickNextPtr;
-    //让当前任务继续与该任务的下一个任务作比较
-                    } else {         //如果该任务是列表的最后一个元素
+                        //让当前任务继续与该任务的下一个任务作比较
+                    }
+                    else
+                    {         //如果该任务是列表的最后一个元素
                         p_tcb->TickNextPtr   = (OS_TCB *)0; //当前任务为列表的最后一个元素
                         p_tcb->TickPrevPtr   =  p_tcb1;  //该任务是当前任务的前一个元素
                         p_tcb1->TickNextPtr  =  p_tcb; //当前任务是该任务的后一个元素
                         p_tcb1             = (OS_TCB *)0; //插入完成，退出 while 循环
                     }
-                } else {                //如果当前任务的剩余等待时间不大于该任务的
-
-    if (p_tcb1->TickPrevPtr == (OS_TCB *)0) {//如果该任务是列表的第一个元素
+                }
+                else
+                {                //如果当前任务的剩余等待时间不大于该任务的
+                    if (p_tcb1->TickPrevPtr == (OS_TCB *)0)
+                    {//如果该任务是列表的第一个元素
                         p_tcb->TickPrevPtr   = (OS_TCB *)0; //当前任务就作为列表的第一个元素
                         p_tcb->TickNextPtr   =  p_tcb1; //该任务是当前任务的后一个元素
                         p_tcb1->TickPrevPtr  =  p_tcb;  //当前任务是该任务的前一个元素
                         p_spoke->FirstPtr    =  p_tcb;  //当前任务是列表的第一个元素
-                    } else {                          //如果该任务也不是是列表的第一个元素
+                    }
+                    else
+                    {                          //如果该任务也不是是列表的第一个元素
                         p_tcb0  =  p_tcb1->TickPrevPtr; // p_tcb0 暂存该任务的前一个任务
                         p_tcb->TickPrevPtr   =  p_tcb0;
-    //该任务的前一个任务作为当前任务的前一个任务
+                        //该任务的前一个任务作为当前任务的前一个任务
                         p_tcb->TickNextPtr   =  p_tcb1; //该任务作为当前任务的后一个任务
-                        p_tcb0->TickNextPtr  =  p_tcb;  // p_tcb0
-    暂存的任务的下一个任务改为当前任务
+                        p_tcb0->TickNextPtr  =  p_tcb;  // p_tcb0暂存的任务的下一个任务改为当前任务
                         p_tcb1->TickPrevPtr  =  p_tcb; // 该任务的前一个任务也改为当前任务
                     }
                     p_tcb1 = (OS_TCB *)0;     //插入完成，退出 while 循环
@@ -936,7 +955,7 @@ OSTimeDly()函数常用于停止当前任务进行的运行，延时一段时间
             }
             p_spoke->NbrEntries++;             //节拍列表中的元素数目加1
         }	//更新节拍列表的元素数目的最大记录
-    if (p_spoke->NbrEntriesMax < p_spoke->NbrEntries) {
+        if (p_spoke->NbrEntriesMax < p_spoke->NbrEntries) {
             p_spoke->NbrEntriesMax = p_spoke->NbrEntries;
         }
         p_tcb->TickSpokePtr = p_spoke;       //记录当前任务存放于哪个节拍列表
@@ -1326,178 +1345,63 @@ Tb抢占了Ta的资源，等到Tb执行完毕，消耗的时间也只不过是10
     :name: 代码清单:任务管理-15
     :linenos:
 
-    /*
-    *************************************************************************
-    ****
-    * EXAMPLE CODE
-    *
-    *          (c) Copyright 2003-2013; Micrium, Inc.; Weston, FL
-    *
-    *All rights reserved.  Protected by international copyright laws.
-    *Knowledge of the source code may NOT be used to develop a similar product.
-    *Please help us continue to provide the Embedded community with the finest
-    *               software available.  Your honesty is greatly appreciated.
-    ************************************************************************
-    ****
-    */
-
-    /*
-    *************************************************************************
-    ****
-    *
-    *                                            EXAMPLE CODE
-    *
-    *                                     ST Microelectronics STM32
-    *                                              on the
-    *
-    *                                     Micrium uC-Eval-STM32F107
-    *                                        Evaluation Board
-    *
-    * Filename      : app.c
-    * Version       : V1.00
-    * Programmer(s) : EHS
-    *                 DC
-    ************************************************************************
-    ****
-    */
-
-    /*
-    *************************************************************************
-    ****
-    *                                             INCLUDE FILES
-    *************************************************************************
-    ****
-    */
-
     #include <includes.h>
     #include <string.h>
-
-
-    /*
-    ************************************************************************
-    ****
-    *                                            LOCAL DEFINES
-    ************************************************************************
-    ****
-    */
 
     //OS_MEM  mem;                    //声明内存管理对象
     //uint8_t ucArray [ 3 ] [ 20 ];   //声明内存分区大小
 
 
-    /*
-    ************************************************************************
-    ****
-    *                                                 TCB
-    ************************************************************************
-    ****
-    */
 
     static  OS_TCB   AppTaskStartTCB;    //任务控制块
-
     static  OS_TCB   AppTaskLed1TCB;
     static  OS_TCB   AppTaskLed2TCB;
     static  OS_TCB   AppTaskLed3TCB;
 
 
-    /*
-    *************************************************************************
-    ****
-    *                                                STACKS
-    ************************************************************************
-    ****
-    */
-
     static  CPU_STK  AppTaskStartStk[APP_TASK_START_STK_SIZE];       //任务栈
-
     static  CPU_STK  AppTaskLed1Stk [ APP_TASK_LED1_STK_SIZE ];
     static  CPU_STK  AppTaskLed2Stk [ APP_TASK_LED2_STK_SIZE ];
     static  CPU_STK  AppTaskLed3Stk [ APP_TASK_LED3_STK_SIZE ];
 
 
-    /*
-    ***********************************************************************
-    ****
-    *                                         FUNCTION PROTOTYPES
-    ************************************************************************
-    ****
-    */
-
     static  void  AppTaskStart  (void *p_arg);               //任务函数声明
-
     static  void  AppTaskLed1  ( void * p_arg );
     static  void  AppTaskLed2  ( void * p_arg );
     static  void  AppTaskLed3  ( void * p_arg );
 
 
-    /*
-    ***********************************************************************
-    ****
-    *                                                main()
-    *
-    * Description : This is the standard entry point for C code.  It is
-    *  assumed that your code will call main() once you have performed all
-    * 	necessary initialization.
-    * Arguments   : none
-    *
-    * Returns     : none
-    **********************************************************************
-    ****
-    */
-
     int  main (void)
     {
         OS_ERR  err;
-
-
         OSInit(&err);                       //初始化 μC/OS-III
 
-    /* 创建起始任务 */
+        /* 创建起始任务 */
         OSTaskCreate((OS_TCB     *)&AppTaskStartTCB,       //任务控制块地址
                     (CPU_CHAR   *)"App Task Start",            //任务名称
                     (OS_TASK_PTR ) AppTaskStart,              //任务函数
                     (void       *) 0,
-    //传递给任务函数（形参p_arg）的实参
+                    //传递给任务函数（形参p_arg）的实参
                     (OS_PRIO     ) APP_TASK_START_PRIO,  //任务的优先级
                     (CPU_STK    *)&AppTaskStartStk[0],
-    //任务栈的基地址
+                    //任务栈的基地址
                     (CPU_STK_SIZE) APP_TASK_START_STK_SIZE / 10,
-    //任务栈空间剩下1/10时限制其增长
+                    //任务栈空间剩下1/10时限制其增长
                     (CPU_STK_SIZE) APP_TASK_START_STK_SIZE,
-    //任务栈空间（单位：sizeof(CPU_STK)）
+                    //任务栈空间（单位：sizeof(CPU_STK)）
                     (OS_MSG_QTY  ) 5u,
-    //任务可接收的最大消息数
+                    //任务可接收的最大消息数
                     (OS_TICK     ) 0u,
-    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
+                    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
                     (void       *) 0,
-    //任务扩展（0表不扩展）
-    (OS_OPT   )(OS_OPT_TASK_STK_CHK |OS_OPT_TASK_STK_CLR),//任务选项
+                    //任务扩展（0表不扩展）
+                    (OS_OPT   )(OS_OPT_TASK_STK_CHK |OS_OPT_TASK_STK_CLR),//任务选项
                     (OS_ERR     *)&err);                      //返回错误类型
 
         OSStart(&err);
-    //启动多任务管理（交由μC/OS-III控制）
+        //启动多任务管理（交由μC/OS-III控制）
 
     }
-
-
-    /*
-    ************************************************************************
-    ****
-    *                                          STARTUP TASK
-    *
-    * Description : This is an example of a startup task.  As mentioned in the book's
-    *      text, you MUST initialize the ticker only once multitasking has started.
-    *
-    * Arguments   : p_arg   is the argument passed to 'AppTaskStart()' by
-    *			'OSTaskCreate()'.
-    * Returns     : none
-    *
-    * Notes       : 1) The first line of code is used to prevent a compiler warning
-    because 'p_arg' is not
-    *  used.  The compiler should not generate any code for this statement.
-    ************************************************************************
-    ****
-    */
 
     static  void  AppTaskStart (void *p_arg)
     {
@@ -1505,112 +1409,103 @@ Tb抢占了Ta的资源，等到Tb执行完毕，消耗的时间也只不过是10
         CPU_INT32U  cnts;
         OS_ERR      err;
 
-
         (void)p_arg;
 
         BSP_Init();               //板级初始化
-        CPU_Init();                                          //初始化 CPU
-    组件（时间戳、关中断时间测量和主机名）
+        CPU_Init();
+        //初始化 CPU组件（时间戳、关中断时间测量和主机名）
 
-        cpu_clk_freq = BSP_CPU_ClkFreq();                    //获取 CPU
-    内核时钟频率（SysTick 工作时钟）
+        cpu_clk_freq = BSP_CPU_ClkFreq();
+        //获取 CPU内核时钟频率（SysTick 工作时钟）
         cnts = cpu_clk_freq / (CPU_INT32U)OSCfg_TickRate_Hz;
-    //根据用户设定的时钟节拍频率计算 SysTick 定时器的计数值
-        OS_CPU_SysTickInit(cnts);                          //调用 SysTick
-    初始化函数，设置定时器计数值和启动定时器
+        //根据用户设定的时钟节拍频率计算 SysTick 定时器的计数值
+        OS_CPU_SysTickInit(cnts);
+        //调用 SysTick初始化函数，设置定时器计数值和启动定时器
 
         Mem_Init();
-    //初始化内存管理组件（堆内存池和内存池表）
+        //初始化内存管理组件（堆内存池和内存池表）
 
     #if OS_CFG_STAT_TASK_EN > 0u
     //如果启用（默认启用）了统计任务
         OSStatTaskCPUUsageInit(&err);
-    //计算没有应用任务（只有空闲任务）运行时 CPU
-    的（最大）
+        //计算没有应用任务（只有空闲任务）运行时 CPU的（最大）容量（决定OS_Stat_IdleCtrMax的值，为后面计算 CPU使用率使用）。
     #endif
-                    //容量（决定OS_Stat_IdleCtrMax
-                    //的值，为后面计算 CPU使用率使用）。
         CPU_IntDisMeasMaxCurReset();
-    //复位（清零）当前最大关中断时间
+        //复位（清零）当前最大关中断时间
 
-
-    /* 配置时间片轮转调度 */
+        /* 配置时间片轮转调度 */
         OSSchedRoundRobinCfg((CPU_BOOLEAN   )DEF_ENABLED, //启用时间片轮转调度
-                            (OS_TICK       )0,  //把 OSCfg_TickRate_Hz / 10
-    设为默认时间片值
+                            (OS_TICK       )0,  //把 OSCfg_TickRate_Hz / 10设为默认时间片值
                             (OS_ERR       *)&err ); //返回错误类型
 
 
-    /* 创建 LED1 任务 */
+        /* 创建 LED1 任务 */
         OSTaskCreate((OS_TCB     *)&AppTaskLed1TCB,            //任务控制块地址
                     (CPU_CHAR   *)"App Task Led1",
                     (OS_TASK_PTR ) AppTaskLed1,                //任务函数
                     (void       *) 0,
-    //传递给任务函数（形参p_arg）的实参
+                    //传递给任务函数（形参p_arg）的实参
                     (OS_PRIO     ) APP_TASK_LED1_PRIO,//任务的优先级
                     (CPU_STK    *)&AppTaskLed1Stk[0],
-    //任务栈的基地址
+                    //任务栈的基地址
                     (CPU_STK_SIZE) APP_TASK_LED1_STK_SIZE / 10,
-    //任务栈空间剩下1/10时限制其增长
+                    //任务栈空间剩下1/10时限制其增长
                     (CPU_STK_SIZE) APP_TASK_LED1_STK_SIZE,
-    //任务栈空间（单位：sizeof(CPU_STK)）
+                    //任务栈空间（单位：sizeof(CPU_STK)）
                     (OS_MSG_QTY  ) 5u,
-    //任务可接收的最大消息数
+                    //任务可接收的最大消息数
                     (OS_TICK     ) 0u,
-    //任务的时间片节拍数（0表默认值）
+                    //任务的时间片节拍数（0表默认值）
                     (void       *) 0,
-    //任务扩展（0表不扩展）
+                    //任务扩展（0表不扩展）
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                     (OS_ERR     *)&err);                    //返回错误类型
 
-    /* 创建 LED2 任务 */
+        /* 创建 LED2 任务 */
         OSTaskCreate((OS_TCB     *)&AppTaskLed2TCB, //任务控制块地址
                     (CPU_CHAR   *)"App Task Led2",           //任务名称
                     (OS_TASK_PTR ) AppTaskLed2,                //任务函数
                     (void       *) 0,
-    //传递给任务函数（形参p_arg）的实参
+                    //传递给任务函数（形参p_arg）的实参
                     (OS_PRIO     ) APP_TASK_LED2_PRIO,        //任务的优先级
                     (CPU_STK    *)&AppTaskLed2Stk[0],
-    //任务栈的基地址
+                    //任务栈的基地址
                     (CPU_STK_SIZE) APP_TASK_LED2_STK_SIZE / 10,
-    //任务栈空间剩下1/10时限制其增长
+                    //任务栈空间剩下1/10时限制其增长
                     (CPU_STK_SIZE) APP_TASK_LED2_STK_SIZE,
-    //任务栈空间（单位：sizeof(CPU_STK)）
+                    //任务栈空间（单位：sizeof(CPU_STK)）
                     (OS_MSG_QTY  ) 5u,
-    //任务可接收的最大消息数
+                    //任务可接收的最大消息数
                     (OS_TICK     ) 0u,
-    //任务的时间片节拍数（0表默认值）
+                    //任务的时间片节拍数（0表默认值）
                     (void       *) 0,
-    //任务扩展（0表不扩展）
+                    //任务扩展（0表不扩展）
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                     (OS_ERR     *)&err);                //返回错误类型
 
-    /* 创建 LED3 任务 */
+        /* 创建 LED3 任务 */
         OSTaskCreate((OS_TCB     *)&AppTaskLed3TCB,  //任务控制块地址
                     (CPU_CHAR   *)"App Task Led3",//任务名称
                     (OS_TASK_PTR ) AppTaskLed3,                 //任务函数
                     (void       *) 0,
-    //传递给任务函数（形参p_arg）的实参
+                    //传递给任务函数（形参p_arg）的实参
                     (OS_PRIO     ) APP_TASK_LED3_PRIO,       //任务的优先级
                     (CPU_STK    *)&AppTaskLed3Stk[0],
-    //任务栈的基地址
+                    //任务栈的基地址
                     (CPU_STK_SIZE) APP_TASK_LED3_STK_SIZE / 10,
-    //任务栈空间剩下1/10时限制其增长
+                    //任务栈空间剩下1/10时限制其增长
                     (CPU_STK_SIZE) APP_TASK_LED3_STK_SIZE,
-    //任务栈空间（单位：sizeof(CPU_STK)）
+                    //任务栈空间（单位：sizeof(CPU_STK)）
                     (OS_MSG_QTY  ) 5u,
-    //任务可接收的最大消息数
+                    //任务可接收的最大消息数
                     (OS_TICK     ) 0u,
-    //任务的时间片节拍数（0表默认值）
+                    //任务的时间片节拍数（0表默认值）
                     (void       *) 0,
-    //任务扩展（0表不扩展）
+                    //任务扩展（0表不扩展）
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
-        (OS_ERR     *)&err); //返回错误类型
+                    (OS_ERR     *)&err); //返回错误类型
 
-
-    OSTaskDel ( 0, & err );        //删除起始任务本身，该任务不再运行
-
-
+        OSTaskDel ( 0, & err );        //删除起始任务本身，该任务不再运行
     }
 
 
@@ -1627,21 +1522,19 @@ Tb抢占了Ta的资源，等到Tb执行完毕，消耗的时间也只不过是10
         OS_ERR      err;
         OS_REG      value;
 
-
         (void)p_arg;
 
-
-    while (DEF_TRUE)                  //任务体，通常写成一个死循环
+        while (DEF_TRUE)                  //任务体，通常写成一个死循环
         {
             macLED1_TOGGLE ();             //切换 LED1 的亮灭状态
 
             value = OSTaskRegGet ( 0, 0, & err ); //获取自身任务寄存器值
 
-    if ( value < 10 )                  //如果任务寄存器值<10
+            if ( value < 10 )                  //如果任务寄存器值<10
             {
                 OSTaskRegSet ( 0, 0, ++ value, & err );//继续累加任务寄存器值
             }
-    else//如果累加到10
+            else//如果累加到10
             {
                 OSTaskRegSet ( 0, 0, 0, & err );        //将任务寄存器值归0
 
@@ -1653,10 +1546,9 @@ Tb抢占了Ta的资源，等到Tb执行完毕，消耗的时间也只不过是10
             }
 
             OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err );
-    //相对性延时1000个时钟节拍（1s）
+            //相对性延时1000个时钟节拍（1s）
 
         }
-
 
     }
 
@@ -1678,17 +1570,17 @@ Tb抢占了Ta的资源，等到Tb执行完毕，消耗的时间也只不过是10
         (void)p_arg;
 
 
-    while (DEF_TRUE)                   //任务体，通常写成一个死循环
+        while (DEF_TRUE)                   //任务体，通常写成一个死循环
         {
             macLED2_TOGGLE ();               //切换 LED2 的亮灭状态
 
             value = OSTaskRegGet ( 0, 0, & err ); //获取自身任务寄存器值
 
-    if ( value < 5 )                     //如果任务寄存器值<5
+            if ( value < 5 )                     //如果任务寄存器值<5
             {
                 OSTaskRegSet ( 0, 0, ++ value, & err );  //继续累加任务寄存器值
             }
-    else//如果累加到5
+            else//如果累加到5
             {
                 OSTaskRegSet ( 0, 0, 0, & err );    //将任务寄存器值归0
 
@@ -1697,7 +1589,7 @@ Tb抢占了Ta的资源，等到Tb执行完毕，消耗的时间也只不过是10
             }
 
             OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err );
-    //相对性延时1000个时钟节拍（1s）
+            //相对性延时1000个时钟节拍（1s）
 
         }
 
@@ -1722,17 +1614,17 @@ Tb抢占了Ta的资源，等到Tb执行完毕，消耗的时间也只不过是10
         (void)p_arg;
 
 
-    while (DEF_TRUE)                    //任务体，通常写成一个死循环
+        while (DEF_TRUE)                    //任务体，通常写成一个死循环
         {
             macLED3_TOGGLE ();             //切换 LED3 的亮灭状态
 
             value = OSTaskRegGet ( 0, 0, & err );     //获取自身任务寄存器值
 
-    if ( value < 5 )                    //如果任务寄存器值<5
+            if ( value < 5 )                    //如果任务寄存器值<5
             {
                 OSTaskRegSet ( 0, 0, ++ value, & err );  //继续累加任务寄存器值
             }
-    else//如果累加到5
+            else//如果累加到5
             {
                 OSTaskRegSet ( 0, 0, 0, & err );  //将任务寄存器值归零
 
@@ -1741,7 +1633,7 @@ Tb抢占了Ta的资源，等到Tb执行完毕，消耗的时间也只不过是10
             }
 
             OSTimeDly ( 1000, OS_OPT_TIME_DLY, & err );
-    //相对性延时1000个时钟节拍（1s）
+            //相对性延时1000个时钟节拍（1s）
 
         }
 

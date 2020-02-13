@@ -266,7 +266,7 @@
 PendSV_Handler()函数中添加了优先级相关的代码，具体见 代码清单:优先级-8_ 中加粗部分。
 有关PendSV_Handler()这个函数的具体讲解要参考《任务的定义与任务切换的实现》这个章节，这里不再赘述。
 
-.. code-block:: guess
+.. code-block::
     :caption: 代码清单:优先级-8PendSV_Handler()函数
     :emphasize-lines: 7-11
     :name: 代码清单:优先级-8

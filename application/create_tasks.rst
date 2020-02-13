@@ -14,7 +14,7 @@
 
 .. code-block:: c
     :caption: 代码清单:创建任务-1 BSP_Init()中添加硬件初始化函数
-    :emphasize-lines: 7-22
+    :emphasize-lines: 7-21
     :name: 代码清单:创建任务-1
     :linenos:
 
@@ -180,7 +180,7 @@
 它就是干这个活的。它将任务主体函数，任务栈和任务控制块这三者联系在一起，让任务在创建之后可以随时被系统启动与调度，
 具体见 代码清单:创建任务-6_。
 
-.. code-block:: c
+.. code-block::
     :caption: 代码清单:创建任务-6创建任务
     :name: 代码清单:创建任务-6
     :linenos:

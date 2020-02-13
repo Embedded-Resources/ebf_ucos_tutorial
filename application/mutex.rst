@@ -167,10 +167,7 @@ PendList链表与OwnerNestingCtr变量等，为的是方便系统来管理互斥
     {
     /* ------------------ GENERIC  MEMBERS ------------------ */
         OS_OBJ_TYPE          Type;                 (1)
-
         CPU_CHAR            *NamePtr;              (2)
-
-
         OS_PEND_LIST         PendList;             (3)
 
     #if OS_CFG_DBG_EN > 0u
@@ -182,7 +179,6 @@ PendList链表与OwnerNestingCtr变量等，为的是方便系统来管理互斥
         OS_TCB              *OwnerTCBPtr;		(4)
         OS_PRIO              OwnerOriginalPrio;	(5)
         OS_NESTING_CTR       OwnerNestingCtr;       (6)
-
         CPU_TS               TS;			(7)
     };
 
@@ -609,7 +605,6 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
     :linenos:
 
     OS_SEM mutex;;                             //声明互斥量
-
     OS_ERR      err;
 
     /* 删除互斥量mutex*/
@@ -948,84 +943,83 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
         OS_TCB        *p_tcb;
         CPU_TS         ts;
         CPU_SR_ALLOC();
-    //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和定义
-    一个局部变
-    //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
-    //，开中断时将该值还原。
+        //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和定义一个局部变
+        //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
+        //，开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL(4)//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return;                         //返回，不继续执行
+            return;                         //返回，不继续执行
         }
     #endif
 
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u(5)//如果启用了中断中非法调用检测
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0)   //如果该函数在中断中被调用
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0)   //如果该函数在中断中被调用
         {
             *p_err = OS_ERR_POST_ISR;               //错误类型为“在中断中等待”
-    return;                                //返回，不继续执行
+            return;                                //返回，不继续执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u(6)//如果启用了参数检测
-    if (p_mutex == (OS_MUTEX *)0)          //如果 p_mutex 为空
+        if (p_mutex == (OS_MUTEX *)0)          //如果 p_mutex 为空
         {
             *p_err = OS_ERR_OBJ_PTR_NULL;       //错误类型为“内核对象为空”
-    return;                            //返回，不继续执行
+            return;                            //返回，不继续执行
         }
-    switch (opt)                           //根据选项分类处理
+        switch (opt)                           //根据选项分类处理
         {
-    case OS_OPT_POST_NONE:             //如果选项在预期内，不处理
-    case OS_OPT_POST_NO_SCHED:
-    break;
+            case OS_OPT_POST_NONE:             //如果选项在预期内，不处理
+            case OS_OPT_POST_NO_SCHED:
+            break;
 
-    default:                           //如果选项超出预期
+            default:                           //如果选项超出预期
             *p_err =  OS_ERR_OPT_INVALID;  //错误类型为“选项非法”
-    return;                       //返回，不继续执行
+            return;                       //返回，不继续执行
         }
     #endif
 
     #if OS_CFG_OBJ_TYPE_CHK_EN > 0u(7)//如果启用了对象类型检测
-    if (p_mutex->Type != OS_OBJ_TYPE_MUTEX)   //如果 p_mutex 的类型不是互斥量类型
+        if (p_mutex->Type != OS_OBJ_TYPE_MUTEX)   //如果 p_mutex 的类型不是互斥量类型
         {
             *p_err = OS_ERR_OBJ_TYPE;              //返回，不继续执行
-    return;
+            return;
         }
     #endif
 
         CPU_CRITICAL_ENTER();                      //关中断
-    if(OSTCBCurPtr != p_mutex->OwnerTCBPtr)(8)//如果当前运行任务不持有该互斥量
+        if(OSTCBCurPtr != p_mutex->OwnerTCBPtr)(8)//如果当前运行任务不持有该互斥量
         {
             CPU_CRITICAL_EXIT();                   //开中断
             *p_err = OS_ERR_MUTEX_NOT_OWNER; (9)//错误类型为“任务不持有该互斥量”
-    return;                                //返回，不继续执行
+            return;                                //返回，不继续执行
         }
 
         OS_CRITICAL_ENTER_CPU_EXIT();                       //锁调度器，开中断
         ts          = OS_TS_GET();           (10)//获取时间戳
         p_mutex->TS = ts;
-    //存储互斥量最后一次被释放的时间戳
+        //存储互斥量最后一次被释放的时间戳
         p_mutex->OwnerNestingCtr--;          (11)//互斥量的嵌套数减1
-    if (p_mutex->OwnerNestingCtr > (OS_NESTING_CTR)0)  //如果互斥量仍被嵌套
+        if (p_mutex->OwnerNestingCtr > (OS_NESTING_CTR)0)  //如果互斥量仍被嵌套
         {
             OS_CRITICAL_EXIT();                             //解锁调度器
             *p_err = OS_ERR_MUTEX_NESTING;       (12)//错误类型为“互斥量被嵌套”
-    return;                                         //返回，不继续执行
+            return;                                         //返回，不继续执行
         }
-    /* 如果互斥量未被嵌套，已可用 */
+        /* 如果互斥量未被嵌套，已可用 */
         p_pend_list = &p_mutex->PendList;          (13)//获取互斥量的等待列表
-    if (p_pend_list->NbrEntries == (OS_OBJ_QTY)0) //如果没有任务在等待该互斥量
+        if (p_pend_list->NbrEntries == (OS_OBJ_QTY)0) //如果没有任务在等待该互斥量
         {
             p_mutex->OwnerTCBPtr     = (OS_TCB  *)0;(14)//清空互斥量持有者信息
             p_mutex->OwnerNestingCtr = (OS_NESTING_CTR)0;(15)
             OS_CRITICAL_EXIT();                          //解锁调度器
             *p_err = OS_ERR_NONE;                (16)//错误类型为“无错误”
-    return;                                      //返回，不继续执行
+            return;                                      //返回，不继续执行
         }
-    /* 如果有任务在等待该互斥量 */
-    if (OSTCBCurPtr->Prio != p_mutex->OwnerOriginalPrio)(17)//如果当前任务的优先级被改过
+        /* 如果有任务在等待该互斥量 */
+        if (OSTCBCurPtr->Prio != p_mutex->OwnerOriginalPrio)(17)//如果当前任务的优先级被改过
         {
             OS_RdyListRemove(OSTCBCurPtr);       (18)//从就绪列表移除当前任务
             OSTCBCurPtr->Prio = p_mutex->OwnerOriginalPrio;(19)//还原当前任务的优先级
@@ -1038,7 +1032,7 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
         p_mutex->OwnerTCBPtr       = p_tcb;         (24)//将互斥量交给该任务
         p_mutex->OwnerOriginalPrio = p_tcb->Prio;(25)
         p_mutex->OwnerNestingCtr   = (OS_NESTING_CTR)1;   (26)//开始嵌套
-    /* 释放互斥量给该任务 */
+        /* 释放互斥量给该任务 */
         OS_Post((OS_PEND_OBJ *)((void *)p_mutex),
                 (OS_TCB      *)p_tcb,
                 (void        *)0,
@@ -1047,8 +1041,7 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
 
         OS_CRITICAL_EXIT_NO_SCHED();             //减锁调度器，但不执行任务调度
 
-    if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0)   //如果 opt
-    没选择“发布时不调度任务”
+        if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0)   //如果 opt没选择“发布时不调度任务”
         {
             OSSched();                       (28)	//任务调度
         }
@@ -1159,7 +1152,6 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
 
     #include <includes.h>
 
-
     /*
     ****************************************************************
     *                        LOCAL DEFINES
@@ -1168,7 +1160,6 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
 
     OS_SEM TestSem;          //信号量
 
-
     /*
     *********************************************************************
     *                   TCB
@@ -1176,7 +1167,6 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
     */
 
     static  OS_TCB   AppTaskStartTCB;
-
     static  OS_TCB   AppTaskLed1TCB;
     static  OS_TCB   AppTaskLed2TCB;
     static  OS_TCB   AppTaskLed3TCB;
@@ -1189,7 +1179,6 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
     */
 
     static  CPU_STK  AppTaskStartStk[APP_TASK_START_STK_SIZE];
-
     static  CPU_STK  AppTaskLed1Stk [ APP_TASK_LED1_STK_SIZE ];
     static  CPU_STK  AppTaskLed2Stk [ APP_TASK_LED2_STK_SIZE ];
     static  CPU_STK  AppTaskLed3Stk [ APP_TASK_LED3_STK_SIZE ];
@@ -1202,23 +1191,15 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
     */
 
     static  void  AppTaskStart  (void *p_arg);
-
     static  void  AppTaskLed1  ( void * p_arg );
     static  void  AppTaskLed2  ( void * p_arg );
     static  void  AppTaskLed3  ( void * p_arg );
 
-
-
     int  main (void)
     {
         OS_ERR  err;
-
-
         OSInit(&err);           /* Init μC/OS-III.    */
-
-
         OSTaskCreate((OS_TCB    *)&AppTaskStartTCB,/* Create the start task*/
-
                     (CPU_CHAR   *)"App Task Start",
                     (OS_TASK_PTR ) AppTaskStart,
                     (void       *) 0,
@@ -1231,22 +1212,14 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
                     (void       *) 0,
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                     (OS_ERR     *)&err);
-
         OSStart(&err);
-
-
-
     }
-
-
-
 
     static  void  AppTaskStart (void *p_arg)
     {
         CPU_INT32U  cpu_clk_freq;
         CPU_INT32U  cnts;
         OS_ERR      err;
-
 
         (void)p_arg;
 
@@ -1260,7 +1233,6 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
 
         OS_CPU_SysTickInit(cnts);
 
-
         Mem_Init();
 
 
@@ -1271,15 +1243,14 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
 
         CPU_IntDisMeasMaxCurReset();
 
-    /* 创建信号量 TestSem */
+        /* 创建信号量 TestSem */
         OSSemCreate((OS_SEM      *)&TestSem,    //指向信号量变量的指针
                     (CPU_CHAR    *)"TestSem ",    //信号量的名字
                     (OS_SEM_CTR   )1,
-    //信号量这里是指示事件发生，所以赋值为0，表示事件
-    还没有发生
+                    //信号量这里是指示事件发生，所以赋值为0，表示事件还没有发生
                     (OS_ERR      *)&err);         //错误类型
 
-    /* Create the Led1 task                                */
+        /* Create the Led1 task                                */
         OSTaskCreate((OS_TCB     *)&AppTaskLed1TCB,
                     (CPU_CHAR   *)"App Task Led1",
                     (OS_TASK_PTR ) AppTaskLed1,
@@ -1294,8 +1265,7 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                     (OS_ERR     *)&err);
 
-    /* Create the Led2 task                                */
-
+        /* Create the Led2 task                                */
         OSTaskCreate((OS_TCB     *)&AppTaskLed2TCB,
                     (CPU_CHAR   *)"App Task Led2",
                     (OS_TASK_PTR ) AppTaskLed2,
@@ -1310,7 +1280,7 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                     (OS_ERR     *)&err);
 
-    /* Create the Led3 task                                */
+        /* Create the Led3 task                                */
         OSTaskCreate((OS_TCB     *)&AppTaskLed3TCB,
                     (CPU_CHAR   *)"App Task Led3",
                     (OS_TASK_PTR ) AppTaskLed3,
@@ -1325,12 +1295,8 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                     (OS_ERR     *)&err);
 
-
         OSTaskDel ( & AppTaskStartTCB, & err );
-
-
     }
-
 
     /*
     ***************************************************************
@@ -1341,47 +1307,39 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
     static  void  AppTaskLed1 ( void * p_arg )
     {
         OS_ERR      err;
-    static uint32_t i;
+        static uint32_t i;
         CPU_TS         ts_sem_post;
 
         (void)p_arg;
 
-
-    while (DEF_TRUE)
-
+        while (DEF_TRUE)
         {
-
             printf("AppTaskLed1 获取信号量\n");
-    //获取二值信号量TestSem,没获取到则一直等待
+            //获取二值信号量TestSem,没获取到则一直等待
             OSSemPend ((OS_SEM   *)&TestSem,             //等待该信号量被发布
                         (OS_TICK   )0,                     //无期限等待
                         (OS_OPT    )OS_OPT_PEND_BLOCKING,
-    //如果没有信号量可用就等待
+                        //如果没有信号量可用就等待
                         (CPU_TS   *)&ts_sem_post,
-    //获取信号量最后一次被发布的时间戳
+                        //获取信号量最后一次被发布的时间戳
                         (OS_ERR   *)&err);                 //返回错误类型
 
 
     for (i=0; i<600000; i++)   //模拟低优先级任务占用信号量
             {
-    //        ;
                 OSSched();//发起任务调度
             }
 
             printf("AppTaskLed1 释放信号量!\n");
             OSSemPost((OS_SEM  *)&TestSem,
-    //发布SemOfKey
+                    //发布SemOfKey
                     (OS_OPT   )OS_OPT_POST_1,
-    //发布给所有等待任务
+                    //发布给所有等待任务
                     (OS_ERR  *)&err);
-
-
 
             macLED1_TOGGLE ();
             OSTimeDlyHMSM (0,0,1,0,OS_OPT_TIME_PERIODIC,&err);
         }
-
-
     }
 
 
@@ -1394,23 +1352,15 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
     static  void  AppTaskLed2 ( void * p_arg )
     {
         OS_ERR      err;
-
-
         (void)p_arg;
 
-
-    while (DEF_TRUE)
-
+        while (DEF_TRUE)
         {
             printf("AppTaskLed2 Running\n");
             macLED2_TOGGLE ();
-
             OSTimeDlyHMSM (0,0,0,200,OS_OPT_TIME_PERIODIC,&err);
         }
-
-
     }
-
 
     /*
     *************************************************************
@@ -1422,38 +1372,30 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
     {
         OS_ERR      err;
         CPU_TS         ts_sem_post;
-
         (void)p_arg;
 
-
-    while (DEF_TRUE)
-
+        while (DEF_TRUE)
         {
-
             printf("AppTaskLed3 获取信号量\n");
-    //获取二值信号量TestSem,没获取到则一直等待
+            //获取二值信号量TestSem,没获取到则一直等待
             OSSemPend ((OS_SEM   *)&TestSem,             //等待该信号量被发布
                         (OS_TICK   )0,                     //无期限等待
                         (OS_OPT    )OS_OPT_PEND_BLOCKING,
-    //如果没有信号量可用就等待
+                        //如果没有信号量可用就等待
                         (CPU_TS   *)&ts_sem_post,
-    //获取信号量最后一次被发布的时间戳
+                        //获取信号量最后一次被发布的时间戳
                         (OS_ERR   *)&err);                 //返回错误类型
 
             macLED3_TOGGLE ();
 
             printf("AppTaskLed3 释放信号量\n");
-    //给出二值信号量
+            //给出二值信号量
             OSSemPost((OS_SEM  *)&TestSem,
-    //发布SemOfKey
+                    //发布SemOfKey
                     (OS_OPT   )OS_OPT_POST_1,
                     (OS_ERR  *)&err);
-
             OSTimeDlyHMSM (0,0,1,0,OS_OPT_TIME_PERIODIC,&err);
-
         }
-
-
     }
 
 
@@ -1469,7 +1411,6 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
 
     #include <includes.h>
 
-
     /*
     *****************************************************************
     *                       LOCAL DEFINES
@@ -1478,7 +1419,6 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
 
     OS_SEM TestMutex;          //互斥量
 
-
     /*
     *******************************************************************
     *                      TCB
@@ -1486,7 +1426,6 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
     */
 
     static  OS_TCB   AppTaskStartTCB;
-
     static  OS_TCB   AppTaskLed1TCB;
     static  OS_TCB   AppTaskLed2TCB;
     static  OS_TCB   AppTaskLed3TCB;
@@ -1499,7 +1438,6 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
     */
 
     static  CPU_STK  AppTaskStartStk[APP_TASK_START_STK_SIZE];
-
     static  CPU_STK  AppTaskLed1Stk [ APP_TASK_LED1_STK_SIZE ];
     static  CPU_STK  AppTaskLed2Stk [ APP_TASK_LED2_STK_SIZE ];
     static  CPU_STK  AppTaskLed3Stk [ APP_TASK_LED3_STK_SIZE ];
@@ -1512,7 +1450,6 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
     */
 
     static  void  AppTaskStart  (void *p_arg);
-
     static  void  AppTaskLed1  ( void * p_arg );
     static  void  AppTaskLed2  ( void * p_arg );
     static  void  AppTaskLed3  ( void * p_arg );
@@ -1521,7 +1458,6 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
     int  main (void)
     {
         OS_ERR  err;
-
 
         OSInit(&err);
 
@@ -1543,14 +1479,11 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
 
     }
 
-
-
     static  void  AppTaskStart (void *p_arg)
     {
         CPU_INT32U  cpu_clk_freq;
         CPU_INT32U  cnts;
         OS_ERR      err;
-
 
         (void)p_arg;
 
@@ -1572,12 +1505,12 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
 
         CPU_IntDisMeasMaxCurReset();
 
-    /* 创建互斥信号量 mutex */
+        /* 创建互斥信号量 mutex */
         OSMutexCreate ((OS_MUTEX  *)&TestMutex,           //指向信号量变量的指针
                         (CPU_CHAR  *)"Mutex For Test", //信号量的名字
                         (OS_ERR    *)&err);            //错误类型
 
-    /* Create the Led1 task                                */
+        /* Create the Led1 task                                */
         OSTaskCreate((OS_TCB     *)&AppTaskLed1TCB,
                     (CPU_CHAR   *)"App Task Led1",
                     (OS_TASK_PTR ) AppTaskLed1,
@@ -1592,7 +1525,7 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                     (OS_ERR     *)&err);
 
-    /* Create the Led2 task                                */
+        /* Create the Led2 task                                */
         OSTaskCreate((OS_TCB     *)&AppTaskLed2TCB,
                     (CPU_CHAR   *)"App Task Led2",
                     (OS_TASK_PTR ) AppTaskLed2,
@@ -1607,7 +1540,7 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                     (OS_ERR     *)&err);
 
-    /* Create the Led3 task                                */
+        /* Create the Led3 task                                */
         OSTaskCreate((OS_TCB     *)&AppTaskLed3TCB,
                     (CPU_CHAR   *)"App Task Led3",
                     (OS_TASK_PTR ) AppTaskLed3,
@@ -1622,12 +1555,8 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                     (OS_ERR     *)&err);
 
-
         OSTaskDel ( & AppTaskStartTCB, & err );
-
-
     }
-
 
     /*
     ************************************************************************
@@ -1638,46 +1567,35 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
     static  void  AppTaskLed1 ( void * p_arg )
     {
         OS_ERR      err;
-    static uint32_t i;
+        static uint32_t i;
 
         (void)p_arg;
 
-
-    while (DEF_TRUE)
+        while (DEF_TRUE)
         {
-
             printf("AppTaskLed1 获取互斥量\n");
-    //获取互斥量 ,没获取到则一直等待
+            //获取互斥量 ,没获取到则一直等待
             OSMutexPend ((OS_MUTEX  *)&TestMutex,          //申请互斥量
-
                         (OS_TICK    )0,                       //无期限等待
                         (OS_OPT     )OS_OPT_PEND_BLOCKING,
-    //如果不能申请到信号量就阻塞任务
+                        //如果不能申请到信号量就阻塞任务
                         (CPU_TS    *)0,                       //不想获得时间戳
                         (OS_ERR    *)&err);                   //返回错误类型
 
-
-    for (i=0; i<600000; i++)   //模拟低优先级任务占用互斥量
+            for (i=0; i<600000; i++)   //模拟低优先级任务占用互斥量
             {
-    //        ;
                 OSSched();//发起任务调度
             }
 
             printf("AppTaskLed1 释放互斥量\n");
             OSMutexPost ((OS_MUTEX  *)&TestMutex,          //释放互斥量
-
                         (OS_OPT     )OS_OPT_POST_NONE,        //进行任务调度
                         (OS_ERR    *)&err);                   //返回错误类型
-
-
 
             macLED1_TOGGLE ();
             OSTimeDlyHMSM (0,0,1,0,OS_OPT_TIME_PERIODIC,&err);
         }
-
-
     }
-
 
     /*
     **********************************************************************
@@ -1688,20 +1606,14 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
     static  void  AppTaskLed2 ( void * p_arg )
     {
         OS_ERR      err;
-
-
         (void)p_arg;
 
-
-    while (DEF_TRUE)
+        while (DEF_TRUE)
         {
             printf("AppTaskLed2 Running\n");
             macLED2_TOGGLE ();
-
             OSTimeDlyHMSM (0,0,0,200,OS_OPT_TIME_PERIODIC,&err);
         }
-
-
     }
 
 
@@ -1714,20 +1626,16 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
     static  void  AppTaskLed3 ( void * p_arg )
     {
         OS_ERR      err;
-
         (void)p_arg;
 
-
-    while (DEF_TRUE)
+        while (DEF_TRUE)
         {
-
             printf("AppTaskLed3 获取互斥量\n");
-    //获取互斥量 ,没获取到则一直等待
+            //获取互斥量 ,没获取到则一直等待
             OSMutexPend ((OS_MUTEX  *)&TestMutex,          //申请互斥量
-
                         (OS_TICK    )0,                       //无期限等待
                         (OS_OPT     )OS_OPT_PEND_BLOCKING,
-    //如果不能申请到信号量就阻塞任务
+                        //如果不能申请到信号量就阻塞任务
                         (CPU_TS    *)0,                       //不想获得时间戳
                         (OS_ERR    *)&err);                   //返回错误类型
 
@@ -1735,16 +1643,11 @@ OSSemDel()用于删除一个互斥量，互斥量删除函数是根据互斥量�
 
             printf("AppTaskLed3 释放互斥量\n");
             OSMutexPost ((OS_MUTEX  *)&TestMutex,        //释放互斥量
-
                         (OS_OPT     )OS_OPT_POST_NONE,        //进行任务调度
                         (OS_ERR    *)&err);                   //返回错误类型
 
-
             OSTimeDlyHMSM (0,0,1,0,OS_OPT_TIME_PERIODIC,&err);
-
         }
-
-
     }
 
 

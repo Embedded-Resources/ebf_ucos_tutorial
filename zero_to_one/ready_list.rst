@@ -266,7 +266,7 @@ CPU_CntLeadZeros()函数可由汇编或者C来实现，如果使用的处理器�
 Cortex-M系列处理器自带CLZ指令，所以CPU_CntLeadZeros()函数默认由汇编编写，具体在cpu_a.asm文件实现，
 在cpu.h文件声明，具体见 代码清单:就绪列表-7_。
 
-.. code-block:: guess
+.. code-block::
     :caption: 代码清单:就绪列表-7CPU_CntLeadZeros()函数实现与声明
     :name: 代码清单:就绪列表-7
     :linenos:

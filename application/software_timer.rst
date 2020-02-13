@@ -118,7 +118,7 @@
         OS_OBJ_TYPE          Type;			(1)
         CPU_CHAR            *NamePtr;		(2)
         OS_TMR_CALLBACK_PTR  CallbackPtr;		(3)
-    void                *CallbackPtrArg;	(4)
+        void                *CallbackPtrArg;	(4)
         OS_TMR              *NextPtr;		(5)
         OS_TMR              *PrevPtr;		(6)
         OS_TICK              Match;		(7)
@@ -195,69 +195,68 @@
             OS_TICK             period,     //周期定时重载节拍数
             OS_OPT              opt,            //选项
             OS_TMR_CALLBACK_PTR  p_callback,  //定时到期时的回调函数
-    void*p_callback_arg, //传给回调函数的参数
-                    OS_ERR               *p_err)          //返回错误类型
+            void*p_callback_arg, //传给回调函数的参数
+            OS_ERR  *p_err)          //返回错误类型
     {
         CPU_SR_ALLOC();
-    //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和定义
-    一个局部变
-    //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
-    //，开中断时将该值还原。
+        //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和定义一个局部变
+        //量，用于保存关中断前的 CPU 状态寄存器 SR（临界段关中断只需保存SR）
+        //，开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return;                         //返回，不执行定时操作
+            return;                         //返回，不执行定时操作
         }
     #endif
 
     #ifdef OS_SAFETY_CRITICAL_IEC61508//如果启用（默认禁用）了安全关键
-    //如果是在调用 OSSafetyCriticalStart()后创建该定时器
-    if (OSSafetyCriticalStartFlag == DEF_TRUE)
+        //如果是在调用 OSSafetyCriticalStart()后创建该定时器
+        if (OSSafetyCriticalStartFlag == DEF_TRUE)
         {
             *p_err = OS_ERR_ILLEGAL_CREATE_RUN_TIME; //错误类型为“非法创建内核对象”
-    return;                                  //返回，不执行定时操作
+            return;                                  //返回，不执行定时操作
         }
     #endif
 
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
-    //如果启用（默认启用）了中断中非法调用检测
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0)    //如果该函数是在中断中被调用
+        //如果启用（默认启用）了中断中非法调用检测
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0)    //如果该函数是在中断中被调用
         {
             *p_err = OS_ERR_TMR_ISR;                 //错误类型为“在中断函数中定时”
-    return;                                 //返回，不执行定时操作
+            return;                                 //返回，不执行定时操作
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u//如果启用（默认启用）了参数检测
-    if (p_tmr == (OS_TMR *)0)                       //如果参数 p_tmr 为空
+        if (p_tmr == (OS_TMR *)0)                       //如果参数 p_tmr 为空
         {
             *p_err = OS_ERR_OBJ_PTR_NULL;         //错误类型为“定时器对象为空”
-    return;                                     //返回，不执行定时操作
+            return;                                     //返回，不执行定时操作
         }
 
-    switch (opt)                            //根据延时选项参数 opt 分类操作
+        switch (opt)                            //根据延时选项参数 opt 分类操作
         {
-    case OS_OPT_TMR_PERIODIC:                   //如果选择周期性定时
-    if (period == (OS_TICK)0)              //如果周期重载实参为0
+            case OS_OPT_TMR_PERIODIC:                   //如果选择周期性定时
+            if (period == (OS_TICK)0)              //如果周期重载实参为0
             {
                 *p_err = OS_ERR_TMR_INVALID_PERIOD; //错误类型为“周期重载实参无效”
-    return;                            //返回，不执行定时操作
+                return;                            //返回，不执行定时操作
             }
-    break;
+            break;
 
-    case OS_OPT_TMR_ONE_SHOT:                   //如果选择一次性定时
-    if (dly == (OS_TICK)0)                 //如果定时初始实参为0
+            case OS_OPT_TMR_ONE_SHOT:                   //如果选择一次性定时
+            if (dly == (OS_TICK)0)                 //如果定时初始实参为0
             {
                 *p_err = OS_ERR_TMR_INVALID_DLY;    //错误类型为“定时初始实参无效”
-    return;                            //返回，不执行定时操作
+                return;                            //返回，不执行定时操作
             }
-    break;
+            break;
 
-    default:                                    //如果选项超出预期
+            default:                                    //如果选项超出预期
             *p_err = OS_ERR_OPT_INVALID;            //错误类型为“选项非法”
-    return;                                //返回，不执行定时操作
+            return;                                //返回，不执行定时操作
         }
     #endif
 
@@ -301,9 +300,9 @@
     OSTmrCreate ((OS_TMR              *)&my_tmr,             //软件定时器对象
                 (CPU_CHAR            *)"MySoftTimer",       //命名软件定时器
                 (OS_TICK              )10,
-    //定时器初始值，依10Hz时基计算，即为1s
+                //定时器初始值，依10Hz时基计算，即为1s
                 (OS_TICK              )10,
-    //定时器周期重载值，依10Hz时基计算，即为1s
+                //定时器周期重载值，依10Hz时基计算，即为1s
                 (OS_OPT               )OS_OPT_TMR_PERIODIC, //周期性定时
                 (OS_TMR_CALLBACK_PTR  )TmrCallback,         //回调函数
                 (void                *)"Timer Over!",    //传递实参给回调函数
@@ -332,70 +331,70 @@
 
 
     #ifdef OS_SAFETY_CRITICAL//如果启用（默认禁用）了安全检测
-    if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0)           //如果错误类型实参为空
         {
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return (DEF_FALSE);             //返回 DEF_FALSE，不继续执行
+            return (DEF_FALSE);             //返回 DEF_FALSE，不继续执行
         }
     #endif
 
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
-    //如果启用（默认启用）了中断中非法调用检测
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0)   //如果该函数是在中断中被调用
+        //如果启用（默认启用）了中断中非法调用检测
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0)   //如果该函数是在中断中被调用
         {
             *p_err = OS_ERR_TMR_ISR;                //错误类型为“在中断函数中定时”
-    return (DEF_FALSE);                    //返回 DEF_FALSE，不继续执行
+            return (DEF_FALSE);                    //返回 DEF_FALSE，不继续执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u//如果启用（默认启用）了参数检测
-    if (p_tmr == (OS_TMR *)0)        //如果启用 p_tmr 的实参为空
+        (p_tmr == (OS_TMR *)0)        //如果启用 p_tmr 的实参为空
         {
             *p_err = OS_ERR_TMR_INVALID;  //错误类型为“无效的定时器”
-    return (DEF_FALSE);          //返回 DEF_FALSE，不继续执行
+            return (DEF_FALSE);          //返回 DEF_FALSE，不继续执行
         }
     #endif
 
     #if OS_CFG_OBJ_TYPE_CHK_EN > 0u//如果启用（默认启用）了对象类型检测
-    if (p_tmr->Type != OS_OBJ_TYPE_TMR)   //如果该定时器的对象类型有误
+        if (p_tmr->Type != OS_OBJ_TYPE_TMR)   //如果该定时器的对象类型有误
         {
             *p_err = OS_ERR_OBJ_TYPE;          //错误类型为“对象类型错误”
-    return (DEF_FALSE);               //返回 DEF_FALSE，不继续执行
+            return (DEF_FALSE);               //返回 DEF_FALSE，不继续执行
         }
     #endif
 
         OSSchedLock(&err);                           //锁住调度器
-    switch (p_tmr->State)             (3)//根据定时器的状态分类处理
+        switch (p_tmr->State)             (3)//根据定时器的状态分类处理
         {
-    case OS_TMR_STATE_RUNNING:       //如果定时器正在运行，则重启
+            case OS_TMR_STATE_RUNNING:       //如果定时器正在运行，则重启
             OS_TmrUnlink(p_tmr);          (5)//从定时器列表里移除该定时器
             OS_TmrLink(p_tmr, OS_OPT_LINK_DLY);(4)//将该定时器重新插入定时器列表
             OSSchedUnlock(&err);                 //解锁调度器
             *p_err   = OS_ERR_NONE;               //错误类型为“无错误”
             success = DEF_TRUE;                  //执行结果暂为 DEF_TRUE
-    break;
+            break;
 
-    case OS_TMR_STATE_STOPPED:                //如果定时器已被停止，则开启
-    case OS_TMR_STATE_COMPLETED:      (6)//如果定时器已完成了，则开启
+            case OS_TMR_STATE_STOPPED:                //如果定时器已被停止，则开启
+            case OS_TMR_STATE_COMPLETED:      (6)//如果定时器已完成了，则开启
             OS_TmrLink(p_tmr, OS_OPT_LINK_DLY);  //将该定时器重新插入定时器列表
             OSSchedUnlock(&err);                 //解锁调度器
             *p_err   = OS_ERR_NONE;               //错误类型为“无错误”
             success = DEF_TRUE;                  //执行结果暂为 DEF_TRUE
-    break;
+            break;
 
-    case OS_TMR_STATE_UNUSED:         (7)//如果定时器未被创建
+            case OS_TMR_STATE_UNUSED:         (7)//如果定时器未被创建
             OSSchedUnlock(&err);                 //解锁调度器
             *p_err   = OS_ERR_TMR_INACTIVE;       //错误类型为“定时器未激活”
             success = DEF_FALSE;                 //执行结果暂为 DEF_FALSE
-    break;
+            break;
 
-    default:                     (8)//如果定时器的状态超出预期
+            default:                     (8)//如果定时器的状态超出预期
             OSSchedUnlock(&err);                 //解锁调度器
             *p_err = OS_ERR_TMR_INVALID_STATE;    //错误类型为“定时器无效”
             success = DEF_FALSE;                 //执行结果暂为 DEF_FALSE
-    break;
+            break;
         }
-    return (success);                             //返回执行结果
+        return (success);                             //返回执行结果
     }
 
 
@@ -424,85 +423,81 @@
         OS_TMR           *p_tmr1;
         OS_TMR_SPOKE_IX   spoke;
 
-
-    //重置定时器为运行状态
+        //重置定时器为运行状态
         p_tmr->State = OS_TMR_STATE_RUNNING;
 
-    if (opt == OS_OPT_LINK_PERIODIC)
+        if (opt == OS_OPT_LINK_PERIODIC)
         {
-    //如果定时器是再次插入，匹配时间加个周期重载值
+            //如果定时器是再次插入，匹配时间加个周期重载值
             p_tmr->Match = p_tmr->Period + OSTmrTickCtr;(3)
         }
-    else
+        else
         {
-    //如果定时器是首次插入
-    if (p_tmr->Dly == (OS_TICK)0)
+            //如果定时器是首次插入
+            if (p_tmr->Dly == (OS_TICK)0)
             {
-    //如果定时器的 Dly = 0，匹配时间加个周期重载值
+                //如果定时器的 Dly = 0，匹配时间加个周期重载值
                 p_tmr->Match = p_tmr->Period + OSTmrTickCtr;(4)
             }
-    else
+            else
             {
-    //如果定时器的 Dly != 0，匹配时间加个 Dly
+                //如果定时器的 Dly != 0，匹配时间加个 Dly
                 p_tmr->Match = p_tmr->Dly    + OSTmrTickCtr;(5)
             }
         }
 
-    //通过哈希算法决定将该定时器插入定时器轮的哪个列表。
+        //通过哈希算法决定将该定时器插入定时器轮的哪个列表。
         spoke  = (OS_TMR_SPOKE_IX)(p_tmr->Match % OSCfg_TmrWheelSize);(6)
         p_spoke = &OSCfg_TmrWheel[spoke];
 
-    if (p_spoke->FirstPtr ==  (OS_TMR *)0)(7)
+        if (p_spoke->FirstPtr ==  (OS_TMR *)0)(7)
         {
-    //如果列表为空，直接将该定时器作为列表的第一个元素。
+            //如果列表为空，直接将该定时器作为列表的第一个元素。
             p_tmr->NextPtr      = (OS_TMR *)0;
             p_tmr->PrevPtr      = (OS_TMR *)0;
             p_spoke->FirstPtr   = p_tmr;
             p_spoke->NbrEntries = 1u;
         }
-    else
+        else
         {
-    //如果列表非空，算出定时器 p_tmr 的剩余时间
-            p_tmr->Remain  = p_tmr->Match
-                            - OSTmrTickCtr;	(8)
-    //取列表的首个元素到 p_tmr1
+            //如果列表非空，算出定时器 p_tmr 的剩余时间
+            p_tmr->Remain  = p_tmr->Match - OSTmrTickCtr;	(8)
+            //取列表的首个元素到 p_tmr1
             p_tmr1         = p_spoke->FirstPtr;	(9)
-    while (p_tmr1 != (OS_TMR *)0)
+            while (p_tmr1 != (OS_TMR *)0)
             {
-    //如果 p_tmr1 非空，算出 p_tmr1 的剩余时间
+                //如果 p_tmr1 非空，算出 p_tmr1 的剩余时间
                 p_tmr1->Remain = p_tmr1->Match
                                 - OSTmrTickCtr;	(10)
-    if (p_tmr->Remain > p_tmr1->Remain)
+                if (p_tmr->Remain > p_tmr1->Remain)
                 {
-    //如果 p_tmr 的剩余时间大于 p_tmr1 的
-    if (p_tmr1->NextPtr  != (OS_TMR *)0)
+                    //如果 p_tmr 的剩余时间大于 p_tmr1 的
+                    if (p_tmr1->NextPtr  != (OS_TMR *)0)
                     {
-    //如果 p_tmr1
-    后面非空，取p_tmr1后一个定时器为新的p_tmr1进行下一次循环
+                        //如果 p_tmr1后面非空，取p_tmr1后一个定时器为新的p_tmr1进行下一次循环
                         p_tmr1            = p_tmr1->NextPtr;(11)
-
                     }
-    else
+                    else
                     {
-    //如果 p_tmr1 后面为空，将 p_tmr 插到 p_tmr1 的后面，结束循环
+                        //如果 p_tmr1 后面为空，将 p_tmr 插到 p_tmr1 的后面，结束循环
                         p_tmr->NextPtr    = (OS_TMR *)0;
                         p_tmr->PrevPtr    =  p_tmr1;
                         p_tmr1->NextPtr   =  p_tmr;
                         p_tmr1            = (OS_TMR *)0;	(12)
                     }
                 }
-    else
+                else
                 {
-    //如果 p_tmr 的剩余时间不大于 p_tmr1 的，
-    if (p_tmr1->PrevPtr == (OS_TMR *)0)	(13)
+                    //如果 p_tmr 的剩余时间不大于 p_tmr1 的，
+                    if (p_tmr1->PrevPtr == (OS_TMR *)0)	(13)
                     {
-    //将 p_tmr 插入 p_tmr1 的前一个，结束循环。
+                        //将 p_tmr 插入 p_tmr1 的前一个，结束循环。
                         p_tmr->PrevPtr    = (OS_TMR *)0;
                         p_tmr->NextPtr    = p_tmr1;
                         p_tmr1->PrevPtr   = p_tmr;
                         p_spoke->FirstPtr = p_tmr;
                     }
-    else
+                    else
                     {
                         p_tmr0            = p_tmr1->PrevPtr;
                         p_tmr->PrevPtr    = p_tmr0;
@@ -513,12 +508,12 @@
                     p_tmr1 = (OS_TMR *)0;
                 }
             }
-    //列表元素成员数加1
+            //列表元素成员数加1
             p_spoke->NbrEntries++;			(15)
         }
-    if (p_spoke->NbrEntriesMax < p_spoke->NbrEntries)
+        if (p_spoke->NbrEntriesMax < p_spoke->NbrEntries)
         {
-    //更新列表成员数最大值历史记录
+            //更新列表成员数最大值历史记录
             p_spoke->NbrEntriesMax = p_spoke->NbrEntries;(16)
         }
     }

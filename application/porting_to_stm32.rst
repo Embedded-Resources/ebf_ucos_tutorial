@@ -341,7 +341,7 @@ os_cpu_c.c
 
 注：关于具体的FPU相关说明请参考《ARM-Cortex-M4内核参考手册》第7章相关内容。
 
-.. code-block:: guess
+.. code-block::
     :caption: 代码清单:移植-1启用FPU（汇编）
     :name: 代码清单:移植-1
     :linenos:

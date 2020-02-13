@@ -101,7 +101,7 @@
 栈是单片机RAM里面一段连续的内存空间，栈的大小由启动文件里面的代码配置，具体见 代码清单:任务-3_ ，
 最后由C库函数_main进行初始化。它们在RAM空间里面的大概分布具体见。
 
-.. code-block:: guess
+.. code-block::
     :caption: 代码清单:任务-3裸机系统中的栈分配
     :name: 代码清单:任务-3
     :linenos:
@@ -264,7 +264,7 @@ OSTaskCreate来实现，该函数在os_task.c（os_task.c第一次使用需要�
 
     void OSTaskCreate (OS_TCB        *p_tcb,(1)
                     OS_TASK_PTR   p_task,(2)
-    void          *p_arg,(3)
+                    void          *p_arg,(3)
                     CPU_STK       *p_stk_base, (4)
                     CPU_STK_SIZE  stk_size, (5)
                     OS_ERR        *p_err) (6)
@@ -293,7 +293,7 @@ OSTaskCreate来实现，该函数在os_task.c（os_task.c第一次使用需要�
     :name: 代码清单:任务-10
     :linenos:
 
-    typedefvoid (*OS_TASK_PTR)(void \*p_arg);
+    typedefvoid (*OS_TASK_PTR)(void *p_arg);
 
 -   代码清单:任务-9_ （3）：p_arg是任务形参，用于传递任务参数。
 
@@ -421,7 +421,7 @@ OSTaskCreate来实现，该函数在os_task.c（os_task.c第一次使用需要�
     :name: 代码清单:任务-14
     :linenos:
 
-    1 OS_EXT OS_RDY_LIST OSRdyList[OS_CFG_PRIO_MAX];
+    OS_EXT OS_RDY_LIST OSRdyList[OS_CFG_PRIO_MAX];
 
 -   代码清单:任务-14_ （3）：OS_CFG_PRIO_MAX是一个定义，表示这个系统支持多少个优先级（刚开始暂时不支持多个优先级，往后章节会支持），
     目前这里仅用    来表示这个就绪列表可以存多少个任务的TCB指针。具体的宏在os_cfg.h（os_cfg.h第一次使用需要自行在文件夹
@@ -565,7 +565,7 @@ os_core.c（os_core.c第一次使用需要自行在文件夹μC/OS-III\Source中
 代码清单:任务-19_ 中的全局变量OSTCBCurPtr和OSTCBHighRdyPtr均在os.h中定义，具体见 代码清单:任务-21_。
 OS_STATE_OS_STOPPED 这个表示系统运行状态的宏也在os.h中定义，具体见 代码清单:任务-22_。
 
-.. code-block:: c
+.. code-block::
     :caption: 代码清单:任务-21 OSInit()函数中出现的全局变量的定义
     :name: 代码清单:任务-21
     :linenos:
@@ -671,7 +671,7 @@ OS_STATE_OS_STOPPED 这个表示系统运行状态的宏也在os.h中定义，�
      - 汇编条件分支语句，跟C语言的if else类似
 
 
-.. code-block:: guess
+.. code-block::
     :caption: 代码清单:任务-24OSStartHighRdy()函数
     :name: 代码清单:任务-24
     :linenos:
@@ -704,7 +704,7 @@ OS_STATE_OS_STOPPED 这个表示系统运行状态的宏也在os.h中定义，�
 NVIC_PENDSV_PRI和NVIC_PENDSVSET这四个常量在
 os_cpu_a.s的开头定义，具体见 代码清单:任务-25_ ，有关这四个常量的含义看代码注释即可。
 
-.. code-block:: guess
+.. code-block::
     :caption: 代码清单:任务-25 NVIC_INT_CTRL、NVIC_SYSPRI14、NVIC_PENDSV_PRI和NVIC_PENDSVSET常量定义
     :name: 代码清单:任务-25
     :linenos:
@@ -735,7 +735,7 @@ os_cpu_a.s的开头定义，具体见 代码清单:任务-25_ ，有关这四个
 -   代码清单:任务-24_ （4）：开中断，因为有些用户在main()函数开始会先关掉中断，
     等全部初始化完成后，在启动OS的时候才开中断。为了快速地开关中断， CM3 专门设置了一条 CPS 指令，有 4 种用法，具体见代码清单:任务-26。
 
-.. code-block:: guess
+.. code-block::
     :caption: 代码清单:任务-26 CPS 指令用法
     :name: 代码清单:任务-26
     :linenos:
@@ -780,7 +780,7 @@ PendSV异常服务函数具体见 代码清单:任务-27_。PendSV异常服务�
 就要检查下异常函数名称是否写错了，没有跟向量表里面的一致。
 PendSV_Handler函数里面涉及的ARM汇编指令的讲解具体见表 PendSV_Handler函数中涉及的ARM汇编指令讲解_。
 
-.. code-block:: guess
+.. code-block::
     :caption: 代码清单:任务-27PendSV异常服务函数
     :name: 代码清单:任务-27
     :linenos:
@@ -859,7 +859,7 @@ PendSV_Handler函数里面涉及的ARM汇编指令的讲解具体见表 PendSV_H
 代码清单:任务-27_  PendSV异常服务中用到了OSTCBCurPtr和OSTCBHighRdyPtr这两个全局变量，这两个全局变量在os.h中定义，
 要想在汇编文件os_cpu_a.s中使用，必须将这两个全局变量导入到os_cpu_a.s中，具体如何导入见 代码清单:任务-28_。
 
-.. code-block:: c
+.. code-block::
     :caption: 代码清单:任务-28导入OSTCBCurPtr和OSTCBHighRdyPtr到os_cpu_a.s
     :name: 代码清单:任务-28
     :linenos:
@@ -870,7 +870,7 @@ PendSV_Handler函数里面涉及的ARM汇编指令的讲解具体见表 PendSV_H
     IMPORT  OSTCBCurPtr              ; 外部文件引人的参考(1)
     IMPORT  OSTCBHighRdyPtr
 
-        EXPORT  OSStartHighRdy           ; 该文件定义的函数(2)
+    EXPORT  OSStartHighRdy           ; 该文件定义的函数(2)
     EXPORT  PendSV_Handler
 
 

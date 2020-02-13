@@ -309,46 +309,46 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
 
     {
         CPU_SR_ALLOC();(5)//使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
 
     #ifdef OS_SAFETY_CRITICAL(6)//如果启用了安全检测
-    if (p_err == (OS_ERR *)0) {         //如果错误类型实参为空
+        if (p_err == (OS_ERR *)0) {         //如果错误类型实参为空
             OS_SAFETY_CRITICAL_EXCEPTION(); //执行安全检测异常函数
-    return;                         //返回，停止执行
+            return;                         //返回，停止执行
         }
     #endif
     #ifdef OS_SAFETY_CRITICAL_IEC61508	//如果启用了安全关键
-    /如果在调用OSSafetyCriticalStart()后创建
-    if (OSSafetyCriticalStartFlag == DEF_TRUE) {
+    //如果在调用OSSafetyCriticalStart()后创建
+        if (OSSafetyCriticalStartFlag == DEF_TRUE) {
             *p_err = OS_ERR_ILLEGAL_CREATE_RUN_TIME; //错误类型为“非法创建内核对象”
-    return;                                  //返回，停止执行
+            return;                                  //返回，停止执行
         }
     #endif
 
     #if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u(7)//如果启用了中断中非法调用检测
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0) { //如果该函数是在中断中被调用
+        if (OSIntNestingCtr > (OS_NESTING_CTR)0) { //如果该函数是在中断中被调用
             *p_err = OS_ERR_CREATE_ISR;             //错误类型为“在中断中创建对象”
-    return;                                //返回，停止执行
+            return;                                //返回，停止执行
         }
     #endif
 
     #if OS_CFG_ARG_CHK_EN > 0u(8)	//如果启用了参数检测
-    if (p_q == (OS_Q *)0) {           //如果 p_q 为空
+        if (p_q == (OS_Q *)0) {           //如果 p_q 为空
             *p_err = OS_ERR_OBJ_PTR_NULL;  //错误类型为“创建对象为空”
-    return;                       //返回，停止执行
+            return;                       //返回，停止执行
         }
-    if (max_qty == (OS_MSG_QTY)0) { (9)//如果 max_qty = 0
+        if (max_qty == (OS_MSG_QTY)0) { (9)//如果 max_qty = 0
             *p_err = OS_ERR_Q_SIZE;        //错误类型为“队列空间为0”
-    return;                       //返回，停止执行
+            return;                       //返回，停止执行
         }
     #endif
 
         OS_CRITICAL_ENTER();             //进入临界段
-    p_q->Type    = OS_OBJ_TYPE_Q; (10)//标记创建对象数据结构为消息队列
-    p_q->NamePtr = p_name;        (11)//标记消息队列的名称
+        p_q->Type    = OS_OBJ_TYPE_Q; (10)//标记创建对象数据结构为消息队列
+        p_q->NamePtr = p_name;        (11)//标记消息队列的名称
         OS_MsgQInit(&p_q->MsgQ,          //初始化消息队列
-                    max_qty);	(12)
+        max_qty);	(12)
         OS_PendListInit(&p_q->PendList); (13)	//初始化该消息队列的等待列表
 
     #if OS_CFG_DBG_EN > 0u//如果启用了调试代码和变量
@@ -1188,10 +1188,10 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
     if (p_obj != (OS_PEND_OBJ *)0)          //如果内核对象为空
             {
                 OS_PendListRemove(p_tcb);     (23)//从等待列表移除该等待任务
-    #if OS_CFG_DBG_EN > 0u//如果启用了调试代码和变量
+        #if OS_CFG_DBG_EN > 0u//如果启用了调试代码和变量
                 OS_PendDbgNameRemove(p_obj,        //移除内核对象的调试名
                                     p_tcb);
-    #endif
+        #endif
             }
             p_tcb->TaskState  = OS_TASK_STATE_SUSPENDED;  (24)//任务状态改为被挂起状态
             p_tcb->PendStatus = OS_STATUS_PEND_OK;   (25)//清除等待状态
@@ -1615,39 +1615,29 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
                 OS_TICK        timeout)      //等待期限
     {
         OS_PEND_LIST  *p_pend_list;
-
-
-
         OSTCBCurPtr->PendOn     = pending_on;             //资源不可用，开始等待
         OSTCBCurPtr->PendStatus = OS_STATUS_PEND_OK;             //正常等待中
+        OS_TaskBlock(OSTCBCurPtr,timeout);       //阻塞当前运行任务，如果 timeout非0，把任务插入的节拍列表
 
-        OS_TaskBlock(OSTCBCurPtr,                         //阻塞当前运行任务，
-                    timeout);                            //如果 timeout
-    非0，把任务插入的节拍列表
-
-    if (p_obj != (OS_PEND_OBJ *)0)                    //如果等待对象非空
+        if (p_obj != (OS_PEND_OBJ *)0)                    //如果等待对象非空
         {
-            p_pend_list             = &p_obj->PendList;    //获取对象的等待列表到
-                                    p_pend_list
+            p_pend_list             = &p_obj->PendList;    //获取对象的等待列表到p_pend_list
             p_pend_data->PendObjPtr = p_obj;              //保存要等待的对象
-            OS_PendDataInit((OS_TCB       *)OSTCBCurPtr,         //初始化
-                            p_pend_data（待插入等待列表）
+            OS_PendDataInit((OS_TCB       *)OSTCBCurPtr,         //初始化 p_pend_data（待插入等待列表）
                             (OS_PEND_DATA *)p_pend_data,
                             (OS_OBJ_QTY    )1);
-    //按优先级将p_pend_data插入等待列表
-    OS_PendListInsertPrio(p_pend_list,
+            //按优先级将p_pend_data插入等待列表
+            OS_PendListInsertPrio(p_pend_list,
                                 p_pend_data);
         }
-    else//如果等待对象为空
+        else//如果等待对象为空
         {
             OSTCBCurPtr->PendDataTblEntries = (OS_OBJ_QTY    )0; //清零当前任务的等待域数据
             OSTCBCurPtr->PendDataTblPtr     = (OS_PEND_DATA *)0;
         }
     #if OS_CFG_DBG_EN > 0u//如果启用了调试代码和变量
         OS_PendDbgNameAdd(p_obj,         //更新信号量的 DbgNamePtr元素为其等待
-    OSTCBCurPtr);//列表中优先级最高的任务的名称。
-
-
+        OSTCBCurPtr);//列表中优先级最高的任务的名称。
     #endif
     }
 
@@ -1746,41 +1736,32 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
 
     #include <includes.h>
 
-
     /**************************************************************************
-
                                         LOCAL DEFINES
     **************************************************************************/
-
     OS_Q queue;                             //声明消息队列
-
 
     /**************************************************************************
                                             TCB
     ************************************************************************/
 
     static  OS_TCB   AppTaskStartTCB;      //任务控制块
-
     static  OS_TCB   AppTaskPostTCB;
     static  OS_TCB   AppTaskPendTCB;
-
 
     /*************************************************************************
                                              STACKS
     ************************************************************************/
 
     static  CPU_STK  AppTaskStartStk[APP_TASK_START_STK_SIZE];       //任务栈
-
     static  CPU_STK  AppTaskPostStk [ APP_TASK_POST_STK_SIZE ];
     static  CPU_STK  AppTaskPendStk [ APP_TASK_PEND_STK_SIZE ];
-
 
     /*************************************************************************
                                       FUNCTION PROTOTYPES
     *************************************************************************/
 
     static  void  AppTaskStart  (void *p_arg);               //任务函数声明
-
     static  void  AppTaskPost   ( void * p_arg );
     static  void  AppTaskPend   ( void * p_arg );
 
@@ -1799,34 +1780,32 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
     int  main (void)
     {
         OS_ERR  err;
-
-
         OSInit(&err);                                     //初始化 μC/OS-III
 
-    /* 创建起始任务 */
+        /* 创建起始任务 */
         OSTaskCreate((OS_TCB     *)&AppTaskStartTCB,       //任务控制块地址
                     (CPU_CHAR   *)"App Task Start",             //任务名称
                     (OS_TASK_PTR ) AppTaskStart,                  //任务函数
                     (void       *) 0,
-    //传递给任务函数（形参p_arg）的实参
+                    //传递给任务函数（形参p_arg）的实参
                     (OS_PRIO     ) APP_TASK_START_PRIO,         //任务的优先级
                     (CPU_STK    *)&AppTaskStartStk[0],
-    //任务栈的基地址
+                    //任务栈的基地址
                     (CPU_STK_SIZE) APP_TASK_START_STK_SIZE / 10,
-    //任务栈空间剩下1/10时限制其增长
+                    //任务栈空间剩下1/10时限制其增长
                     (CPU_STK_SIZE) APP_TASK_START_STK_SIZE,
-    //任务栈空间（单位：sizeof(CPU_STK)）
+                    //任务栈空间（单位：sizeof(CPU_STK)）
                     (OS_MSG_QTY  ) 5u,
-    //任务可接收的最大消息数
+                    //任务可接收的最大消息数
                     (OS_TICK     ) 0u,
-    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
+                    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
                     (void       *) 0,
-    //任务扩展（0表不扩展）
+                    //任务扩展（0表不扩展）
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
-            (OS_ERR     *)&err);  //返回错误类型
+                    (OS_ERR     *)&err);  //返回错误类型
 
         OSStart(&err);
-    //启动多任务管理（交由μC/OS-III控制）
+        //启动多任务管理（交由μC/OS-III控制）
 
     }
 
@@ -1858,84 +1837,82 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
         (void)p_arg;
 
         BSP_Init();                                    //板级初始化
-        CPU_Init();                                   //初始化 CPU
-    组件（时间戳、关中断时间测量和主机名）
+        CPU_Init();
+        //初始化 CPU组件（时间戳、关中断时间测量和主机名）
 
-        cpu_clk_freq = BSP_CPU_ClkFreq();            //获取 CPU
-    内核时钟频率（SysTick 工作时钟）
+        cpu_clk_freq = BSP_CPU_ClkFreq();
+        //获取 CPU内核时钟频率（SysTick 工作时钟）
         cnts = cpu_clk_freq / (CPU_INT32U)OSCfg_TickRate_Hz;
-    //根据用户设定的时钟节拍频率计算 SysTick 定时器的计数值
-        OS_CPU_SysTickInit(cnts);                       //调用 SysTick
-    初始化函数，设置定时器计数值和启动定时器
+        //根据用户设定的时钟节拍频率计算 SysTick 定时器的计数值
+        OS_CPU_SysTickInit(cnts);
+        //调用 SysTick初始化函数，设置定时器计数值和启动定时器
 
         Mem_Init();
-    //初始化内存管理组件（堆内存池和内存池表）
+        //初始化内存管理组件（堆内存池和内存池表）
 
     #if OS_CFG_STAT_TASK_EN > 0u
     //如果启用（默认启用）了统计任务
         OSStatTaskCPUUsageInit(&err);
-    //计算没有应用任务（只有空闲任务）运行时 CPU的（最大）
+        //计算没有应用任务（只有空闲任务）运行时 CPU的（最大）
 
-    #endif//容量（决定 OS_Stat_IdleCtrMax
-    的值，为后面计算 CPU
-    //使用率使用）。
+    #endif//容量（决定 OS_Stat_IdleCtrMax的值，为后面计算 CPU使用率使用）。
         CPU_IntDisMeasMaxCurReset();
-    //复位（清零）当前最大关中断时间
+        //复位（清零）当前最大关中断时间
 
 
-    /* 创建消息队列 queue */
+        /* 创建消息队列 queue */
         OSQCreate ((OS_Q         *)&queue,            //指向消息队列的指针
                     (CPU_CHAR     *)"Queue For Test",  //队列的名字
                     (OS_MSG_QTY    )20,                //最多可存放消息的数目
                     (OS_ERR       *)&err);             //返回错误类型
 
 
-    /* 创建 AppTaskPost 任务 */
+        /* 创建 AppTaskPost 任务 */
         OSTaskCreate((OS_TCB     *)&AppTaskPostTCB,           //任务控制块地址
                     (CPU_CHAR   *)"App Task Post",           //任务名称
                     (OS_TASK_PTR ) AppTaskPost,             //任务函数
                     (void       *) 0,
-    //传递给任务函数（形参p_arg）的实参
+                    //传递给任务函数（形参p_arg）的实参
                     (OS_PRIO     ) APP_TASK_POST_PRIO,  //任务的优先级
                     (CPU_STK    *)&AppTaskPostStk[0],
-    //任务栈的基地址
+                    //任务栈的基地址
                     (CPU_STK_SIZE) APP_TASK_POST_STK_SIZE / 10,
-    //任务栈空间剩下1/10时限制其增长
+                    //任务栈空间剩下1/10时限制其增长
                     (CPU_STK_SIZE) APP_TASK_POST_STK_SIZE,
-    //任务栈空间（单位：sizeof(CPU_STK)）
+                    //任务栈空间（单位：sizeof(CPU_STK)）
                     (OS_MSG_QTY  ) 5u,
-    //任务可接收的最大消息数
+                    //任务可接收的最大消息数
                     (OS_TICK     ) 0u,
-    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
+                    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
                     (void       *) 0,
-    //任务扩展（0表不扩展）
-    (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+                    //任务扩展（0表不扩展）
+                    (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                     (OS_ERR     *)&err);                   //返回错误类型
 
-    /* 创建 AppTaskPend 任务 */
+        /* 创建 AppTaskPend 任务 */
         OSTaskCreate((OS_TCB     *)&AppTaskPendTCB,           //任务控制块地址
                     (CPU_CHAR   *)"App Task Pend",               //任务名称
                     (OS_TASK_PTR ) AppTaskPend,                //任务函数
                     (void       *) 0,
-    //传递给任务函数（形参p_arg）的实参
+                    //传递给任务函数（形参p_arg）的实参
                     (OS_PRIO     ) APP_TASK_PEND_PRIO,//任务的优先级
                     (CPU_STK    *)&AppTaskPendStk[0],
-    //任务栈的基地址
+                    //任务栈的基地址
                     (CPU_STK_SIZE) APP_TASK_PEND_STK_SIZE / 10,
-    //任务栈空间剩下1/10时限制其增长
+                    //任务栈空间剩下1/10时限制其增长
                     (CPU_STK_SIZE) APP_TASK_PEND_STK_SIZE,
-    //任务栈空间（单位：sizeof(CPU_STK)）
+                    //任务栈空间（单位：sizeof(CPU_STK)）
                     (OS_MSG_QTY  ) 5u,
-    //任务可接收的最大消息数
+                    //任务可接收的最大消息数
                     (OS_TICK     ) 0u,
-    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
+                    //任务的时间片节拍数（0表默认值OSCfg_TickRate_Hz/10）
                     (void       *) 0,
-    //任务扩展（0表不扩展）
+                    //任务扩展（0表不扩展）
                     (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                     (OS_ERR     *)&err);                     //返回错误类型
 
         OSTaskDel ( & AppTaskStartTCB, & err );
-    //删除起始任务本身，该任务不再运行
+        //删除起始任务本身，该任务不再运行
 
 
     }
@@ -1947,26 +1924,21 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
     static  void  AppTaskPost ( void * p_arg )
     {
         OS_ERR      err;
-
-
         (void)p_arg;
 
-
-    while (DEF_TRUE)                            //任务体
+        while (DEF_TRUE)                            //任务体
         {
-    /* 发布消息到消息队列 queue */
+            /* 发布消息到消息队列 queue */
             OSQPost ((OS_Q        *)&queue,          //消息变量指针
                     (void        *)"Fire μC/OS-III",
-    //要发送的数据的指针，将内存块首地址通过队列“发送出去”
+                    //要发送的数据的指针，将内存块首地址通过队列“发送出去”
                     (OS_MSG_SIZE  )sizeof ( "Fire μC/OS-III" ),//数据字节大小
                     (OS_OPT       )OS_OPT_POST_FIFO | OS_OPT_POST_ALL,
-    //先进先出和发布给全部任务的形式
+                    //先进先出和发布给全部任务的形式
                     (OS_ERR      *)&err);               //返回错误类型
 
             OSTimeDlyHMSM ( 0, 0, 0, 500, OS_OPT_TIME_DLY, & err );
-
         }
-
     }
 
 
@@ -1978,37 +1950,29 @@ OS_MsgPoolInit()函数的定义位于 os_msg.c文件中，其源码具体见 代
         OS_ERR      err;
         OS_MSG_SIZE msg_size;
         CPU_SR_ALLOC(); //使用到临界段（在关/开中断时）时必须用到该宏，该宏声明和
-    //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
-    // SR（临界段关中断只需保存SR），开中断时将该值还原。
-    char * pMsg;
-
-
+        //定义一个局部变量，用于保存关中断前的 CPU 状态寄存器
+        // SR（临界段关中断只需保存SR），开中断时将该值还原。
+        char * pMsg;
         (void)p_arg;
 
-
-    while (DEF_TRUE)                                         //任务体
+        while (DEF_TRUE)                                         //任务体
         {
-    /* 请求消息队列 queue 的消息 */
+            /* 请求消息队列 queue 的消息 */
             pMsg = OSQPend ((OS_Q         *)&queue,          //消息变量指针
                             (OS_TICK       )0,               //等待时长为无限
                             (OS_OPT        )OS_OPT_PEND_BLOCKING,
-    //如果没有获取到信号量就等待
+                            //如果没有获取到信号量就等待
                             (OS_MSG_SIZE  *)&msg_size,     //获取消息的字节大小
                             (CPU_TS       *)0,         //获取任务发送时的时间戳
                             (OS_ERR       *)&err);         //返回错误
 
-    if ( err == OS_ERR_NONE )                       //如果接收成功
+            if ( err == OS_ERR_NONE )                       //如果接收成功
             {
                 OS_CRITICAL_ENTER();                      //进入临界段
-
-    printf ( "\r\n接收消息的长度：%d字节，内容：%s\r\n", msg_size, pMsg );
-
+                printf ( "\r\n接收消息的长度：%d字节，内容：%s\r\n", msg_size, pMsg );
                 OS_CRITICAL_EXIT();
-
             }
-
         }
-
     }
 
 
